@@ -1,0 +1,47 @@
+api: '1.20.6'
+name: Economy 
+version: '1.0'
+main: com.github.yuqingliu.economy.Main
+api-version: '1.13'
+softdepend: [ Vault ]
+commands:
+  deposit:
+    description: Deposit currency into user's purse
+    usage: /deposit <currency> <amount>
+    permission: economy.admin
+  withdraw:
+    description: Removes currency from user's purse
+    usage: /withdraw <currency> <amount>
+    permission: economy.admin
+  currency:
+    description: Add/Remove a currency
+    usage: /currency add <name>; /currency remove <name>
+    permission: economy.admin
+  purse:
+    description: Opens purse GUI
+    usage: /purse
+    permission: economy.user
+    permission-message: You do not have permission to use this command
+  shop:
+    description: Create/Delete a shop. Spawns a villager acting as a trading post for that shop.
+    usage: /shop create <name>; /shop delete <name>
+    permission: economy.admin
+    permission-message: You do not have permission to use this command
+  section:
+    description: Create/Delete a shop section. Main hand item is used as icon.
+    usage: /section create <shop name> <section title>; /section delete <shop name> <section title>
+    permission: economy.admin
+    permission-message: You do not have permission to use this command
+  item:
+    description: Add/Remove main hand item as an option in a shop section
+    usage: /item add <shop name> <section title>; /item remove <shop name> <section title> <displayName>
+    permission: economy.admin
+    permission-message: You do not have permission to use this command
+
+permissions:
+  economy.admin:
+    description: Allows use of admin commands
+    default: op
+  economy.user:
+    description: Allows use of regular commands
+    default: true
