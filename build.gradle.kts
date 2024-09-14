@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     id("java")
+    id("io.spring.dependency-management") version "1.1.6"
 }
 
 group = "com.github.yuqingliu.economy"
@@ -27,6 +28,8 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.46.1.0")
     implementation("org.springframework:spring-core:6.1.12")
     implementation("org.springframework:spring-context:6.1.12")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc:3.3.3")
+
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")

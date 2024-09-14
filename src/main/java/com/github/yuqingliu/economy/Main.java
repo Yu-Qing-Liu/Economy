@@ -6,6 +6,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import com.github.yuqingliu.economy.api.Economy;
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.persistence.DbConfig;
 
 import lombok.Getter;
 
@@ -19,7 +20,8 @@ public class Main extends Economy {
     @Override
     public void onEnable() {
         SpringConfig.setPlugin(this);
-        applicationContext = new AnnotationConfigApplicationContext(SpringConfig.class);
+        DbConfig.setPlugin(this);
+        applicationContext = new AnnotationConfigApplicationContext(DbConfig.class, SpringConfig.class);
     }
 
     @Override

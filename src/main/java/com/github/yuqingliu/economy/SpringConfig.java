@@ -4,10 +4,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
 import com.github.yuqingliu.economy.managers.EventManagerImpl;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 
-@Configuration(proxyBeanMethods=false)
+@Configuration
 @ComponentScan
 public class SpringConfig {
     private static JavaPlugin plugin;
