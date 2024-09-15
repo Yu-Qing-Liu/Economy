@@ -6,19 +6,17 @@ import java.util.Map;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.events.*;
+import com.google.inject.Singleton;
 
-@Component
+@Singleton
 public class EventManagerImpl implements EventManager {
     private Map<String, Listener> listeners = new HashMap<>();
     
     private final JavaPlugin plugin;
 
-    @Autowired
     public EventManagerImpl(JavaPlugin plugin) {
         this.plugin = plugin;
         initializeListeners();

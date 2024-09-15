@@ -1,46 +1,33 @@
 package com.github.yuqingliu.economy;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import com.github.yuqingliu.economy.api.Economy;
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.modules.PluginModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 import lombok.Getter;
 
 @Getter
 public class Main extends Economy {
-    private AnnotationConfigApplicationContext applicationContext;
-    
-    @Autowired
+    @Inject
     private EventManager eventManager;
+
+    private Injector injector;
 
     @Override
     public void onEnable() {
-        SpringConfig.setPlugin(this);
-        applicationContext = new AnnotationConfigApplicationContext();
-        applicationContext.register(SpringConfig.class);
-        applicationContext.refresh();
-        printCustomBeans();
+        // Initialize Guice
+        injector = Guice.createInjector(new PluginModule(this));
+
+        // Inject dependencies
+        injector.injectMembers(this);
     }
 
     @Override
     public void onDisable() {
-        if (applicationContext != null) {
-            ((AnnotationConfigApplicationContext) applicationContext).close();
-        }
-    }
 
-    private void printCustomBeans() {
-        String[] allBeanNames = applicationContext.getBeanDefinitionNames();
-        for (String beanName : allBeanNames) {
-            Object bean = applicationContext.getBean(beanName);
-            if (!isDefaultSpringBean(beanName)) {
-                System.out.println("Bean name: " + beanName + ", Bean class: " + bean.getClass().getName());
-            }
-        }
-    }
-
-    private boolean isDefaultSpringBean(String beanName) {
-        return beanName.startsWith("org.springframework");
     }
 }
 

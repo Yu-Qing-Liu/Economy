@@ -32,8 +32,7 @@ dependencies {
 
     implementation(project(":api"))
     implementation("org.xerial:sqlite-jdbc:3.46.1.0")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.3.3")
-
+    implementation("com.google.inject:guice:7.0.0")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
