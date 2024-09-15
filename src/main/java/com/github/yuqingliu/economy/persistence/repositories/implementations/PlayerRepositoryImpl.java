@@ -14,13 +14,9 @@ import java.util.UUID;
 
 @Repository
 public class PlayerRepositoryImpl implements PlayerRepository {
-
-    private final JdbcTemplate jdbcTemplate;
-
+    
     @Autowired
-    public PlayerRepositoryImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private JdbcTemplate jdbcTemplate;
 
     private static final RowMapper<Player> PLAYER_ROW_MAPPER = new RowMapper<>() {
         @Override

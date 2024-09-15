@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./gradlew clean build
+./gradlew clean shadowJar
 cp ./build/libs/* ../../MinecraftTestServer/plugins/Economy.jar

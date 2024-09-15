@@ -15,7 +15,6 @@ public class PlayerJoinsServer implements Listener {
     @EventHandler
     public void playerJoinsServer(PlayerJoinEvent event) {
         playerService.savePlayer(event.getPlayer());
-
         // Retrieve and print player information
         Player player = playerService.getPlayer(event.getPlayer().getUniqueId());
         if (player != null) {

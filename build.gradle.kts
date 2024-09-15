@@ -1,14 +1,20 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.process.internal.ExecException
 import java.io.ByteArrayOutputStream
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
+    id("com.gradleup.shadow") version "8.3.1"
     id("java")
-    id("io.spring.dependency-management") version "1.1.6"
+    id("application")
+}
+
+application {
+    mainClass = "com.github.yuqingliu.economy.Main"
 }
 
 group = "com.github.yuqingliu.economy"
-version = "2.0.2-SNAPSHOT"
+version = "2.0.3-SNAPSHOT"
 
 repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
@@ -26,9 +32,7 @@ dependencies {
 
     implementation(project(":api"))
     implementation("org.xerial:sqlite-jdbc:3.46.1.0")
-    implementation("org.springframework:spring-core:6.1.12")
-    implementation("org.springframework:spring-context:6.1.12")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc:3.3.3")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.3.3")
 
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
@@ -90,28 +94,9 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.register<Jar>("uberJar") {
-    archiveClassifier = "uber"
-
-    from(sourceSets.main.get().output)
-
-    dependsOn(configurations.runtimeClasspath)
-    from({
-        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
-    })
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-tasks.jar {
-    enabled = false
-}
-
-tasks.assemble {
-    dependsOn(tasks.named("uberJar"))
-}
-
-tasks.build {
-    dependsOn(tasks.assemble)
+// Disable the default jar task
+tasks.named<Jar>("jar") {
+    isEnabled = false
 }
 
 java {
@@ -119,3 +104,6 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}

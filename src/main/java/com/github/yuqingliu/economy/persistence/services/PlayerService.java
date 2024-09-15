@@ -11,13 +11,9 @@ import java.util.UUID;
 
 @Service
 public class PlayerService {
-
-    private final PlayerRepository playerRepository;
-
+    
     @Autowired
-    public PlayerService(PlayerRepository playerRepository) {
-        this.playerRepository = playerRepository;
-    }
+    private PlayerRepository playerRepository;
 
     public Player fromBukkitPlayer(OfflinePlayer bukkitPlayer) {
         return new Player(bukkitPlayer.getUniqueId());
