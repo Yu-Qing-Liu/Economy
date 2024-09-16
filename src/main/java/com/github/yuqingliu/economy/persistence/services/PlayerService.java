@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.OfflinePlayer;
 
 import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
+import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
 import com.github.yuqingliu.economy.persistence.repositories.PlayerRepository;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -22,8 +23,10 @@ public class PlayerService {
     }
 
     public void addPlayer(OfflinePlayer player) {
-        PlayerEntity playerEntity = new PlayerEntity(player.getUniqueId());
         if(!containsPlayer(player)) {
+            PlayerEntity playerEntity = new PlayerEntity(player.getUniqueId());
+            PurseEntity playerPurse = new PurseEntity(player.getUniqueId());
+            playerEntity.setPurse(playerPurse);
             playerRepository.save(playerEntity);
         }
     }
