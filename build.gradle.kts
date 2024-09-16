@@ -33,6 +33,8 @@ dependencies {
     implementation(project(":api"))
     implementation("org.xerial:sqlite-jdbc:3.46.1.0")
     implementation("com.google.inject:guice:7.0.0")
+    implementation("org.hibernate.orm:hibernate-core:6.6.0.Final")
+    implementation("org.hibernate.orm:hibernate-community-dialects:6.6.0.Final")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")

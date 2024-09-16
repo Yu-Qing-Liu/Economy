@@ -20,7 +20,6 @@ public class Main extends Economy {
     public void onEnable() {
         // Initialize Guice
         injector = Guice.createInjector(new PluginModule(this));
-
         // Inject dependencies
         injector.injectMembers(this);
     }
