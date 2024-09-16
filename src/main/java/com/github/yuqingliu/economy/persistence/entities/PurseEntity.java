@@ -9,22 +9,28 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "purses")
 @Getter
 @Setter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class PurseEntity {
     @Id
     @Column(name = "playerId", columnDefinition = "VARCHAR(36)")
-    private final UUID id;
+    private UUID playerId;
 
     @OneToOne
     @MapsId
     @JoinColumn(name = "playerId", nullable = false)
     private PlayerEntity player;
+
+    public PurseEntity(UUID playerId) {
+        this.playerId = playerId;
+    }
 }

@@ -7,7 +7,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.UUID;
 
@@ -15,11 +15,11 @@ import java.util.UUID;
 @Table(name = "accounts")
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class AccountEntity {
     @Id
     @Column(name = "accountId", columnDefinition = "VARCHAR(36)")
-    private UUID id;
+    private UUID accountId;
 
     @ManyToOne
     @JoinColumn(name = "bankName", nullable = false)

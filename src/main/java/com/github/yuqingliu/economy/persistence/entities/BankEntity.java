@@ -18,7 +18,7 @@ import java.util.Set;
 public class BankEntity {
     @Id
     @Column(name = "bankName", columnDefinition = "VARCHAR(16)")
-    private final String name;
+    private final String bankName;
 
     @OneToMany(mappedBy = "bank")
     private Set<AccountEntity> accounts;

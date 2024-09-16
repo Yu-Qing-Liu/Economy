@@ -1,6 +1,7 @@
 package com.github.yuqingliu.economy;
 
 import com.github.yuqingliu.economy.api.Economy;
+import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.modules.PluginModule;
 import com.google.inject.Guice;
@@ -11,10 +12,12 @@ import lombok.Getter;
 
 @Getter
 public class Main extends Economy {
+    private Injector injector;
+
     @Inject
     private EventManager eventManager;
-
-    private Injector injector;
+    @Inject
+    private CommandManager commandManager;
 
     @Override
     public void onEnable() {

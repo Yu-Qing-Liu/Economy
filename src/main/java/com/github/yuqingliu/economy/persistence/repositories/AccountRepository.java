@@ -4,7 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
+import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -15,45 +15,45 @@ import java.util.UUID;
 
 @Singleton
 @RequiredArgsConstructor
-public class PurseRepository {
+public class AccountRepository {
     @Inject
     private final SessionFactory sessionFactory;
 
-    public void save(PurseEntity purse) {
+    public void save(AccountEntity account) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.persist(purse);
+            session.persist(account);
             transaction.commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void update(PurseEntity purse) {
+    public void update(AccountEntity account) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.merge(purse);
+            session.merge(account);
             transaction.commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public PurseEntity get(UUID playerId) {
+    public AccountEntity get(UUID accountId) {
         try (Session session = sessionFactory.openSession()) {
-            return session.get(PurseEntity.class, playerId);
+            return session.get(AccountEntity.class, accountId);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public void delete(UUID playerId) {
+    public void delete(UUID accountId) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            PurseEntity purse = session.get(PurseEntity.class, playerId);
-            if (purse != null) {
-                session.remove(purse);
+            AccountEntity account = session.get(AccountEntity.class, accountId);
+            if (account != null) {
+                session.remove(account);
             }
             transaction.commit();
         } catch (Exception e) {
@@ -61,9 +61,9 @@ public class PurseRepository {
         }
     }
 
-    public Set<PurseEntity> findAll() {
+    public Set<AccountEntity> findAll() {
         try (Session session = sessionFactory.openSession()) {
-            return Set.copyOf(session.createQuery("from PurseEntity", PurseEntity.class).list());
+            return Set.copyOf(session.createQuery("from AccountEntity", AccountEntity.class).list());
         } catch (Exception e) {
             e.printStackTrace();
             return Set.of();
