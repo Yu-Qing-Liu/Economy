@@ -35,33 +35,21 @@ public class Currency implements CommandExecutor {
             }
             switch (args[0]) {
                 case "add":
-                    try {
-                        ItemStack icon = player.getInventory().getItemInMainHand().clone();
-                        if(icon.getType() == Material.AIR) {
-                            player.sendMessage(Component.text("Invalid section icon. Please have a valid item in main hand.", NamedTextColor.RED));
-                            return false;
-                        }
-                        icon.setAmount(1);
-                        ItemMeta meta = icon.getItemMeta();
-                        if(meta != null) {
-                            meta.displayName(Component.text(args[1], NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
-                            icon.setItemMeta(meta);
-                        }
-                        currencyService.addCurrencyToAll(args[1], 0, icon);
-                        player.sendMessage(Component.text("Successfully added a new currency named " + args[1], NamedTextColor.GREEN));
-                    } catch (Exception e) {
-                        player.sendMessage(Component.text("Currency names must be unique", NamedTextColor.RED));
-                        return false;                   
-                    }
-                    break;
-                case "remove":
-                    try {
-                        //new RemoveCurrency(args[1]).update();
-                        player.sendMessage(Component.text("Successfully removed currency named " + args[1], NamedTextColor.RED));
-                    } catch (Exception e) {
-                        player.sendMessage(Component.text("An internal error occured.", NamedTextColor.RED));
+                    ItemStack icon = player.getInventory().getItemInMainHand().clone();
+                    if(icon.getType() == Material.AIR) {
+                        player.sendMessage(Component.text("Invalid section icon. Please have a valid item in main hand.", NamedTextColor.RED));
                         return false;
                     }
+                    icon.setAmount(1);
+                    ItemMeta meta = icon.getItemMeta();
+                    if(meta != null) {
+                        meta.displayName(Component.text(args[1], NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+                        icon.setItemMeta(meta);
+                    }
+                    currencyService.addCurrencyToAll(args[1], 0, icon);
+                    break;
+                case "remove":
+                    currencyService.deleteCurrencyFromAll(args[1]);
                     break;
                 default:
                     break;

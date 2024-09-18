@@ -4,6 +4,7 @@ import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
+import com.github.yuqingliu.economy.persistence.entities.keys.CurrencyKey;
 import com.github.yuqingliu.economy.persistence.repositories.BankRepository;
 import com.github.yuqingliu.economy.persistence.repositories.CurrencyRepository;
 import com.github.yuqingliu.economy.persistence.repositories.PurseRepository;
@@ -57,6 +58,16 @@ public class CurrencyService {
             purseCurrency.setPurse(purse);
             purseCurrency.setAccount(null);
             currencyRepository.save(purseCurrency);
+        }
+    }
+
+    public void deleteCurrencyFromAll(String currencyName) {
+        Set<CurrencyEntity> currencies = currencyRepository.findAll();
+        for(CurrencyEntity currency : currencies) {
+            if(currency.getCurrencyName().equals(currencyName)) {
+                CurrencyKey key = new CurrencyKey(currency.getCurrencyName(), currency.getPurseId(), currency.getAccountId());
+                currencyRepository.delete(key);
+            }
         }
     }
 }
