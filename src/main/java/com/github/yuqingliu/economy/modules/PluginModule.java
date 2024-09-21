@@ -2,8 +2,10 @@ package com.github.yuqingliu.economy.modules;
 
 import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.managers.CommandManagerImpl;
 import com.github.yuqingliu.economy.managers.EventManagerImpl;
+import com.github.yuqingliu.economy.managers.InventoryManagerImpl;
 import com.github.yuqingliu.economy.persistence.repositories.AccountRepository;
 import com.github.yuqingliu.economy.persistence.repositories.BankRepository;
 import com.github.yuqingliu.economy.persistence.repositories.CurrencyRepository;
@@ -84,8 +86,14 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public CommandManager provideCommandManager(CurrencyService currencyService) {
-        return new CommandManagerImpl(plugin, currencyService);
+    public InventoryManager provideInventoryManager(EventManager eventManager, CurrencyService currencyService) {
+        return new InventoryManagerImpl(eventManager, currencyService);
+    }
+
+    @Provides
+    @Singleton
+    public CommandManager provideCommandManager(InventoryManager inventoryManager, CurrencyService currencyService) {
+        return new CommandManagerImpl(plugin, inventoryManager, currencyService);
     }
 
 }

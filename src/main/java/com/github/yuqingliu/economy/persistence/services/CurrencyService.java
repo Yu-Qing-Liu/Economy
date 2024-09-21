@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.Set;
 import java.util.UUID;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
 @Singleton
@@ -69,5 +70,10 @@ public class CurrencyService {
                 currencyRepository.delete(key);
             }
         }
+    }
+
+    public Set<CurrencyEntity> getPlayerPurseCurrencies(OfflinePlayer player) {
+        PurseEntity playerPurse = purseRepository.get(player.getUniqueId());
+        return playerPurse.getCurrencies();
     }
 }

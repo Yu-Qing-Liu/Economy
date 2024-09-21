@@ -3,6 +3,7 @@ package com.github.yuqingliu.economy;
 import com.github.yuqingliu.economy.api.Economy;
 import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.modules.PluginModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
@@ -18,6 +19,8 @@ public class Main extends Economy {
     private EventManager eventManager;
     @Inject
     private CommandManager commandManager;
+    @Inject
+    private InventoryManager inventoryManager;
 
     @Override
     public void onEnable() {
