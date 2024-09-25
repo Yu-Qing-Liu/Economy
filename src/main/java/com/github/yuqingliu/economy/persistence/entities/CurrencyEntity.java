@@ -1,12 +1,8 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.io.BukkitObjectInputStream;
-import org.bukkit.util.io.BukkitObjectOutputStream;
 
 import com.github.yuqingliu.economy.persistence.entities.keys.CurrencyKey;
 
@@ -56,30 +52,11 @@ public class CurrencyEntity {
     private PurseEntity purse;
 
     public ItemStack getIcon() {
-        try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(this.icon);
-            BukkitObjectInputStream bois = new BukkitObjectInputStream(bais);
-            ItemStack item = (ItemStack) bois.readObject();
-            bais.close();
-            bois.close();
-            return item;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return ItemStack.deserializeBytes(this.icon);
     }
 
     public void setIcon(ItemStack itemStack) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            BukkitObjectOutputStream boos = new BukkitObjectOutputStream(baos);
-            boos.writeObject(itemStack);
-            this.icon = baos.toByteArray();
-            boos.close();
-            baos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.icon = itemStack.serializeAsBytes();
     }
 }
 

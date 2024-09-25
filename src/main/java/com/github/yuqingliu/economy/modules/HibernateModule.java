@@ -7,11 +7,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
-import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
-import com.github.yuqingliu.economy.persistence.entities.BankEntity;
-import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
-import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
-import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
+import com.github.yuqingliu.economy.persistence.entities.*;
 
 public class HibernateModule {
 
@@ -42,6 +38,10 @@ public class HibernateModule {
         sources.addAnnotatedClass(CurrencyEntity.class);
         sources.addAnnotatedClass(PlayerEntity.class);
         sources.addAnnotatedClass(PurseEntity.class);
+        sources.addAnnotatedClass(ShopEntity.class);
+        sources.addAnnotatedClass(ShopSectionEntity.class);
+        sources.addAnnotatedClass(ShopItemEntity.class);
+        sources.addAnnotatedClass(ShopOrderEntity.class);
 
         Metadata metadata = sources.getMetadataBuilder().build();
         return metadata.getSessionFactoryBuilder().build();
