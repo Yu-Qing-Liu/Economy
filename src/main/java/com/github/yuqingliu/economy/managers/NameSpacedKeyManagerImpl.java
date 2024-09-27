@@ -4,9 +4,11 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
+import com.google.inject.Singleton;
 
 import lombok.Getter;
 
+@Singleton
 @Getter
 public class NameSpacedKeyManagerImpl implements NameSpacedKeyManager {
     private final NamespacedKey shopKey;

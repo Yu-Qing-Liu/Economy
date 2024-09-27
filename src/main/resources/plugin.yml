@@ -27,14 +27,29 @@ commands:
     usage: /shop create <name>; /shop delete <name>
     permission: economy.admin
     permission-message: You do not have permission to use this command
-  section:
+  shopsection:
     description: Create/Delete a shop section. Main hand item is used as icon.
-    usage: /section create <shop name> <section title>; /section delete <shop name> <section title>
+    usage: /shopsection create <shop name> <section title>; /section delete <shop name> <section title>
     permission: economy.admin
     permission-message: You do not have permission to use this command
-  item:
+  shopitem:
     description: Add/Remove main hand item as an option in a shop section
-    usage: /item add <shop name> <section title>; /item remove <shop name> <section title> <displayName>
+    usage: /shopitem add <shop name> <section title>; /item remove <shop name> <section title> <displayName>
+    permission: economy.admin
+    permission-message: You do not have permission to use this command
+  vendor:
+    description: Create/Delete a vendor. Spawns a villager acting as a trading post for that shop.
+    usage: /vendor create <name>; /vendor delete <name>
+    permission: economy.admin
+    permission-message: You do not have permission to use this command
+  vendorsection:
+    description: Create/Delete a vendor section. Main hand item is used as icon.
+    usage: /vendorsection create <vendor name> <section title>; /section delete <vendor name> <section title>
+    permission: economy.admin
+    permission-message: You do not have permission to use this command
+  vendoritem:
+    description: Add/Remove main hand item as an option in a vendor section
+    usage: /vendoritem add <vendor name> <section title>; /item remove <vendor name> <section title> <displayName>
     permission: economy.admin
     permission-message: You do not have permission to use this command
 
