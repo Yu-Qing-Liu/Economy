@@ -15,15 +15,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "shops")
+@Table(name = "vendors")
 @Getter
 @Setter
 @NoArgsConstructor
-public class ShopEntity {
+public class VendorEntity {
     @Id
-    @Column(name = "shopName", columnDefinition = "VARCHAR(16)")
-    private String shopName;
+    @Column(name = "vendorName", columnDefinition = "VARCHAR(16)")
+    private String vendorName;
 
-    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<ShopSectionEntity> sections = new HashSet<>();
+    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<VendorSectionEntity> sections = new HashSet<>();
+
+    public VendorEntity(String vendorName) {
+        this.vendorName = vendorName;
+    } 
 }

@@ -30,10 +30,6 @@ public class PlayerEntity {
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AccountEntity> accounts;
 
-    public PlayerEntity(UUID playerId) {
-        this.playerId = playerId;
-    } 
-
     public void setPurse(PurseEntity purse) {
         if (purse != null) {
             purse.setPlayer(this); // Ensure bidirectional consistency

@@ -37,8 +37,4 @@ public class PurseEntity {
 
     @OneToMany(mappedBy = "purse", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<CurrencyEntity> currencies = new HashSet<>();
-
-    public PurseEntity(UUID playerId) {
-        this.playerId = playerId;
-    }
 }

@@ -42,6 +42,9 @@ public class HibernateModule {
         sources.addAnnotatedClass(ShopSectionEntity.class);
         sources.addAnnotatedClass(ShopItemEntity.class);
         sources.addAnnotatedClass(ShopOrderEntity.class);
+        sources.addAnnotatedClass(VendorEntity.class);
+        sources.addAnnotatedClass(VendorSectionEntity.class);
+        sources.addAnnotatedClass(VendorItemEntity.class);
 
         Metadata metadata = sources.getMetadataBuilder().build();
         return metadata.getSessionFactoryBuilder().build();

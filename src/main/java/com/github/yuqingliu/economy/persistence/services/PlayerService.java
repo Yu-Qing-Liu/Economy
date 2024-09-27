@@ -24,8 +24,10 @@ public class PlayerService {
 
     public void addPlayer(OfflinePlayer player) {
         if(!containsPlayer(player)) {
-            PlayerEntity playerEntity = new PlayerEntity(player.getUniqueId());
-            PurseEntity playerPurse = new PurseEntity(player.getUniqueId());
+            PlayerEntity playerEntity = new PlayerEntity();
+            playerEntity.setPlayerId(player.getUniqueId());
+            PurseEntity playerPurse = new PurseEntity();
+            playerPurse.setPlayerId(player.getUniqueId());
             playerEntity.setPurse(playerPurse);
             playerRepository.save(playerEntity);
         }
