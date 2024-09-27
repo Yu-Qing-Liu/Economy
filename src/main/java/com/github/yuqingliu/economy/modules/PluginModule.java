@@ -3,9 +3,11 @@ package com.github.yuqingliu.economy.modules;
 import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
 import com.github.yuqingliu.economy.managers.CommandManagerImpl;
 import com.github.yuqingliu.economy.managers.EventManagerImpl;
 import com.github.yuqingliu.economy.managers.InventoryManagerImpl;
+import com.github.yuqingliu.economy.managers.NameSpacedKeyManagerImpl;
 import com.github.yuqingliu.economy.persistence.repositories.AccountRepository;
 import com.github.yuqingliu.economy.persistence.repositories.BankRepository;
 import com.github.yuqingliu.economy.persistence.repositories.CurrencyRepository;
@@ -80,8 +82,14 @@ public class PluginModule extends AbstractModule {
     // Managers
     @Provides
     @Singleton
-    public EventManager provideEventManager(PlayerService playerService) {
-        return new EventManagerImpl(plugin, playerService);
+    public NameSpacedKeyManager provideNameSpacedKeyManager() {
+        return new NameSpacedKeyManagerImpl(plugin);
+    }
+
+    @Provides
+    @Singleton
+    public EventManager provideEventManager(PlayerService playerService, NameSpacedKeyManager nameSpacedKeyManager, InventoryManager inventoryManager) {
+        return new EventManagerImpl(plugin, playerService, nameSpacedKeyManager, inventoryManager);
     }
 
     @Provides
@@ -92,8 +100,8 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public CommandManager provideCommandManager(InventoryManager inventoryManager, CurrencyService currencyService) {
-        return new CommandManagerImpl(plugin, inventoryManager, currencyService);
+    public CommandManager provideCommandManager(InventoryManager inventoryManager, CurrencyService currencyService, NameSpacedKeyManager nameSpacedKeyManager) {
+        return new CommandManagerImpl(plugin, inventoryManager, currencyService, nameSpacedKeyManager);
     }
 
 }

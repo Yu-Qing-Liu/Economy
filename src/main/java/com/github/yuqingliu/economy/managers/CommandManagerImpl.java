@@ -8,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
 import com.github.yuqingliu.economy.commands.*;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.google.inject.Inject;
@@ -18,22 +19,26 @@ public class CommandManagerImpl implements CommandManager {
     private final JavaPlugin plugin;
     private final InventoryManager inventoryManager;
     private final CurrencyService currencyService;
+    private final NameSpacedKeyManager nameSpacedKeyManager;
     private Map<String, CommandExecutor> commands = new HashMap<>();
         
     @Inject
-    public CommandManagerImpl(JavaPlugin plugin, InventoryManager inventoryManager, CurrencyService currencyService) {
+    public CommandManagerImpl(JavaPlugin plugin, InventoryManager inventoryManager, CurrencyService currencyService, NameSpacedKeyManager nameSpacedKeyManager) {
         this.plugin = plugin;
         this.inventoryManager = inventoryManager;
         this.currencyService = currencyService;
+        this.nameSpacedKeyManager = nameSpacedKeyManager;
         initializeCommands();
         registerCommands();
     }
 
     private void initializeCommands() {
         // Currency commands
-        commands.put("currency", new Currency(currencyService));
+        commands.put("currency", new CurrencyCommand(currencyService));
         // Purse commands
-        commands.put("purse", new Purse(inventoryManager));
+        commands.put("purse", new PurseCommand(inventoryManager));
+        // Vendor commands
+        commands.put("vendor", new VendorCommand(nameSpacedKeyManager));
     }
 
     private void registerCommands() {

@@ -8,6 +8,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
 import com.github.yuqingliu.economy.events.*;
 import com.github.yuqingliu.economy.persistence.services.PlayerService;
 import com.google.inject.Inject;
@@ -18,17 +20,22 @@ public class EventManagerImpl implements EventManager {
     private Map<String, Listener> listeners = new HashMap<>();
     private final JavaPlugin plugin;
     private final PlayerService playerService;
+    private final NameSpacedKeyManager nameSpacedKeyManager;
+    private final InventoryManager inventoryManager;
     
     @Inject
-    public EventManagerImpl(JavaPlugin plugin, PlayerService playerService) {
+    public EventManagerImpl(JavaPlugin plugin, PlayerService playerService, NameSpacedKeyManager nameSpacedKeyManager, InventoryManager inventoryManager) {
         this.plugin = plugin;
         this.playerService = playerService;
+        this.nameSpacedKeyManager = nameSpacedKeyManager;
+        this.inventoryManager = inventoryManager;
         initializeListeners();
         registerEvents();
     }
 
     private void initializeListeners() {
         listeners.put(PlayerJoinsServer.class.getSimpleName(), new PlayerJoinsServer(playerService));
+        listeners.put(PlayerOpensVendor.class.getSimpleName(), new PlayerOpensVendor(nameSpacedKeyManager, inventoryManager));
     }
     
     public void registerEvents() {

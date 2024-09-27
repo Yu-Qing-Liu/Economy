@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.view.pursemenu.PurseMenu;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @RequiredArgsConstructor
-public class Purse implements CommandExecutor {
+public class PurseCommand implements CommandExecutor {
     @Inject
     private final InventoryManager inventoryManager;
 
@@ -29,7 +30,7 @@ public class Purse implements CommandExecutor {
                 player.sendMessage(Component.text("Usage: /purse", NamedTextColor.RED));
                 return false;
             }
-            inventoryManager.getInventory("PurseMenu").open(player);
+            inventoryManager.getInventory(PurseMenu.class.getSimpleName()).open(player);
             return true;
         }
         return false;
