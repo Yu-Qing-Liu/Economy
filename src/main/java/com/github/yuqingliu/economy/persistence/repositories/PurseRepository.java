@@ -19,23 +19,27 @@ public class PurseRepository {
     @Inject
     private final SessionFactory sessionFactory;
 
-    public void save(PurseEntity purse) {
+    public boolean save(PurseEntity purse) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.persist(purse);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public void update(PurseEntity purse) {
+    public boolean update(PurseEntity purse) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.merge(purse);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -48,7 +52,7 @@ public class PurseRepository {
         }
     }
 
-    public void delete(UUID playerId) {
+    public boolean delete(UUID playerId) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             PurseEntity purse = session.get(PurseEntity.class, playerId);
@@ -56,8 +60,10 @@ public class PurseRepository {
                 session.remove(purse);
             }
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 

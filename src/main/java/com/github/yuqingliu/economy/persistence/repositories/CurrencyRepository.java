@@ -18,23 +18,27 @@ public class CurrencyRepository {
     @Inject
     private final SessionFactory sessionFactory;
 
-    public void save(CurrencyEntity currency) {
+    public boolean save(CurrencyEntity currency) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.persist(currency);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public void update(CurrencyEntity currency) {
+    public boolean update(CurrencyEntity currency) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.merge(currency);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -46,7 +50,7 @@ public class CurrencyRepository {
         }
     }
 
-    public void delete(CurrencyKey key) {
+    public boolean delete(CurrencyKey key) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             CurrencyEntity currency = session.find(CurrencyEntity.class, key);
@@ -54,8 +58,10 @@ public class CurrencyRepository {
                 session.remove(currency);
             }
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 

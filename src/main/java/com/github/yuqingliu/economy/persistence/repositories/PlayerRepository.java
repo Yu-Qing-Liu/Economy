@@ -18,23 +18,27 @@ public class PlayerRepository {
     @Inject
     private final SessionFactory sessionFactory;
 
-    public void save(PlayerEntity player) {
+    public boolean save(PlayerEntity player) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.persist(player);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public void update(PlayerEntity player) {
+    public boolean update(PlayerEntity player) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.merge(player);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -46,7 +50,7 @@ public class PlayerRepository {
         }
     }
 
-    public void delete(UUID uuid) {
+    public boolean delete(UUID uuid) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             PlayerEntity player = session.get(PlayerEntity.class, uuid);
@@ -54,8 +58,10 @@ public class PlayerRepository {
                 session.remove(player);
             }
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 }

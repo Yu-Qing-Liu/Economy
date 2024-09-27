@@ -19,23 +19,27 @@ public class AccountRepository {
     @Inject
     private final SessionFactory sessionFactory;
 
-    public void save(AccountEntity account) {
+    public boolean save(AccountEntity account) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.persist(account);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public void update(AccountEntity account) {
+    public boolean update(AccountEntity account) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.merge(account);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -48,7 +52,7 @@ public class AccountRepository {
         }
     }
 
-    public void delete(UUID accountId) {
+    public boolean delete(UUID accountId) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             AccountEntity account = session.get(AccountEntity.class, accountId);
@@ -56,8 +60,10 @@ public class AccountRepository {
                 session.remove(account);
             }
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 

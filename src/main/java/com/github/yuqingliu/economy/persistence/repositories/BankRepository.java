@@ -17,23 +17,27 @@ public class BankRepository {
     @Inject
     private final SessionFactory sessionFactory;
 
-    public void save(BankEntity bank) {
+    public boolean save(BankEntity bank) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.persist(bank);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public void update(BankEntity bank) {
+    public boolean update(BankEntity bank) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             session.merge(bank);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -46,7 +50,7 @@ public class BankRepository {
         }
     }
 
-    public void delete(String bankName) {
+    public boolean delete(String bankName) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             BankEntity bank = session.get(BankEntity.class, bankName);
@@ -54,8 +58,10 @@ public class BankRepository {
                 session.remove(bank);
             }
             transaction.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 

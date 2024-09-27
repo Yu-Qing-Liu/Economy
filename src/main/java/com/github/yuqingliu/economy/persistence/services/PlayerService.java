@@ -1,7 +1,5 @@
 package com.github.yuqingliu.economy.persistence.services;
 
-import java.util.UUID;
-
 import org.bukkit.OfflinePlayer;
 
 import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
