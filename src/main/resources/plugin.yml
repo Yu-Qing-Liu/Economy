@@ -7,15 +7,15 @@ softdepend: [ Vault ]
 commands:
   deposit:
     description: Deposit currency into user's purse
-    usage: /deposit <currency> <amount>
+    usage: /deposit <currencyName> <amount>
     permission: economy.admin
   withdraw:
     description: Removes currency from user's purse
-    usage: /withdraw <currency> <amount>
+    usage: /withdraw <currencyName> <amount>
     permission: economy.admin
   currency:
     description: Add/Remove a currency
-    usage: /currency add <name>; /currency remove <name>
+    usage: /currency add <currencyName>; /currency remove <name>
     permission: economy.admin
   purse:
     description: Opens purse GUI
@@ -24,32 +24,32 @@ commands:
     permission-message: You do not have permission to use this command
   shop:
     description: Create/Delete a shop. Spawns a villager acting as a trading post for that shop.
-    usage: /shop create <name>; /shop delete <name>
+    usage: /shop create <shopName>; /shop delete <shopName>
     permission: economy.admin
     permission-message: You do not have permission to use this command
   shopsection:
     description: Create/Delete a shop section. Main hand item is used as icon.
-    usage: /shopsection create <shop name> <section title>; /section delete <shop name> <section title>
+    usage: /shopsection create <shopName> <sectionName>; /shopsection delete <shopName> <sectionName>
     permission: economy.admin
     permission-message: You do not have permission to use this command
   shopitem:
     description: Add/Remove main hand item as an option in a shop section
-    usage: /shopitem add <shop name> <section title>; /item remove <shop name> <section title> <displayName>
+    usage: /shopitem add <shopName> <sectionName>; /shopitem remove <shopName> <sectionName> <itemName>
     permission: economy.admin
     permission-message: You do not have permission to use this command
   vendor:
     description: Create/Delete a vendor. Spawns a villager acting as a trading post for that shop.
-    usage: /vendor create <name>; /vendor delete <name>
+    usage: /vendor create <vendorName>; /vendor delete <vendorName>
     permission: economy.admin
     permission-message: You do not have permission to use this command
   vendorsection:
     description: Create/Delete a vendor section. Main hand item is used as icon.
-    usage: /vendorsection create <vendor name> <section title>; /section delete <vendor name> <section title>
+    usage: /vendorsection create <vendorName> <sectionName>; /vendorsection delete <vendorName> <sectionName>
     permission: economy.admin
     permission-message: You do not have permission to use this command
   vendoritem:
     description: Add/Remove main hand item as an option in a vendor section
-    usage: /vendoritem add <vendor name> <section title>; /item remove <vendor name> <section title> <displayName>
+    usage: /vendoritem add <vendorName> <sectionName> <buyPrice> <sellPrice>; /vendoritem remove <vendorName> <sectionName> <itemName>
     permission: economy.admin
     permission-message: You do not have permission to use this command
 

@@ -27,7 +27,6 @@ public class PurseCommand implements CommandExecutor {
                 return false;
             }
             if (args.length != 0) {
-                player.sendMessage(Component.text("Usage: /purse", NamedTextColor.RED));
                 return false;
             }
             inventoryManager.getInventory(PurseMenu.class.getSimpleName()).open(player);

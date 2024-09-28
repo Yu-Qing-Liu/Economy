@@ -33,7 +33,6 @@ public class VendorCommand implements CommandExecutor {
                 return false;
             }
             if (args.length != 2) {
-                player.sendMessage(Component.text("Usage: /vendor create <name>; /vendor delete <name>", NamedTextColor.RED));
                 return false;
             }
             switch (args[0]) {
@@ -50,7 +49,6 @@ public class VendorCommand implements CommandExecutor {
                     player.sendMessage(Component.text("Vendor with name " + args[1] + " has been deleted", NamedTextColor.RED));
                     break;
                 default:
-                    player.sendMessage(Component.text("Usage: /vendor create <name>; /vendor delete <name>", NamedTextColor.RED));
                     return false;
             }
             return true;

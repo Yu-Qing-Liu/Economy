@@ -48,6 +48,7 @@ public class CommandManagerImpl implements CommandManager {
         commands.put("purse", new PurseCommand(inventoryManager));
         // Vendor commands
         commands.put("vendor", new VendorCommand(nameSpacedKeyManager, vendorService));
+        commands.put("vendorsection", new VendorSectionCommand(vendorService));
     }
 
     private void registerCommands() {
