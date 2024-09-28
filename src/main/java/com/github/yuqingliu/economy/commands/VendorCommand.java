@@ -37,8 +37,9 @@ public class VendorCommand implements CommandExecutor {
             }
             switch (args[0]) {
                 case "create":
-                    vendorService.addVendor(args[1]);
-                    player.sendMessage(Component.text("Successfully created shop with name " + args[1], NamedTextColor.GREEN));
+                    if(vendorService.addVendor(args[1])) {
+                        player.sendMessage(Component.text("Successfully created shop with name " + args[1], NamedTextColor.GREEN));
+                    } 
                     Villager villager = (Villager) player.getWorld().spawnEntity(player.getLocation(), EntityType.VILLAGER);
                     PersistentDataContainer container = villager.getPersistentDataContainer();
                     container.set(nameSpacedKeyManager.getVendorKey(), PersistentDataType.STRING, args[1]);

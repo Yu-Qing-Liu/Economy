@@ -50,6 +50,19 @@ public class CurrencyRepository {
         }
     }
 
+
+    public CurrencyEntity getFirst(String currencyName) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM CurrencyEntity WHERE currencyName = :currencyName", CurrencyEntity.class)
+                          .setParameter("currencyName", currencyName)
+                          .setMaxResults(1)
+                          .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public boolean delete(CurrencyKey key) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();

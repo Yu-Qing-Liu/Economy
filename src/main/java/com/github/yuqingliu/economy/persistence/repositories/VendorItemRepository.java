@@ -4,8 +4,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
-import com.github.yuqingliu.economy.persistence.entities.keys.VendorSectionKey;
+import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
+import com.github.yuqingliu.economy.persistence.entities.keys.VendorItemKey;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -13,14 +13,14 @@ import lombok.RequiredArgsConstructor;
 
 @Singleton
 @RequiredArgsConstructor
-public class VendorSectionRepository {
+public class VendorItemRepository {
     @Inject
     private final SessionFactory sessionFactory;
 
-    public boolean save(VendorSectionEntity section) {
+    public boolean save(VendorItemEntity item) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.persist(section);
+            session.persist(item);
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -29,10 +29,10 @@ public class VendorSectionRepository {
         }
     }
 
-    public boolean update(VendorSectionEntity section) {
+    public boolean update(VendorItemEntity item) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.merge(section);
+            session.merge(item);
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -41,18 +41,18 @@ public class VendorSectionRepository {
         }
     }
 
-    public VendorSectionEntity get(VendorSectionKey key) {
+    public VendorItemEntity get(VendorItemKey key) {
         try (Session session = sessionFactory.openSession()) {
-            return session.get(VendorSectionEntity.class, key);
+            return session.get(VendorItemEntity.class, key);
         } catch (Exception e) {
             return null;
         }
     }
 
-    public boolean delete(VendorSectionKey key) {
+    public boolean delete(VendorItemKey key) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            VendorSectionEntity player = session.get(VendorSectionEntity.class, key);
+            VendorItemEntity player = session.get(VendorItemEntity.class, key);
             if (player != null) {
                 session.remove(player);
             }

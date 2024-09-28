@@ -69,7 +69,7 @@ public class ShopOrderEntity {
     @Column(name = "unitPrice")
     private double unitPrice;
     
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    private CurrencyEntity currencyType;
+    @Column(name = "currencyType")
+    private String currencyType;
 }
 

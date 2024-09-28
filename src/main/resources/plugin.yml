@@ -49,7 +49,7 @@ commands:
     permission-message: You do not have permission to use this command
   vendoritem:
     description: Add/Remove main hand item as an option in a vendor section
-    usage: /vendoritem add <vendorName> <sectionName> <buyPrice> <sellPrice>; /vendoritem remove <vendorName> <sectionName> <itemName>
+    usage: /vendoritem add <vendorName> <sectionName> <currencyName> <buyPrice> <sellPrice>; /vendoritem remove <vendorName> <sectionName> <itemName>
     permission: economy.admin
     permission-message: You do not have permission to use this command
 

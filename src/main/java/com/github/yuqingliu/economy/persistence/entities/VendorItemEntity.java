@@ -53,9 +53,9 @@ public class VendorItemEntity {
 
     @Column(name = "sellPrice")
     private double sellPrice;
-
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    private CurrencyEntity currencyType;
+    
+    @Column(name = "currencyType")
+    private String currencyType;
 
     public ItemStack getIcon() {
         return ItemStack.deserializeBytes(this.icon);

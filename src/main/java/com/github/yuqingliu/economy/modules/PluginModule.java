@@ -67,6 +67,12 @@ public class PluginModule extends AbstractModule {
         return new VendorSectionRepository(sessionFactory);
     }
 
+    @Provides
+    @Singleton
+    public VendorItemRepository provideVendorItemRepository(SessionFactory sessionFactory) {
+        return new VendorItemRepository(sessionFactory);
+    }
+
     // Services
     @Provides
     @Singleton
@@ -82,8 +88,8 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public VendorService provideVendorService(VendorRepository vendorRepository, VendorSectionRepository vendorSectionRepository) {
-        return new VendorService(vendorRepository, vendorSectionRepository);
+    public VendorService provideVendorService(VendorRepository vendorRepository, VendorSectionRepository vendorSectionRepository, VendorItemRepository vendorItemRepository, CurrencyRepository currencyRepository) {
+        return new VendorService(vendorRepository, vendorSectionRepository, vendorItemRepository, currencyRepository);
     }
 
     // Managers

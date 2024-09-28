@@ -19,7 +19,7 @@ public class HibernateModule {
         configuration.setProperty("hibernate.connection.url", dbUrl);
         configuration.setProperty("hibernate.connection.driver_class", "org.sqlite.JDBC");
         configuration.setProperty("hibernate.dialect", "org.hibernate.community.dialect.SQLiteDialect");
-        configuration.setProperty("hibernate.hbm2ddl.auto", "create-drop"); // Or "create", "create-drop"
+        configuration.setProperty("hibernate.hbm2ddl.auto", "update"); // "update", "create", "create-drop"
         configuration.setProperty("hibernate.show_sql", "true");
         configuration.setProperty("hibernate.format_sql", "true");
 
