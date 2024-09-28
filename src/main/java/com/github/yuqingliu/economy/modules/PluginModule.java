@@ -1,20 +1,9 @@
 package com.github.yuqingliu.economy.modules;
 
-import com.github.yuqingliu.economy.api.managers.CommandManager;
-import com.github.yuqingliu.economy.api.managers.EventManager;
-import com.github.yuqingliu.economy.api.managers.InventoryManager;
-import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
-import com.github.yuqingliu.economy.managers.CommandManagerImpl;
-import com.github.yuqingliu.economy.managers.EventManagerImpl;
-import com.github.yuqingliu.economy.managers.InventoryManagerImpl;
-import com.github.yuqingliu.economy.managers.NameSpacedKeyManagerImpl;
-import com.github.yuqingliu.economy.persistence.repositories.AccountRepository;
-import com.github.yuqingliu.economy.persistence.repositories.BankRepository;
-import com.github.yuqingliu.economy.persistence.repositories.CurrencyRepository;
-import com.github.yuqingliu.economy.persistence.repositories.PlayerRepository;
-import com.github.yuqingliu.economy.persistence.repositories.PurseRepository;
-import com.github.yuqingliu.economy.persistence.services.CurrencyService;
-import com.github.yuqingliu.economy.persistence.services.PlayerService;
+import com.github.yuqingliu.economy.api.managers.*;
+import com.github.yuqingliu.economy.managers.*;
+import com.github.yuqingliu.economy.persistence.repositories.*;
+import com.github.yuqingliu.economy.persistence.services.*;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -66,6 +55,18 @@ public class PluginModule extends AbstractModule {
         return new PurseRepository(sessionFactory);
     }
 
+    @Provides
+    @Singleton
+    public VendorRepository provideVendorRepository(SessionFactory sessionFactory) {
+        return new VendorRepository(sessionFactory);
+    }
+
+    @Provides
+    @Singleton
+    public VendorSectionRepository provideVendorSectionRepository(SessionFactory sessionFactory) {
+        return new VendorSectionRepository(sessionFactory);
+    }
+
     // Services
     @Provides
     @Singleton
@@ -77,6 +78,12 @@ public class PluginModule extends AbstractModule {
     @Singleton
     public CurrencyService provideCurrencyService(CurrencyRepository currencyRepository, BankRepository bankRepository, PurseRepository purseRepository) {
         return new CurrencyService(currencyRepository, bankRepository, purseRepository);
+    }
+
+    @Provides
+    @Singleton
+    public VendorService provideVendorService(VendorRepository vendorRepository, VendorSectionRepository vendorSectionRepository) {
+        return new VendorService(vendorRepository, vendorSectionRepository);
     }
 
     // Managers
@@ -94,14 +101,25 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public InventoryManager provideInventoryManager(EventManager eventManager, CurrencyService currencyService) {
-        return new InventoryManagerImpl(eventManager, currencyService);
+    public InventoryManager provideInventoryManager(EventManager eventManager, CurrencyService currencyService, VendorService vendorService) {
+        return new InventoryManagerImpl(eventManager, currencyService, vendorService);
     }
 
     @Provides
     @Singleton
-    public CommandManager provideCommandManager(InventoryManager inventoryManager, CurrencyService currencyService, NameSpacedKeyManager nameSpacedKeyManager) {
-        return new CommandManagerImpl(plugin, inventoryManager, currencyService, nameSpacedKeyManager);
+    public CommandManager provideCommandManager(
+        InventoryManager inventoryManager,
+        CurrencyService currencyService,
+        VendorService vendorService,
+        NameSpacedKeyManager nameSpacedKeyManager
+    ) {
+        return new CommandManagerImpl(
+            plugin,
+            inventoryManager,
+            currencyService,
+            vendorService,
+            nameSpacedKeyManager
+        );
     }
 
 }

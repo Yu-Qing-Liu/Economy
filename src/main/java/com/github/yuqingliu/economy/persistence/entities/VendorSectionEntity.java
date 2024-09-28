@@ -1,6 +1,6 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.bukkit.inventory.ItemStack;
@@ -44,7 +44,7 @@ public class VendorSectionEntity {
     private VendorEntity vendor;
 
     @OneToMany(mappedBy = "vendorSection", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<VendorItemEntity> items = new HashSet<>();
+    private Set<VendorItemEntity> items = new LinkedHashSet<>();
 
     public ItemStack getIcon() {
         return ItemStack.deserializeBytes(this.icon);

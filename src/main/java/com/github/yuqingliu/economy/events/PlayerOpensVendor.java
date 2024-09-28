@@ -10,6 +10,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
+import com.github.yuqingliu.economy.api.view.PlayerInventory;
+import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
@@ -29,13 +31,11 @@ public class PlayerOpensVendor implements Listener {
         if(entity.getType() == EntityType.VILLAGER) {
             PersistentDataContainer container = entity.getPersistentDataContainer();
             if(container.has(nameSpacedKeyManager.getVendorKey())) {
-                String shopName = container.get(nameSpacedKeyManager.getVendorKey(), PersistentDataType.STRING);
-                try {
-                    Component shopNameComponent = Component.text(shopName, NamedTextColor.DARK_GRAY);
-                    //plugin.getUIManager().getUserInterface(ShopMenu.class.getSimpleName()).open(event.getPlayer(), shopNameComponent);
-                } catch (Exception e) {
-                    return;
-                }
+                String vendorName = container.get(nameSpacedKeyManager.getVendorKey(), PersistentDataType.STRING);
+                Component vendorComponentName = Component.text(vendorName, NamedTextColor.DARK_GRAY);
+                PlayerInventory inventory = inventoryManager.getInventory(VendorMenu.class.getSimpleName());
+                inventory.setDisplayName(vendorComponentName);
+                inventory.open(event.getPlayer());
             }
         }
     }

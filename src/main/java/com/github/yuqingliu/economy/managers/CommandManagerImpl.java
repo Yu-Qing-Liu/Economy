@@ -11,6 +11,7 @@ import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
 import com.github.yuqingliu.economy.commands.*;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
+import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -19,14 +20,22 @@ public class CommandManagerImpl implements CommandManager {
     private final JavaPlugin plugin;
     private final InventoryManager inventoryManager;
     private final CurrencyService currencyService;
+    private final VendorService vendorService;
     private final NameSpacedKeyManager nameSpacedKeyManager;
     private Map<String, CommandExecutor> commands = new HashMap<>();
         
     @Inject
-    public CommandManagerImpl(JavaPlugin plugin, InventoryManager inventoryManager, CurrencyService currencyService, NameSpacedKeyManager nameSpacedKeyManager) {
+    public CommandManagerImpl(
+        JavaPlugin plugin,
+        InventoryManager inventoryManager,
+        CurrencyService currencyService,
+        VendorService vendorService,
+        NameSpacedKeyManager nameSpacedKeyManager
+    ) {
         this.plugin = plugin;
         this.inventoryManager = inventoryManager;
         this.currencyService = currencyService;
+        this.vendorService = vendorService;
         this.nameSpacedKeyManager = nameSpacedKeyManager;
         initializeCommands();
         registerCommands();
@@ -38,7 +47,7 @@ public class CommandManagerImpl implements CommandManager {
         // Purse commands
         commands.put("purse", new PurseCommand(inventoryManager));
         // Vendor commands
-        commands.put("vendor", new VendorCommand(nameSpacedKeyManager));
+        commands.put("vendor", new VendorCommand(nameSpacedKeyManager, vendorService));
     }
 
     private void registerCommands() {

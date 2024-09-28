@@ -1,6 +1,6 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -25,9 +25,5 @@ public class VendorEntity {
     private String vendorName;
 
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<VendorSectionEntity> sections = new HashSet<>();
-
-    public VendorEntity(String vendorName) {
-        this.vendorName = vendorName;
-    } 
+    private Set<VendorSectionEntity> sections = new LinkedHashSet<>();
 }

@@ -1,6 +1,6 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,5 +36,5 @@ public class PurseEntity {
     private PlayerEntity player;
 
     @OneToMany(mappedBy = "purse", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<CurrencyEntity> currencies = new HashSet<>();
+    private Set<CurrencyEntity> currencies = new LinkedHashSet<>();
 }

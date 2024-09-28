@@ -10,6 +10,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
+import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class VendorCommand implements CommandExecutor {
     @Inject
     private final NameSpacedKeyManager nameSpacedKeyManager;
+    @Inject
+    private final VendorService vendorService;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -35,7 +38,7 @@ public class VendorCommand implements CommandExecutor {
             }
             switch (args[0]) {
                 case "create":
-                    //new AddShop(args[1]).update();
+                    vendorService.addVendor(args[1]);
                     player.sendMessage(Component.text("Successfully created shop with name " + args[1], NamedTextColor.GREEN));
                     Villager villager = (Villager) player.getWorld().spawnEntity(player.getLocation(), EntityType.VILLAGER);
                     PersistentDataContainer container = villager.getPersistentDataContainer();
@@ -43,7 +46,7 @@ public class VendorCommand implements CommandExecutor {
                     villager.setPersistent(true);
                     break;
                 case "delete":
-                    //new RemoveShop(args[1]).update();
+                    vendorService.deleteVendor(args[1]);
                     player.sendMessage(Component.text("Vendor with name " + args[1] + " has been deleted", NamedTextColor.RED));
                     break;
                 default:

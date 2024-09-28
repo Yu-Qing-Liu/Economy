@@ -8,6 +8,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
@@ -21,5 +23,5 @@ public class BankEntity {
     private final String bankName;
 
     @OneToMany(mappedBy = "bank")
-    private Set<AccountEntity> accounts;
+    private Set<AccountEntity> accounts = new LinkedHashSet<>();
 }
