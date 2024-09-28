@@ -55,6 +55,7 @@ public class MainMenu extends PurseMenu implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(displayName)) {
             controller.onClose();
+            eventManager.unregisterEvent(this.getClass().getSimpleName());
         }
     }
 }

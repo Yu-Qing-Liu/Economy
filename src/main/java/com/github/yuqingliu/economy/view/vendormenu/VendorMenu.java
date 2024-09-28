@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+import com.github.yuqingliu.economy.view.vendormenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.vendormenu.mainmenu.MainMenu;
 import com.google.inject.Inject;
 
@@ -22,7 +23,7 @@ public class VendorMenu extends AbstractPlayerInventory {
     protected MenuType currentMenu;
 
     protected enum MenuType {
-        MainMenu;
+        MainMenu, ItemMenu;
     }
 
     @Inject
@@ -35,14 +36,7 @@ public class VendorMenu extends AbstractPlayerInventory {
         this.vendorService = vendorService;
         this.currentMenu = MenuType.MainMenu;
     }
-
-    @Override
-    public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, INVENTORY_SIZE, displayName);
-        player.openInventory(inv);
-        new MainMenu(eventManager, displayName, vendorService).getController().openMainMenu(inv);
-    }
-
+    
     protected String getVendorName() {
         return componentToString(displayName);
     }
@@ -53,4 +47,12 @@ public class VendorMenu extends AbstractPlayerInventory {
         }
         return PlainTextComponentSerializer.plainText().serialize(component);
     }
+
+    @Override
+    public void open(Player player) {
+        Inventory inv = Bukkit.createInventory(null, INVENTORY_SIZE, displayName);
+        player.openInventory(inv);
+        new MainMenu(eventManager, displayName, vendorService).getController().openMainMenu(inv);
+    }
+
 }
