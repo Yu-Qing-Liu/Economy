@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import com.github.yuqingliu.economy.view.vendormenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.vendormenu.mainmenu.MainMenu;
 import com.google.inject.Inject;
 
@@ -25,7 +24,7 @@ public class VendorMenu extends AbstractPlayerInventory {
     protected MenuType currentMenu;
 
     protected enum MenuType {
-        MainMenu, ItemMenu, TransactionMenu;
+        MainMenu, ItemMenu, TransactionMenu, TradeMenu;
     }
 
     @Inject
@@ -37,7 +36,6 @@ public class VendorMenu extends AbstractPlayerInventory {
         );
         this.vendorService = vendorService;
         this.currencyService = currencyService;
-        this.currentMenu = MenuType.MainMenu;
     }
     
     protected String getVendorName() {

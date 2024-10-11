@@ -41,7 +41,6 @@ public class TransactionMenuController extends VendorMenu {
     }
 
     public void openTransactionMenu(Inventory inv, VendorItemEntity item) {
-        currentMenu = MenuType.TransactionMenu;
         this.item = item;
         clear(inv);
         pagePtrs(inv);
@@ -160,7 +159,7 @@ public class TransactionMenuController extends VendorMenu {
         inv.setItem(this.prev, prev);
 
         ItemStack exit = new ItemStack(Material.RED_WOOL);
-        ItemMeta emeta = prevPage.getItemMeta();
+        ItemMeta emeta = exit.getItemMeta();
         if(emeta != null) {
             emeta.displayName(Component.text("Exit", NamedTextColor.RED));
         }

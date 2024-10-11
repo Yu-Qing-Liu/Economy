@@ -43,7 +43,6 @@ public class ItemMenuController extends VendorMenu {
     }
 
     public void openItemMenu(Inventory inv, VendorSectionEntity section) {
-        currentMenu = MenuType.ItemMenu;
         this.section = section;
         clear(inv);
         pagePtrs(inv);
@@ -156,7 +155,7 @@ public class ItemMenuController extends VendorMenu {
         inv.setItem(this.prev, prev);
 
         ItemStack exit = new ItemStack(Material.RED_WOOL);
-        ItemMeta emeta = prevPage.getItemMeta();
+        ItemMeta emeta = exit.getItemMeta();
         if(emeta != null) {
             emeta.displayName(Component.text("Exit", NamedTextColor.RED));
         }

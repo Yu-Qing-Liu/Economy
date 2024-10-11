@@ -26,6 +26,7 @@ public class ItemMenu extends VendorMenu implements Listener {
         super(eventManager, displayName, vendorService, currencyService);
         this.controller = new ItemMenuController(eventManager, displayName, vendorService, currencyService);
         eventManager.registerEvent(this);
+        currentMenu = MenuType.ItemMenu;
     }
 
     @EventHandler
@@ -40,7 +41,7 @@ public class ItemMenu extends VendorMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(controller.getCurrentMenu() == MenuType.ItemMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(currentMenu == MenuType.ItemMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 // Open currency options menu
