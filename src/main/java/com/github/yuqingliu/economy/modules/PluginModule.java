@@ -88,8 +88,8 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public VendorService provideVendorService(VendorRepository vendorRepository, VendorSectionRepository vendorSectionRepository, VendorItemRepository vendorItemRepository, CurrencyRepository currencyRepository) {
-        return new VendorService(vendorRepository, vendorSectionRepository, vendorItemRepository, currencyRepository);
+    public VendorService provideVendorService(VendorRepository vendorRepository, VendorSectionRepository vendorSectionRepository, VendorItemRepository vendorItemRepository) {
+        return new VendorService(vendorRepository, vendorSectionRepository, vendorItemRepository);
     }
 
     // Managers

@@ -74,6 +74,9 @@ public class MainMenuController extends VendorMenu {
 
     private void fetchSections() {
         VendorEntity vendor = vendorService.getVendor(getVendorName()); 
+        if(vendor == null) {
+            return;
+        }
         Set<VendorSectionEntity> sections = vendor.getSections();
         if(sections.isEmpty()) {
             return;

@@ -110,18 +110,6 @@ public class ItemMenuController extends VendorMenu {
                 inv.setItem(i, Placeholder);
             } else {
                 ItemStack item = items[currentIndex].getIcon().clone(); 
-                ItemMeta meta = item.getItemMeta();
-                if(meta != null) {
-                    Component currencyName = Component.text("Currency: ", NamedTextColor.GRAY).append(Component.text(items[currentIndex].getCurrencyType(), NamedTextColor.GOLD));
-                    Component buyPrice = Component.text("BUY: ", NamedTextColor.RED).append(Component.text(items[currentIndex].getBuyPrice() + "$", NamedTextColor.DARK_GREEN));
-                    Component sellPrice = Component.text("SELL: ", NamedTextColor.GREEN).append(Component.text(items[currentIndex].getSellPrice() + "$", NamedTextColor.DARK_GREEN));
-                    List<Component> lore = new ArrayList<>();
-                    lore.add(currencyName);
-                    lore.add(buyPrice);
-                    lore.add(sellPrice);
-                    meta.lore(lore);
-                    item.setItemMeta(meta);
-                }
                 inv.setItem(i, item);
             }
             currentIndex++;

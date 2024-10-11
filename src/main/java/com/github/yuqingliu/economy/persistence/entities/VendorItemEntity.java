@@ -1,18 +1,22 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.persistence.entities.keys.VendorItemKey;
 
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,7 +41,7 @@ public class VendorItemEntity {
     @Id
     @Column(name = "vendorName", columnDefinition = "VARCHAR(16)")
     private String vendorName;
-
+    
     @Column(name = "icon", columnDefinition = "BLOB")
     private byte[] icon;
 
@@ -47,15 +51,32 @@ public class VendorItemEntity {
         @JoinColumn(name = "sectionName", referencedColumnName = "sectionName", insertable = false, updatable = false)
     })
     private VendorSectionEntity vendorSection;
-
-    @Column(name = "buyPrice")
-    private double buyPrice;
-
-    @Column(name = "sellPrice")
-    private double sellPrice;
     
-    @Column(name = "currencyType")
-    private String currencyType;
+    @ElementCollection
+    @CollectionTable(
+        name = "buy_prices",
+        joinColumns = {
+            @JoinColumn(name = "itemName", referencedColumnName = "itemName"),
+            @JoinColumn(name = "sectionName", referencedColumnName = "sectionName"),
+            @JoinColumn(name = "vendorName", referencedColumnName = "vendorName")
+        }
+    )
+    @MapKeyColumn(name = "currency")
+    @Column(name = "price")
+    private Map<String, Double> buyPrices = new LinkedHashMap<>();
+
+    @ElementCollection
+    @CollectionTable(
+        name = "sell_prices",
+        joinColumns = {
+            @JoinColumn(name = "itemName", referencedColumnName = "itemName"),
+            @JoinColumn(name = "sectionName", referencedColumnName = "sectionName"),
+            @JoinColumn(name = "vendorName", referencedColumnName = "vendorName")
+        }
+    )
+    @MapKeyColumn(name = "currency")
+    @Column(name = "price")
+    private Map<String, Double> sellPrices = new LinkedHashMap<>();
 
     public ItemStack getIcon() {
         return ItemStack.deserializeBytes(this.icon);

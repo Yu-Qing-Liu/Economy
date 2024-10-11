@@ -7,7 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import com.github.yuqingliu.economy.persistence.entities.VendorEntity;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
 

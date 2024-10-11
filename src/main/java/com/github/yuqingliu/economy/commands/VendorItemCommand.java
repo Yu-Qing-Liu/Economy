@@ -1,5 +1,8 @@
 package com.github.yuqingliu.economy.commands;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -12,6 +15,7 @@ import com.google.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @RequiredArgsConstructor
 public class VendorItemCommand implements CommandExecutor {
@@ -26,23 +30,31 @@ public class VendorItemCommand implements CommandExecutor {
                 player.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
                 return false;
             }
-            if (args.length > 6 || args.length < 4) {
+            if(args.length < 3) {
                 return false;
             }
             switch (args[0]) {
                 case "add":
-                    if(args.length != 6) {
-                        return false;
-                    }
                     ItemStack icon = player.getInventory().getItemInMainHand().clone();
                     if(icon.getType() == Material.AIR) {
-                        player.sendMessage(Component.text("Invalid section icon. Please have a valid item in main hand.", NamedTextColor.RED));
+                        player.sendMessage(Component.text("Invalid item icon. Please have a valid item in main hand.", NamedTextColor.RED));
                         return false;
                     }
                     icon.setAmount(1);
-                    double buyPrice = Double.parseDouble(args[4]);
-                    double sellPrice = Double.parseDouble(args[5]);
-                    if(vendorService.addVendorItem(args[1], args[2], icon, args[3], buyPrice, sellPrice)) {
+                    if(args.length < 6) {
+                        return false;
+                    }
+                    Map<String, Double> buyPrices = new LinkedHashMap<>();
+                    Map<String, Double> sellPrices = new LinkedHashMap<>();
+                    try {
+                        for (int i = 3; i < args.length; i+=3) {
+                            buyPrices.put(args[i], Double.parseDouble(args[i+1]));
+                            sellPrices.put(args[i], Double.parseDouble(args[i+2]));
+                        }
+                    } catch (Exception e) {
+                        return false;
+                    }
+                    if(vendorService.addVendorItem(args[1], args[2], icon, buyPrices, sellPrices)) {
                         player.sendMessage(Component.text("Successfully added item to shop", NamedTextColor.GREEN));
                     } else {
                         player.sendMessage(Component.text("Invalid parameters. Please enter valid fields.", NamedTextColor.RED));
@@ -50,10 +62,12 @@ public class VendorItemCommand implements CommandExecutor {
                     }
                     break;
                 case "remove":
-                    if(args.length != 4) {
+                    ItemStack item = player.getInventory().getItemInMainHand().clone();
+                    if(item.getType() == Material.AIR) {
+                        player.sendMessage(Component.text("Invalid item icon. Please have a valid item in main hand.", NamedTextColor.RED));
                         return false;
                     }
-                    vendorService.deleteVendorItem(args[1], args[2], args[3]);
+                    vendorService.deleteVendorItem(args[1], args[2], PlainTextComponentSerializer.plainText().serialize(item.displayName()));
                     player.sendMessage(Component.text("Item sucessfully deleted from shop" + args[1], NamedTextColor.RED));
                     break;
                 default:

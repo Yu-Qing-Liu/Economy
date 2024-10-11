@@ -1,14 +1,14 @@
 package com.github.yuqingliu.economy.persistence.services;
 
+import java.util.Map;
+
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.keys.VendorItemKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.VendorSectionKey;
-import com.github.yuqingliu.economy.persistence.repositories.CurrencyRepository;
 import com.github.yuqingliu.economy.persistence.repositories.VendorItemRepository;
 import com.github.yuqingliu.economy.persistence.repositories.VendorRepository;
 import com.github.yuqingliu.economy.persistence.repositories.VendorSectionRepository;
@@ -27,8 +27,6 @@ public class VendorService {
     private final VendorSectionRepository vendorSectionRepository;
     @Inject
     private final VendorItemRepository vendorItemRepository;
-    @Inject
-    private final CurrencyRepository currencyRepository;
 
     public boolean addVendor(String vendorName) {
         VendorEntity vendor = new VendorEntity();
@@ -57,17 +55,15 @@ public class VendorService {
         vendorSectionRepository.delete(key);
     }
 
-    public boolean addVendorItem(String vendorName, String sectionName, ItemStack icon, String currencyName, double buyPrice, double sellPrice) {
-        CurrencyEntity temp = currencyRepository.getFirst(currencyName);
-        if(temp != null) {
+    public boolean addVendorItem(String vendorName, String sectionName, ItemStack icon, Map<String, Double> buyPrices, Map<String, Double> sellPrices) {
+        if(!buyPrices.isEmpty() && !sellPrices.isEmpty()) {
             VendorItemEntity item = new VendorItemEntity();
             item.setIcon(icon);
-            item.setBuyPrice(buyPrice);
+            item.setBuyPrices(buyPrices);
             item.setItemName(PlainTextComponentSerializer.plainText().serialize(icon.displayName()));
-            item.setSellPrice(sellPrice);
+            item.setSellPrices(sellPrices);
             item.setVendorName(vendorName);
             item.setSectionName(sectionName);
-            item.setCurrencyType(temp.getCurrencyName());
             return vendorItemRepository.save(item);
         }
         return false;

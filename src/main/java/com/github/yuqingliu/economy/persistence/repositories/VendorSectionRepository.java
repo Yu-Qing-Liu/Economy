@@ -4,6 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import com.github.yuqingliu.economy.persistence.entities.VendorEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.keys.VendorSectionKey;
 import com.google.inject.Inject;
@@ -52,9 +53,12 @@ public class VendorSectionRepository {
     public boolean delete(VendorSectionKey key) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            VendorSectionEntity player = session.get(VendorSectionEntity.class, key);
-            if (player != null) {
-                session.remove(player);
+            VendorSectionEntity section = session.get(VendorSectionEntity.class, key);
+            VendorEntity vendor = session.get(VendorEntity.class, key.getVendorName());
+            if (section != null) {
+                vendor.getSections().remove(section);
+                session.remove(section);
+                session.persist(vendor);
             }
             transaction.commit();
             return true;
