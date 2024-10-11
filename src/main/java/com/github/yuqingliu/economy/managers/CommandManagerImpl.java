@@ -49,7 +49,7 @@ public class CommandManagerImpl implements CommandManager {
         // Vendor commands
         commands.put("vendor", new VendorCommand(nameSpacedKeyManager, vendorService));
         commands.put("vendorsection", new VendorSectionCommand(vendorService));
-        commands.put("vendoritem", new VendorItemCommand(vendorService));
+        commands.put("vendoritem", new VendorItemCommand(vendorService, currencyService));
     }
 
     private void registerCommands() {

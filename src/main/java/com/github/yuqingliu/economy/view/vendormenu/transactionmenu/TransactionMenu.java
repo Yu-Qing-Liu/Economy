@@ -9,10 +9,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
-import com.github.yuqingliu.economy.view.vendormenu.mainmenu.MainMenu;
+import com.github.yuqingliu.economy.view.vendormenu.itemmenu.ItemMenu;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -51,7 +52,7 @@ public class TransactionMenu extends VendorMenu implements Listener {
                 controller.prevPage(clickedInventory);
             }
             if(slot == controller.getPrev()) {
-                new MainMenu(eventManager, displayName, vendorService, currencyService).getController().openMainMenu(clickedInventory);
+                new ItemMenu(eventManager, displayName, vendorService, currencyService).getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection());
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

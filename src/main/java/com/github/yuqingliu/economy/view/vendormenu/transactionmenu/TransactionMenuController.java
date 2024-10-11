@@ -154,7 +154,7 @@ public class TransactionMenuController extends VendorMenu {
         ItemStack prev = new ItemStack(Material.GREEN_WOOL);
         ItemMeta prevmeta = prev.getItemMeta();
         if(prevmeta != null) {
-            prevmeta.displayName(Component.text("Sections", NamedTextColor.GRAY));
+            prevmeta.displayName(Component.text("Items", NamedTextColor.GRAY));
         }
         prev.setItemMeta(prevmeta);
         inv.setItem(this.prev, prev);
