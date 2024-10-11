@@ -51,7 +51,7 @@ public class TransactionMenu extends VendorMenu implements Listener {
                 controller.prevPage(clickedInventory);
             }
             if(slot == controller.getPrev()) {
-                new MainMenu(eventManager, displayName, vendorService).getController().openMainMenu(clickedInventory);
+                new MainMenu(eventManager, displayName, vendorService, currencyService).getController().openMainMenu(clickedInventory);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

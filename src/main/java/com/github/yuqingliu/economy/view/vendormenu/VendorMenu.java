@@ -55,7 +55,7 @@ public class VendorMenu extends AbstractPlayerInventory {
     public void open(Player player) {
         Inventory inv = Bukkit.createInventory(null, INVENTORY_SIZE, displayName);
         player.openInventory(inv);
-        new MainMenu(eventManager, displayName, vendorService).getController().openMainMenu(inv);
+        new MainMenu(eventManager, displayName, vendorService, currencyService).getController().openMainMenu(inv);
     }
 
 }

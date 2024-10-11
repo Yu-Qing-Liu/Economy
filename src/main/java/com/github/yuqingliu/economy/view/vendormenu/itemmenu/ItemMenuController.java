@@ -1,7 +1,6 @@
 package com.github.yuqingliu.economy.view.vendormenu.itemmenu;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
+import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 
@@ -38,8 +38,8 @@ public class ItemMenuController extends VendorMenu {
     protected int pageNumber = 1;
     protected VendorSectionEntity section;
 
-    public ItemMenuController(EventManager eventManager, Component displayName, VendorService vendorService) {
-        super(eventManager, displayName, vendorService, null);
+    public ItemMenuController(EventManager eventManager, Component displayName, VendorService vendorService, CurrencyService currencyService) {
+        super(eventManager, displayName, vendorService, currencyService);
     }
 
     public void openItemMenu(Inventory inv, VendorSectionEntity section) {

@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.persistence.entities.VendorEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
+import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 
@@ -37,8 +38,8 @@ public class MainMenuController extends VendorMenu {
     protected Map<Integer, VendorSectionEntity[]> pageData = new HashMap<>();
     protected int pageNumber = 1;
 
-    public MainMenuController(EventManager eventManager, Component displayName, VendorService vendorService) {
-        super(eventManager, displayName, vendorService, null);
+    public MainMenuController(EventManager eventManager, Component displayName, VendorService vendorService, CurrencyService currencyService) {
+        super(eventManager, displayName, vendorService, currencyService);
     }
 
     public void openMainMenu(Inventory inv) {
