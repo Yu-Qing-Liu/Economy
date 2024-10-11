@@ -12,6 +12,7 @@ import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.github.yuqingliu.economy.view.vendormenu.mainmenu.MainMenu;
+import com.github.yuqingliu.economy.view.vendormenu.transactionmenu.TransactionMenu;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -21,7 +22,7 @@ public class ItemMenu extends VendorMenu implements Listener {
     private final ItemMenuController controller;
 
     public ItemMenu(EventManager eventManager, Component displayName, VendorService vendorService) {
-        super(eventManager, displayName, vendorService);
+        super(eventManager, displayName, vendorService, null);
         this.controller = new ItemMenuController(eventManager, displayName, vendorService);
         eventManager.registerEvent(this);
     }
@@ -41,7 +42,11 @@ public class ItemMenu extends VendorMenu implements Listener {
         if(controller.getCurrentMenu() == MenuType.ItemMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
-                // Open trade menu
+                // Open currency options menu
+                int index = slot % 7 - 3;
+                if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
+                    new TransactionMenu(eventManager, displayName, vendorService, currencyService).getController().openTransactionMenu(clickedInventory, controller.getPageData().get(controller.getPageNumber())[index]);
+                }
             }
             if(slot == controller.getNextPagePtr()) {
                 controller.nextPage(clickedInventory);

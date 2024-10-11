@@ -76,4 +76,8 @@ public class CurrencyService {
         PurseEntity playerPurse = purseRepository.get(player.getUniqueId());
         return playerPurse.getCurrencies();
     }
+
+    public CurrencyEntity getCurrencyByName(String currencyName) {
+        return currencyRepository.getFirst(currencyName);
+    }
 }

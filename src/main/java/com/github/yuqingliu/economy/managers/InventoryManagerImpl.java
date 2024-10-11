@@ -49,7 +49,8 @@ public class InventoryManagerImpl implements InventoryManager {
             new VendorMenu(
                 eventManager,
                 null,
-                vendorService
+                vendorService,
+                currencyService
             )
         );
     }

@@ -38,7 +38,7 @@ public class MainMenuController extends VendorMenu {
     protected int pageNumber = 1;
 
     public MainMenuController(EventManager eventManager, Component displayName, VendorService vendorService) {
-        super(eventManager, displayName, vendorService);
+        super(eventManager, displayName, vendorService, null);
     }
 
     public void openMainMenu(Inventory inv) {

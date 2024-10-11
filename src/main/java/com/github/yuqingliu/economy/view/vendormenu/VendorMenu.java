@@ -11,6 +11,7 @@ import com.google.inject.Inject;
 import lombok.Getter;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 
@@ -20,20 +21,22 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 @Getter
 public class VendorMenu extends AbstractPlayerInventory {
     protected final VendorService vendorService;
+    protected final CurrencyService currencyService;
     protected MenuType currentMenu;
 
     protected enum MenuType {
-        MainMenu, ItemMenu;
+        MainMenu, ItemMenu, TransactionMenu;
     }
 
     @Inject
-    public VendorMenu(EventManager eventManager, Component displayName, VendorService vendorService) {
+    public VendorMenu(EventManager eventManager, Component displayName, VendorService vendorService, CurrencyService currencyService) {
         super(
             eventManager,
             displayName,
             54
         );
         this.vendorService = vendorService;
+        this.currencyService = currencyService;
         this.currentMenu = MenuType.MainMenu;
     }
     
