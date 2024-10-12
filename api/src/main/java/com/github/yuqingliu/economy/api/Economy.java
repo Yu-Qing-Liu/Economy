@@ -12,6 +12,7 @@ public abstract class Economy extends JavaPlugin {
             throw new RuntimeException("Multiple instances of Economy detected!");
         }
         instance = this;
+        Scheduler.setPlugin(instance);
     }
 
     /**
