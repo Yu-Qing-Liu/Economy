@@ -18,17 +18,17 @@ import net.kyori.adventure.text.Component;
 public abstract class AbstractPlayerInventory implements PlayerInventory {
     protected EventManager eventManager;
     @Setter protected Component displayName;
-    protected final int INVENTORY_SIZE;
+    protected final int inventorySize;
         
     @Inject
-    public AbstractPlayerInventory(EventManager eventManager, Component displayName, int INVENTORY_SIZE) {
+    public AbstractPlayerInventory(EventManager eventManager, Component displayName, int inventorySize) {
         this.eventManager = eventManager;
         this.displayName = displayName;
-        this.INVENTORY_SIZE = INVENTORY_SIZE;
+        this.inventorySize = inventorySize;
     }
 
-    protected void clear(Inventory inv) {
-        for (int i = 0; i < INVENTORY_SIZE; i++) {
+    public void clear(Inventory inv) {
+        for (int i = 0; i < inventorySize; i++) {
             inv.setItem(i, new ItemStack(Material.AIR));
         }
     }

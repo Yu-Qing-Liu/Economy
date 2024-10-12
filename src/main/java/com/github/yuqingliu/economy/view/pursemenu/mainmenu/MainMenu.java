@@ -8,21 +8,19 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.api.managers.EventManager;
-import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.view.pursemenu.PurseMenu;
 
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
 
 @Getter
-public class MainMenu extends PurseMenu implements Listener {
+public class MainMenu implements Listener {
+    private final PurseMenu purseMenu;
     private final MainMenuController controller;
     
-    public MainMenu(EventManager eventManager, Component displayName, CurrencyService currencyService) {
-        super(eventManager, displayName, currencyService);
-        this.controller = new MainMenuController(eventManager, displayName, currencyService);
-        eventManager.registerEvent(this);
+    public MainMenu(PurseMenu purseMenu) {
+        this.purseMenu = purseMenu;
+        this.controller = new MainMenuController(purseMenu);
+        purseMenu.getEventManager().registerEvent(this);
     }
 
     @EventHandler
@@ -31,13 +29,13 @@ public class MainMenu extends PurseMenu implements Listener {
         Inventory clickedInventory = event.getClickedInventory();
         ItemStack currentItem = event.getCurrentItem();
 
-        if (clickedInventory == null || currentItem == null || !event.getView().title().equals(controller.getDisplayName())) {
+        if (clickedInventory == null || currentItem == null || !event.getView().title().equals(purseMenu.getDisplayName())) {
             return;
         }
 
         event.setCancelled(true);
 
-        if(controller.getCurrentMenu() == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(purseMenu.getCurrentMenu().name().equals("MainMenu") && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot)) {
                 // Open currency details
@@ -53,9 +51,9 @@ public class MainMenu extends PurseMenu implements Listener {
     
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (event.getView().title().equals(displayName)) {
+        if (event.getView().title().equals(purseMenu.getDisplayName())) {
             controller.onClose();
-            eventManager.unregisterEvent(this.getClass().getSimpleName());
+            purseMenu.getEventManager().unregisterEvent(this.getClass().getSimpleName());
         }
     }
 }

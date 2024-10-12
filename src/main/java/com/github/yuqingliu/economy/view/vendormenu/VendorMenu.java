@@ -4,10 +4,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+import com.github.yuqingliu.economy.view.vendormenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.vendormenu.mainmenu.MainMenu;
+import com.github.yuqingliu.economy.view.vendormenu.trademenu.TradeMenu;
+import com.github.yuqingliu.economy.view.vendormenu.transactionmenu.TransactionMenu;
 import com.google.inject.Inject;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
@@ -21,11 +25,16 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 public class VendorMenu extends AbstractPlayerInventory {
     protected final VendorService vendorService;
     protected final CurrencyService currencyService;
-    protected MenuType currentMenu;
+    @Setter protected MenuType currentMenu;
 
-    protected enum MenuType {
+    public enum MenuType {
         MainMenu, ItemMenu, TransactionMenu, TradeMenu;
     }
+
+    protected final MainMenu mainMenu;
+    protected final ItemMenu itemMenu;
+    protected final TransactionMenu transactionMenu;
+    protected final TradeMenu tradeMenu;
 
     @Inject
     public VendorMenu(EventManager eventManager, Component displayName, VendorService vendorService, CurrencyService currencyService) {
@@ -36,9 +45,13 @@ public class VendorMenu extends AbstractPlayerInventory {
         );
         this.vendorService = vendorService;
         this.currencyService = currencyService;
+        this.mainMenu = new MainMenu(this);
+        this.itemMenu = new ItemMenu(this);
+        this.transactionMenu = new TransactionMenu(this);
+        this.tradeMenu = new TradeMenu(this);
     }
     
-    protected String getVendorName() {
+    public String getVendorName() {
         return componentToString(displayName);
     }
 
@@ -51,9 +64,8 @@ public class VendorMenu extends AbstractPlayerInventory {
 
     @Override
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, INVENTORY_SIZE, displayName);
+        Inventory inv = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inv);
-        new MainMenu(eventManager, displayName, vendorService, currencyService).getController().openMainMenu(inv);
+        mainMenu.getController().openMainMenu(inv);
     }
-
 }

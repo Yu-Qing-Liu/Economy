@@ -8,24 +8,20 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.api.managers.EventManager;
-import com.github.yuqingliu.economy.persistence.services.CurrencyService;
-import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
-import com.github.yuqingliu.economy.view.vendormenu.itemmenu.ItemMenu;
+import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
 
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
 
 @Getter
-public class TradeMenu extends VendorMenu implements Listener {
+public class TradeMenu implements Listener {
+    private final VendorMenu vendorMenu;
     private final TradeMenuController controller;
 
-    public TradeMenu(EventManager eventManager, Component displayName, VendorService vendorService, CurrencyService currencyService) {
-        super(eventManager, displayName, vendorService, currencyService);
-        this.controller = new TradeMenuController(eventManager, displayName, vendorService, currencyService);
-        eventManager.registerEvent(this);
-        currentMenu = MenuType.TradeMenu;
+    public TradeMenu(VendorMenu vendorMenu) {
+        this.vendorMenu = vendorMenu;
+        this.controller = new TradeMenuController(vendorMenu);
+        vendorMenu.getEventManager().registerEvent(this);
     }
 
     @EventHandler
@@ -34,27 +30,20 @@ public class TradeMenu extends VendorMenu implements Listener {
         Inventory clickedInventory = event.getClickedInventory();
         ItemStack currentItem = event.getCurrentItem();
 
-        if (clickedInventory == null || currentItem == null || !event.getView().title().equals(displayName)) {
+        if (clickedInventory == null || currentItem == null || !event.getView().title().equals(vendorMenu.getDisplayName())) {
             return;
         }
 
         event.setCancelled(true);
 
-        if(currentMenu == MenuType.TradeMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(vendorMenu.getCurrentMenu() == MenuType.TradeMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(slot == controller.getPrev()) {
-                new ItemMenu(eventManager, displayName, vendorService, currencyService).getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection());
+                vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection());
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();
             }
-        }
-    }
-
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (event.getView().title().equals(displayName)) {
-            eventManager.unregisterEvent(this.getClass().getSimpleName());
         }
     }
 }

@@ -1,28 +1,26 @@
 package com.github.yuqingliu.economy.view.vendormenu.trademenu;
 
-import java.util.ArrayDeque;
+import java.time.Duration;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
-import com.github.yuqingliu.economy.persistence.services.CurrencyService;
-import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
+import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class TradeMenuController extends VendorMenu {
+public class TradeMenuController {
+    private final VendorMenu vendorMenu;
     protected final int itemSlot = 13;
     protected final int buy1 = 29;
     protected final int buyInventory = 33;
@@ -36,13 +34,16 @@ public class TradeMenuController extends VendorMenu {
     protected final List<Integer> buttons = Arrays.asList(20,24);
     protected VendorItemEntity item;
     
-    public TradeMenuController(EventManager eventManager, Component displayName, VendorService vendorService, CurrencyService currencyService) {
-        super(eventManager, displayName, vendorService, currencyService);
-    }
+    public TradeMenuController(VendorMenu vendorMenu) {
+        this.vendorMenu = vendorMenu;
+    }   
 
     public void openTradeMenu(Inventory inv, VendorItemEntity item) {
         this.item = item;
-        clear(inv);
+        Scheduler.runLaterAsync((task) -> {
+            vendorMenu.setCurrentMenu(MenuType.TradeMenu);
+        }, Duration.ofMillis(50));
+        vendorMenu.clear(inv);
         pagePtrs(inv);
         frame(inv);
         displayItem(inv);
@@ -85,7 +86,7 @@ public class TradeMenuController extends VendorMenu {
             meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
         }
         Placeholder.setItemMeta(meta);
-        for (int i = 0; i < INVENTORY_SIZE; i++) {
+        for (int i = 0; i < vendorMenu.getInventorySize(); i++) {
             if(!options.contains(i) && !buttons.contains(i)) {
                 inv.setItem(i, Placeholder);
             }
