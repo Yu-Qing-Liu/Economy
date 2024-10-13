@@ -1,5 +1,6 @@
 package com.github.yuqingliu.economy.view.pursemenu.mainmenu;
 
+import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,37 +16,42 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
-import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.view.pursemenu.PurseMenu;
+import com.github.yuqingliu.economy.view.pursemenu.PurseMenu.MenuType;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class MainMenuController extends PurseMenu {
-    private final int length = 7;
-    private final int prevPagePtr = 9;
-    private final int nextPagePtr = 17;
+public class MainMenuController {
+    private final PurseMenu purseMenu;
+    private final int length = 5;
+    private final int prevPagePtr = 10;
+    private final int nextPagePtr = 16;
     private Material voidOption = Material.GLASS_PANE;
-    private final List<Integer> options = Arrays.asList(10,11,12,13,14,15,16);
-    private final List<Integer> buttons = Arrays.asList(9,17);
+    private final List<Integer> options = Arrays.asList(11,12,13,14,15);
+    private final List<Integer> buttons = Arrays.asList(10,16);
     private Map<Integer, CurrencyEntity[]> pageData = new HashMap<>();
     private int pageNumber = 1;
 
-    public MainMenuController(EventManager eventManager, Component displayName, CurrencyService currencyService) {
-        super(eventManager, displayName, currencyService);
+    public MainMenuController(PurseMenu purseMenu) {
+        this.purseMenu = purseMenu;
     }
     
     public void openMainMenu(Player player, Inventory inv) {
-        currentMenu = MenuType.MainMenu;
-        clear(inv);
-        pagePtrs(inv);
+        Scheduler.runLaterAsync((task) -> {
+            purseMenu.setCurrentMenu(MenuType.MainMenu);
+        }, Duration.ofMillis(50));
+        purseMenu.clear(inv);
         frame(inv);
-        fetchCurrencies(player);
-        displayCurrencies(player, inv);
+        pagePtrs(inv);
+        Scheduler.runAsync((task) -> {
+            fetchCurrencies(player);
+            displayCurrencies(player, inv);
+        });
     }
 
     public void nextPage(Player player, Inventory inv) {
@@ -71,7 +77,7 @@ public class MainMenuController extends PurseMenu {
     }
 
     private void fetchCurrencies(Player player) {
-        Set<CurrencyEntity> currencies = currencyService.getPlayerPurseCurrencies(player);
+        Set<CurrencyEntity> currencies = purseMenu.getCurrencyService().getPlayerPurseCurrencies(player);
         if(currencies.isEmpty()) {
             return;
         }
@@ -128,10 +134,8 @@ public class MainMenuController extends PurseMenu {
             meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
         }
         Placeholder.setItemMeta(meta);
-        for (int i = 0; i < INVENTORY_SIZE; i++) {
-            if(!options.contains(i) && !buttons.contains(i)) {
-                inv.setItem(i, Placeholder);
-            }
+        for (int i = 0; i < purseMenu.getInventorySize(); i++) {
+            inv.setItem(i, Placeholder);
         }
     }
 

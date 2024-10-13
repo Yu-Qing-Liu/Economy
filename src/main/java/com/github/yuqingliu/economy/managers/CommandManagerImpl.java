@@ -46,10 +46,12 @@ public class CommandManagerImpl implements CommandManager {
         commands.put("currency", new CurrencyCommand(currencyService));
         // Purse commands
         commands.put("purse", new PurseCommand(inventoryManager));
+        commands.put("deposit", new DepositCommand(currencyService));
+        commands.put("withdraw", new WithdrawCommand(currencyService));
         // Vendor commands
         commands.put("vendor", new VendorCommand(nameSpacedKeyManager, vendorService));
         commands.put("vendorsection", new VendorSectionCommand(vendorService));
-        commands.put("vendoritem", new VendorItemCommand(vendorService));
+        commands.put("vendoritem", new VendorItemCommand(vendorService, currencyService));
     }
 
     private void registerCommands() {

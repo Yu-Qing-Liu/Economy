@@ -29,7 +29,7 @@ public class CurrencyService {
     @Inject
     private final PurseRepository purseRepository;
 
-    public void addCurrencyToAll(String currencyName, double amount, ItemStack icon) {
+    public boolean addCurrencyToAll(String currencyName, double amount, ItemStack icon) {
         // Fetch all bank entities
         Set<BankEntity> banks = bankRepository.findAll();
         // Add currency to all bank accounts
@@ -43,7 +43,9 @@ public class CurrencyService {
                 bankCurrency.setAccountId(account.getAccountId());
                 bankCurrency.setPurse(null);
                 bankCurrency.setAccount(account);
-                currencyRepository.save(bankCurrency);
+                if(!currencyRepository.save(bankCurrency)) {
+                    return false;
+                }
             }
         }
         // Fetch all purse entities
@@ -58,22 +60,56 @@ public class CurrencyService {
             purseCurrency.setAccountId(UUID.randomUUID());
             purseCurrency.setPurse(purse);
             purseCurrency.setAccount(null);
-            currencyRepository.save(purseCurrency);
+            if(!currencyRepository.save(purseCurrency)) {
+                return false;
+            }
         }
+        return true;
     }
 
-    public void deleteCurrencyFromAll(String currencyName) {
+    public boolean deleteCurrencyFromAll(String currencyName) {
         Set<CurrencyEntity> currencies = currencyRepository.findAll();
         for(CurrencyEntity currency : currencies) {
             if(currency.getCurrencyName().equals(currencyName)) {
                 CurrencyKey key = new CurrencyKey(currency.getCurrencyName(), currency.getPurseId(), currency.getAccountId());
-                currencyRepository.delete(key);
+                if(!currencyRepository.delete(key)) {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
     public Set<CurrencyEntity> getPlayerPurseCurrencies(OfflinePlayer player) {
         PurseEntity playerPurse = purseRepository.get(player.getUniqueId());
         return playerPurse.getCurrencies();
+    }
+
+    public CurrencyEntity getCurrencyByName(String currencyName) {
+        return currencyRepository.getFirst(currencyName);
+    }
+
+    public boolean depositPlayerPurse(OfflinePlayer player, String currencyName, double amount) {
+        Set<CurrencyEntity> currencies = getPlayerPurseCurrencies(player);
+        for(CurrencyEntity currency : currencies) {
+            if(currency.getCurrencyName().equals(currencyName)) {
+                currency.setAmount(currency.getAmount() + amount);
+                return currencyRepository.update(currency);
+            }
+        }
+        return false;
+    }
+
+    public boolean withdrawPlayerPurse(OfflinePlayer player, String currencyName, double amount) {
+        Set<CurrencyEntity> currencies = getPlayerPurseCurrencies(player);
+        for(CurrencyEntity currency : currencies) {
+            if(currency.getCurrencyName().equals(currencyName)) {
+                if(currency.getAmount() - amount >= 0) {
+                    currency.setAmount(currency.getAmount() - amount);
+                    return currencyRepository.update(currency);
+                }
+            }
+        }
+        return false;
     }
 }

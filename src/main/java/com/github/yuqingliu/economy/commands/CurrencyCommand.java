@@ -45,11 +45,9 @@ public class CurrencyCommand implements CommandExecutor {
                         meta.displayName(Component.text(args[1], NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
                         icon.setItemMeta(meta);
                     }
-                    currencyService.addCurrencyToAll(args[1], 0, icon);
-                    break;
+                    return currencyService.addCurrencyToAll(args[1], 0, icon);
                 case "remove":
-                    currencyService.deleteCurrencyFromAll(args[1]);
-                    break;
+                    return currencyService.deleteCurrencyFromAll(args[1]);
                 default:
                     break;
             }

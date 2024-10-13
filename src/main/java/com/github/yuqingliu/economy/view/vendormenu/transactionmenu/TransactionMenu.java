@@ -1,4 +1,4 @@
-package com.github.yuqingliu.economy.view.vendormenu.itemmenu;
+package com.github.yuqingliu.economy.view.vendormenu.transactionmenu;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,13 +14,13 @@ import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
 import lombok.Getter;
 
 @Getter
-public class ItemMenu implements Listener {
+public class TransactionMenu implements Listener {
     private final VendorMenu vendorMenu;
-    private final ItemMenuController controller;
+    private final TransactionMenuController controller;
 
-    public ItemMenu(VendorMenu vendorMenu) {
+    public TransactionMenu(VendorMenu vendorMenu) {
         this.vendorMenu = vendorMenu;
-        this.controller = new ItemMenuController(vendorMenu);
+        this.controller = new TransactionMenuController(vendorMenu);
         vendorMenu.getEventManager().registerEvent(this);
     }
 
@@ -36,13 +36,12 @@ public class ItemMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(vendorMenu.getCurrentMenu() == MenuType.ItemMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(vendorMenu.getCurrentMenu() == MenuType.TransactionMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
-                // Open currency options menu
-                int index = slot % 7 - 3;
+                int index = slot % 5 - 4;
                 if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
-                    vendorMenu.getTransactionMenu().getController().openTransactionMenu(clickedInventory, controller.getPageData().get(controller.getPageNumber())[index]);
+                    vendorMenu.getTradeMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), controller.getPageData().get(controller.getPageNumber())[index]);
                 }
             }
             if(slot == controller.getNextPagePtr()) {
@@ -52,7 +51,7 @@ public class ItemMenu implements Listener {
                 controller.prevPage(clickedInventory);
             }
             if(slot == controller.getPrev()) {
-                vendorMenu.getMainMenu().getController().openMainMenu(clickedInventory);
+                vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection());
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

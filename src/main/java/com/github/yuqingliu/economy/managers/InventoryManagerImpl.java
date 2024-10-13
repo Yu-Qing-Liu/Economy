@@ -3,8 +3,6 @@ package com.github.yuqingliu.economy.managers;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.event.Listener;
-
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
@@ -49,7 +47,8 @@ public class InventoryManagerImpl implements InventoryManager {
             new VendorMenu(
                 eventManager,
                 null,
-                vendorService
+                vendorService,
+                currencyService
             )
         );
     }

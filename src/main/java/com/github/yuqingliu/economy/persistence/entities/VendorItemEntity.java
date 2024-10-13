@@ -11,6 +11,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
@@ -52,7 +53,7 @@ public class VendorItemEntity {
     })
     private VendorSectionEntity vendorSection;
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
         name = "buy_prices",
         joinColumns = {
@@ -65,7 +66,7 @@ public class VendorItemEntity {
     @Column(name = "price")
     private Map<String, Double> buyPrices = new LinkedHashMap<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
         name = "sell_prices",
         joinColumns = {

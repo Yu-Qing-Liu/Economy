@@ -9,6 +9,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
 
@@ -21,6 +23,8 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 public class VendorItemCommand implements CommandExecutor {
     @Inject
     private final VendorService vendorService;
+    @Inject
+    private final CurrencyService currencyService;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -48,6 +52,9 @@ public class VendorItemCommand implements CommandExecutor {
                     Map<String, Double> sellPrices = new LinkedHashMap<>();
                     try {
                         for (int i = 3; i < args.length; i+=3) {
+                            if(currencyService.getCurrencyByName(args[i]) == null) {
+                                return false;
+                            }
                             buyPrices.put(args[i], Double.parseDouble(args[i+1]));
                             sellPrices.put(args[i], Double.parseDouble(args[i+2]));
                         }
