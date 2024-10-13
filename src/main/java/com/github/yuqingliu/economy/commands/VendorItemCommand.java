@@ -75,7 +75,7 @@ public class VendorItemCommand implements CommandExecutor {
                         return false;
                     }
                     vendorService.deleteVendorItem(args[1], args[2], PlainTextComponentSerializer.plainText().serialize(item.displayName()));
-                    player.sendMessage(Component.text("Item sucessfully deleted from shop" + args[1], NamedTextColor.RED));
+                    player.sendMessage(Component.text("Item sucessfully deleted from vendor" + args[1], NamedTextColor.RED));
                     break;
                 default:
                     return false;

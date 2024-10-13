@@ -73,6 +73,30 @@ public class PluginModule extends AbstractModule {
         return new VendorItemRepository(sessionFactory);
     }
 
+    @Provides
+    @Singleton
+    public ShopRepository provideShopRepository(SessionFactory sessionFactory) {
+        return new ShopRepository(sessionFactory);
+    }
+
+    @Provides
+    @Singleton
+    public ShopSectionRepository provideShopSectionRepository(SessionFactory sessionFactory) {
+        return new ShopSectionRepository(sessionFactory);
+    }
+
+    @Provides
+    @Singleton
+    public ShopItemRepository provideShopItemRepository(SessionFactory sessionFactory) {
+        return new ShopItemRepository(sessionFactory);
+    }
+
+    @Provides
+    @Singleton
+    public ShopOrderRepository provideShopOrderRepository(SessionFactory sessionFactory) {
+        return new ShopOrderRepository(sessionFactory);
+    }
+
     // Services
     @Provides
     @Singleton
@@ -90,6 +114,12 @@ public class PluginModule extends AbstractModule {
     @Singleton
     public VendorService provideVendorService(VendorRepository vendorRepository, VendorSectionRepository vendorSectionRepository, VendorItemRepository vendorItemRepository) {
         return new VendorService(vendorRepository, vendorSectionRepository, vendorItemRepository);
+    }
+
+    @Provides
+    @Singleton
+    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository) {
+        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository);
     }
 
     // Managers
@@ -117,6 +147,7 @@ public class PluginModule extends AbstractModule {
         InventoryManager inventoryManager,
         CurrencyService currencyService,
         VendorService vendorService,
+        ShopService shopService,
         NameSpacedKeyManager nameSpacedKeyManager
     ) {
         return new CommandManagerImpl(
@@ -124,6 +155,7 @@ public class PluginModule extends AbstractModule {
             inventoryManager,
             currencyService,
             vendorService,
+            shopService,
             nameSpacedKeyManager
         );
     }
