@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -12,6 +11,8 @@ import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
 
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
 public class TradeMenu implements Listener {
@@ -38,6 +39,25 @@ public class TradeMenu implements Listener {
 
         if(vendorMenu.getCurrentMenu() == MenuType.TradeMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
+            if(controller.getBuyOptions().contains(slot)) {
+                int amount = controller.getQuantities()[slot - controller.getBuy1()];
+                double cost = controller.getCurrencyOption().getBuyPrice(amount);
+                if(vendorMenu.getCurrencyService().withdrawPlayerPurse(player, controller.getCurrencyOption().getCurrencyName(), cost)) {
+                    vendorMenu.addItemToPlayer(player, controller.getItem().getIcon().clone(), amount);                            
+                } else {
+                    player.sendMessage(Component.text("Failed to purchase Item(s).", NamedTextColor.RED));
+                }
+            }
+            if(controller.getSellOptions().contains(slot)) {
+                int amount = controller.getQuantities()[slot - controller.getSell1()];
+                double profit = controller.getCurrencyOption().getSellPrice(amount);
+                if(vendorMenu.removeItemToPlayer(player, controller.getItem().getIcon().clone(), amount)) {
+                    if(!vendorMenu.getCurrencyService().depositPlayerPurse(player, controller.getCurrencyOption().getCurrencyName(), profit)) {
+                        player.sendMessage(Component.text("Item(s) were not sold.", NamedTextColor.RED));
+                        vendorMenu.addItemToPlayer(player, controller.getItem().getIcon().clone(), amount);
+                    } 
+                }
+            }
             if(slot == controller.getPrev()) {
                 vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection());
             }

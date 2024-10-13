@@ -49,10 +49,12 @@ public class ItemMenuController {
             vendorMenu.setCurrentMenu(MenuType.ItemMenu);
         }, Duration.ofMillis(50));
         vendorMenu.clear(inv);
-        pagePtrs(inv);
         frame(inv);
-        fetchItems();
-        displayItems(inv);
+        pagePtrs(inv);
+        Scheduler.runAsync((task) -> {
+            fetchItems();
+            displayItems(inv);
+        });
     }
 
     public void nextPage(Inventory inv) {
@@ -127,9 +129,7 @@ public class ItemMenuController {
         }
         Placeholder.setItemMeta(meta);
         for (int i = 0; i < vendorMenu.getInventorySize(); i++) {
-            if(!options.contains(i) && !buttons.contains(i)) {
-                inv.setItem(i, Placeholder);
-            }
+            inv.setItem(i, Placeholder);
         }
     }
 

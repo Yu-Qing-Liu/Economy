@@ -28,12 +28,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class MainMenuController {
     private final PurseMenu purseMenu;
-    private final int length = 7;
-    private final int prevPagePtr = 9;
-    private final int nextPagePtr = 17;
+    private final int length = 5;
+    private final int prevPagePtr = 10;
+    private final int nextPagePtr = 16;
     private Material voidOption = Material.GLASS_PANE;
-    private final List<Integer> options = Arrays.asList(10,11,12,13,14,15,16);
-    private final List<Integer> buttons = Arrays.asList(9,17);
+    private final List<Integer> options = Arrays.asList(11,12,13,14,15);
+    private final List<Integer> buttons = Arrays.asList(10,16);
     private Map<Integer, CurrencyEntity[]> pageData = new HashMap<>();
     private int pageNumber = 1;
 
@@ -46,10 +46,12 @@ public class MainMenuController {
             purseMenu.setCurrentMenu(MenuType.MainMenu);
         }, Duration.ofMillis(50));
         purseMenu.clear(inv);
-        pagePtrs(inv);
         frame(inv);
-        fetchCurrencies(player);
-        displayCurrencies(player, inv);
+        pagePtrs(inv);
+        Scheduler.runAsync((task) -> {
+            fetchCurrencies(player);
+            displayCurrencies(player, inv);
+        });
     }
 
     public void nextPage(Player player, Inventory inv) {
@@ -133,9 +135,7 @@ public class MainMenuController {
         }
         Placeholder.setItemMeta(meta);
         for (int i = 0; i < purseMenu.getInventorySize(); i++) {
-            if(!options.contains(i) && !buttons.contains(i)) {
-                inv.setItem(i, Placeholder);
-            }
+            inv.setItem(i, Placeholder);
         }
     }
 

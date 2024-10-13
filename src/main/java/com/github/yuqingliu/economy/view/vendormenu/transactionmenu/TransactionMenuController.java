@@ -25,14 +25,16 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class TransactionMenuController {
     private final VendorMenu vendorMenu;
-    protected final int prevPagePtr = 16;
-    protected final int nextPagePtr = 43;
-    protected final int prev = 25;
-    protected final int exit = 34;
-    protected final int length = 24;
+    protected final int prevPagePtr = 28;
+    protected final int nextPagePtr = 34;
+    protected final int prev = 11;
+    protected final int exit = 15;
+    protected final int itemSlot = 13;
+    protected final int length = 5;
     protected Material voidOption = Material.GLASS_PANE;
-    protected final List<Integer> options = Arrays.asList(10,11,12,13,14,15,19,20,21,22,23,24,28,29,30,31,32,33,37,38,39,40,41,42);
-    protected final List<Integer> buttons = Arrays.asList(16,43,25,34);
+    protected final List<Integer> options = Arrays.asList(29,30,31,32,33);
+    protected final List<Integer> buttons = Arrays.asList(11,13,15,28,34);
+    protected final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25,37,38,39,40,41,42,43);
     protected Map<Integer, CurrencyOption[]> pageData = new HashMap<>();
     protected int pageNumber = 1;
     protected VendorItemEntity item;
@@ -47,10 +49,14 @@ public class TransactionMenuController {
             vendorMenu.setCurrentMenu(MenuType.TransactionMenu);
         }, Duration.ofMillis(50));
         vendorMenu.clear(inv);
-        pagePtrs(inv);
         frame(inv);
-        fetchOptions();
-        displayOptions(inv);
+        pagePtrs(inv);
+        border(inv);
+        displayItem(inv);
+        Scheduler.runAsync((task) -> {
+            fetchOptions();
+            displayOptions(inv);
+        });
     }
 
     public void nextPage(Inventory inv) {
@@ -103,6 +109,10 @@ public class TransactionMenuController {
         }
     }
 
+    private void displayItem(Inventory inv) {
+        inv.setItem(itemSlot, item.getIcon().clone());
+    }
+
     private void displayOptions(Inventory inv) {
         ItemStack Placeholder = new ItemStack(voidOption);
         ItemMeta pmeta = Placeholder.getItemMeta();
@@ -117,6 +127,11 @@ public class TransactionMenuController {
                 inv.setItem(i, Placeholder);
             } else {
                 ItemStack item = currencyOptions[currentIndex].getIcon().clone(); 
+                ItemMeta itemMeta = item.getItemMeta();
+                Component buyPrice = Component.text("UNIT BUY PRICE: ", NamedTextColor.DARK_AQUA).append(Component.text(currencyOptions[currentIndex].getBuyPrice() +"$ ", NamedTextColor.DARK_GREEN));
+                Component sellPrice = Component.text("UNIT SELL PRICE: ", NamedTextColor.DARK_AQUA).append(Component.text(currencyOptions[currentIndex].getSellPrice() +"$ ", NamedTextColor.DARK_GREEN));
+                itemMeta.lore(Arrays.asList(buyPrice, sellPrice));
+                item.setItemMeta(itemMeta);
                 inv.setItem(i, item);
             }
             currentIndex++;
@@ -131,9 +146,19 @@ public class TransactionMenuController {
         }
         Placeholder.setItemMeta(meta);
         for (int i = 0; i < vendorMenu.getInventorySize(); i++) {
-            if(!options.contains(i) && !buttons.contains(i)) {
-                inv.setItem(i, Placeholder);
-            }
+            inv.setItem(i, Placeholder);
+        }
+    }
+
+    private void border(Inventory inv) {
+        ItemStack Placeholder = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta meta = Placeholder.getItemMeta();
+        if(meta != null) {
+            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
+        }
+        Placeholder.setItemMeta(meta);
+        for (int i : border) {
+            inv.setItem(i, Placeholder);
         }
     }
 

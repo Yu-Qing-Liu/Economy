@@ -13,6 +13,7 @@ import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
+import com.github.yuqingliu.economy.view.vendormenu.transactionmenu.CurrencyOption;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -29,23 +30,28 @@ public class TradeMenuController {
     protected final int prev = 20;
     protected final int exit = 24;
     protected final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
+    protected final List<Integer> border = Arrays.asList(3,4,5,12,14,21,22,23);
     protected final List<Integer> buyOptions = Arrays.asList(29,30,31,32,33);
     protected final List<Integer> sellOptions = Arrays.asList(38,39,40,41,42);
     protected final List<Integer> buttons = Arrays.asList(20,24);
+    protected final int[] quantities = new int[] {1, 16, 32, 64};
     protected VendorItemEntity item;
+    protected CurrencyOption currencyOption;
     
     public TradeMenuController(VendorMenu vendorMenu) {
         this.vendorMenu = vendorMenu;
     }   
 
-    public void openTradeMenu(Inventory inv, VendorItemEntity item) {
+    public void openTradeMenu(Inventory inv, VendorItemEntity item, CurrencyOption currencyOption) {
         this.item = item;
+        this.currencyOption = currencyOption;
         Scheduler.runLaterAsync((task) -> {
             vendorMenu.setCurrentMenu(MenuType.TradeMenu);
         }, Duration.ofMillis(50));
         vendorMenu.clear(inv);
-        pagePtrs(inv);
         frame(inv);
+        border(inv);
+        pagePtrs(inv);
         displayItem(inv);
         displayBuyOptions(inv);
         displaySellOptions(inv);
@@ -56,11 +62,15 @@ public class TradeMenuController {
     }
 
     private void displayBuyOptions(Inventory inv) {
-        int[] quantities = new int[] {1, 16, 32, 64};
         for (int i = buy1; i < buyInventory; i++) {
             int index = i - buy1;
             ItemStack icon = new ItemStack(Material.LIME_STAINED_GLASS);
             icon.setAmount(quantities[index]);
+            ItemMeta iconMeta = icon.getItemMeta();
+            iconMeta.displayName(Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED)));
+            Component cost = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(quantities[index]) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()));
+            iconMeta.lore(Arrays.asList(cost));
+            icon.setItemMeta(iconMeta);
             inv.setItem(i, icon);
         }
         ItemStack inventoryOption = new ItemStack(Material.CHEST);
@@ -68,11 +78,15 @@ public class TradeMenuController {
     }
 
     private void displaySellOptions(Inventory inv) {
-        int[] quantities = new int[] {1, 16, 32, 64};
         for (int i = sell1; i < sellInventory; i++) {
             int index = i - sell1;
             ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS);
             icon.setAmount(quantities[index]);
+            ItemMeta iconMeta = icon.getItemMeta();
+            iconMeta.displayName(Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED)));
+            Component profit = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(quantities[index]) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()));
+            iconMeta.lore(Arrays.asList(profit));
+            icon.setItemMeta(iconMeta);
             inv.setItem(i, icon);
         }
         ItemStack inventoryOption = new ItemStack(Material.CHEST);
@@ -87,9 +101,19 @@ public class TradeMenuController {
         }
         Placeholder.setItemMeta(meta);
         for (int i = 0; i < vendorMenu.getInventorySize(); i++) {
-            if(!options.contains(i) && !buttons.contains(i)) {
-                inv.setItem(i, Placeholder);
-            }
+            inv.setItem(i, Placeholder);
+        }
+    }
+
+    private void border(Inventory inv) {
+        ItemStack Placeholder = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta meta = Placeholder.getItemMeta();
+        if(meta != null) {
+            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
+        }
+        Placeholder.setItemMeta(meta);
+        for (int i : border) {
+            inv.setItem(i, Placeholder);
         }
     }
 

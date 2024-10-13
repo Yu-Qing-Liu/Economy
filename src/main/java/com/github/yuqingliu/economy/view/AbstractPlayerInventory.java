@@ -7,6 +7,7 @@ import com.google.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -31,6 +32,28 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         for (int i = 0; i < inventorySize; i++) {
             inv.setItem(i, new ItemStack(Material.AIR));
         }
+    }
+
+    public void addItemToPlayer(Player player, ItemStack item, int quantity) {
+        item.setAmount(quantity);
+        if (!player.getInventory().addItem(item).isEmpty()) {
+            Location location = player.getLocation();
+            player.getWorld().dropItemNaturally(location, item);
+        }
+    }
+
+    public boolean removeItemToPlayer(Player player, ItemStack item, int quantity) {
+        for (ItemStack inventoryItem : player.getInventory().getContents()) {
+            if (inventoryItem != null && inventoryItem.isSimilar(item)) {
+                if(inventoryItem.getAmount() >= quantity) {
+                    inventoryItem.setAmount(inventoryItem.getAmount() - quantity);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
