@@ -40,7 +40,7 @@ public class MainMenu implements Listener {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 // Open item menu
-                int index = slot % 7 - 3;
+                int index = slot - controller.getOptions().get(0);
                 if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
                     vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getPageData().get(controller.getPageNumber())[index]);
                 }

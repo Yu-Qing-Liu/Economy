@@ -39,7 +39,7 @@ public class TransactionMenu implements Listener {
         if(vendorMenu.getCurrentMenu() == MenuType.TransactionMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
-                int index = slot % 5 - 4;
+                int index = slot - controller.getOptions().get(0);
                 if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
                     vendorMenu.getTradeMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), controller.getPageData().get(controller.getPageNumber())[index]);
                 }
