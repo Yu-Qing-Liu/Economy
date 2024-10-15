@@ -1,6 +1,10 @@
 package com.github.yuqingliu.economy.persistence.services;
 
+import org.bukkit.inventory.ItemStack;
+
 import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
+import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
+import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
 import com.github.yuqingliu.economy.persistence.repositories.ShopItemRepository;
 import com.github.yuqingliu.economy.persistence.repositories.ShopOrderRepository;
 import com.github.yuqingliu.economy.persistence.repositories.ShopRepository;
@@ -34,6 +38,19 @@ public class ShopService {
 
     public ShopEntity getShop(String shopName) {
         return shopRepository.get(shopName);
+    }
+
+    public boolean addShopSection(String shopName, String sectionName, ItemStack icon) {
+        ShopSectionEntity section = new ShopSectionEntity();
+        section.setShopName(shopName);
+        section.setIcon(icon);
+        section.setSectionName(sectionName);
+        return shopSectionRepository.save(section);
+    }
+
+    public void deleteShopSection(String shopName, String sectionName) {
+        ShopSectionKey key = new ShopSectionKey(sectionName, shopName);
+        shopSectionRepository.delete(key);
     }
 }
 

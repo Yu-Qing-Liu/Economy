@@ -58,6 +58,7 @@ public class CommandManagerImpl implements CommandManager {
         commands.put("vendoritem", new VendorItemCommand(vendorService, currencyService));
         // Shop commands
         commands.put("shop", new ShopCommand(nameSpacedKeyManager, shopService));
+        commands.put("shopsection", new ShopSectionCommand(shopService));
     }
 
     private void registerCommands() {
