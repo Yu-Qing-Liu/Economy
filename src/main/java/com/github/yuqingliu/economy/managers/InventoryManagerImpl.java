@@ -12,6 +12,7 @@ import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 import com.github.yuqingliu.economy.view.pursemenu.PurseMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
+import com.github.yuqingliu.economy.view.textmenu.TextMenu;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -56,12 +57,17 @@ public class InventoryManagerImpl implements InventoryManager {
             )
         );
         inventories.put(
+            TextMenu.class.getSimpleName(),
+            new TextMenu(eventManager, null)
+        );
+        inventories.put(
             ShopMenu.class.getSimpleName(),
             new ShopMenu(
                 eventManager,
                 null,
                 shopService,
-                currencyService
+                currencyService,
+                this
             )
         );
     }

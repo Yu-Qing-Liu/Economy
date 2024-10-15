@@ -17,6 +17,7 @@ import net.kyori.adventure.text.Component;
 
 @Getter
 public abstract class AbstractPlayerInventory implements PlayerInventory {
+    protected Inventory inventory;
     protected EventManager eventManager;
     @Setter protected Component displayName;
     protected final int inventorySize;
@@ -57,5 +58,9 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
     }
 
     @Override
+    public abstract void load(Player player);
+
+    @Override
     public abstract void open(Player player);
+
 }

@@ -10,10 +10,8 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
@@ -35,13 +33,13 @@ public class OrderMenuController {
     protected final int nextSellPagePtr = 43;
     protected final int prev = 11;
     protected final int exit = 15;
-    protected final int createBuyOrder = 10;
-    protected final int createSellOrder = 16;
+    protected final int createBuyOrder = 29;
+    protected final int createSellOrder = 38;
     protected final int itemSlot = 13;
-    protected final int length = 5;
+    protected final int length = 4;
     protected Material voidOption = Material.GLASS_PANE;
-    protected final List<Integer> buyOptions = Arrays.asList(29,30,31,32,33);
-    protected final List<Integer> sellOptions = Arrays.asList(38,39,40,41,42);
+    protected final List<Integer> buyOptions = Arrays.asList(30,31,32,33);
+    protected final List<Integer> sellOptions = Arrays.asList(39,40,41,42);
     protected final List<Integer> buttons = Arrays.asList(10,11,13,15,16,28,34,37,43);
     protected final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25);
     protected Map<Integer, OrderOption[]> buyPageData = new HashMap<>();
@@ -112,14 +110,6 @@ public class OrderMenuController {
     public void onClose() {
         buyPageData.clear();
         sellPageData.clear();
-    }
-
-    public void createBuyOrder(Player player) {
-
-    }
-
-    public void createSellOrder(Player player) {
-
     }
 
     private void fetchBuyOptions() {

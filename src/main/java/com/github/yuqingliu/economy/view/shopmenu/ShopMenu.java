@@ -2,7 +2,6 @@ package com.github.yuqingliu.economy.view.shopmenu;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 import com.google.inject.Inject;
 
@@ -10,9 +9,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
+import com.github.yuqingliu.economy.view.shopmenu.buyordermenu.BuyOrderMenu;
 import com.github.yuqingliu.economy.view.shopmenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.shopmenu.mainmenu.MainMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenu;
@@ -24,18 +25,20 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 public class ShopMenu extends AbstractPlayerInventory {
     protected final ShopService shopService;
     protected final CurrencyService currencyService;
+    protected final InventoryManager inventoryManager;
     @Setter protected MenuType currentMenu;
 
     public enum MenuType {
-        MainMenu, ItemMenu, OrderMenu;
+        MainMenu, ItemMenu, OrderMenu, BuyOrderMenu, SellOrderMenu, QuickBuyMenu;
     }
 
     protected final MainMenu mainMenu;
     protected final ItemMenu itemMenu;
     protected final OrderMenu orderMenu;
+    protected final BuyOrderMenu buyOrderMenu;
 
     @Inject
-    public ShopMenu(EventManager eventManager, Component displayName, ShopService shopService, CurrencyService currencyService) {
+    public ShopMenu(EventManager eventManager, Component displayName, ShopService shopService, CurrencyService currencyService, InventoryManager inventoryManager) {
         super(
             eventManager,
             displayName,
@@ -43,9 +46,11 @@ public class ShopMenu extends AbstractPlayerInventory {
         );
         this.shopService = shopService;
         this.currencyService = currencyService;
+        this.inventoryManager = inventoryManager;
         this.mainMenu = new MainMenu(this);
         this.itemMenu = new ItemMenu(this);
         this.orderMenu = new OrderMenu(this);
+        this.buyOrderMenu = new BuyOrderMenu(this);
     }
     
     public String getShopName() {
@@ -60,9 +65,15 @@ public class ShopMenu extends AbstractPlayerInventory {
     }
 
     @Override
+    public void load(Player player) {
+        inventory = Bukkit.createInventory(null, inventorySize, displayName);
+        player.openInventory(inventory);
+    }
+
+    @Override
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, inventorySize, displayName);
-        player.openInventory(inv);
-        mainMenu.getController().openMainMenu(inv);
+        inventory = Bukkit.createInventory(null, inventorySize, displayName);
+        player.openInventory(inventory);
+        mainMenu.getController().openMainMenu(inventory);
     }
 }

@@ -2,7 +2,6 @@ package com.github.yuqingliu.economy.view.pursemenu;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 import com.github.yuqingliu.economy.view.pursemenu.mainmenu.MainMenu;
 import com.google.inject.Inject;
@@ -39,9 +38,16 @@ public class PurseMenu extends AbstractPlayerInventory {
     }
 
     @Override
-    public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, inventorySize, displayName);
-        player.openInventory(inv);
-        mainMenu.getController().openMainMenu(player, inv);
+    public void load(Player player) {
+        inventory = Bukkit.createInventory(null, inventorySize, displayName);
+        player.openInventory(inventory);
     }
+
+    @Override
+    public void open(Player player) {
+        inventory = Bukkit.createInventory(null, inventorySize, displayName);
+        player.openInventory(inventory);
+        mainMenu.getController().openMainMenu(player, inventory);
+    }
+
 }

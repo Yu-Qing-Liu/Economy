@@ -1,10 +1,13 @@
 package com.github.yuqingliu.economy.persistence.services;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
+import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
+import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
 import com.github.yuqingliu.economy.persistence.repositories.ShopItemRepository;
@@ -65,9 +68,35 @@ public class ShopService {
         return shopItemRepository.save(item);
     }
 
-    public void deleteShopItem(String vendorName, String sectionName, String itemName) {
-        ShopItemKey key = new ShopItemKey(itemName, sectionName, vendorName);
+    public void deleteShopItem(String shopName, String sectionName, String itemName) {
+        ShopItemKey key = new ShopItemKey(itemName, sectionName, shopName);
         shopItemRepository.delete(key);
+    }
+
+    public void createBuyOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        ShopOrderEntity order = new ShopOrderEntity();
+        order.setType(OrderType.BUY);
+        order.setPlayerId(player.getUniqueId());
+        order.setItemName(item.getItemName());
+        order.setSectionName(item.getSectionName());
+        order.setShopName(item.getShopName());
+        order.setQuantity(quantity);
+        order.setUnitPrice(unitPrice);
+        order.setCurrencyType(currencyType);
+        shopOrderRepository.save(order);
+    }
+
+    public void createSellOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        ShopOrderEntity order = new ShopOrderEntity();
+        order.setType(OrderType.SELL);
+        order.setPlayerId(player.getUniqueId());
+        order.setItemName(item.getItemName());
+        order.setSectionName(item.getSectionName());
+        order.setShopName(item.getShopName());
+        order.setQuantity(quantity);
+        order.setUnitPrice(unitPrice);
+        order.setCurrencyType(currencyType);
+        shopOrderRepository.save(order);
     }
 }
 
