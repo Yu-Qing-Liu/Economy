@@ -42,7 +42,7 @@ public class ItemMenu implements Listener {
                 // Open currency options menu
                 int index = slot - controller.getOptions().get(0);
                 if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
-                    // shopMenu.getTransactionMenu().getController().openTransactionMenu(clickedInventory, controller.getPageData().get(controller.getPageNumber())[index]);
+                    shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getPageData().get(controller.getPageNumber())[index]);
                 }
             }
             if(slot == controller.getNextPagePtr()) {

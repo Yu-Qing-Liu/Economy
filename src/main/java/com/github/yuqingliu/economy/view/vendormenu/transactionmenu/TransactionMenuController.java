@@ -89,7 +89,7 @@ public class TransactionMenuController {
             String currencyName = entry.getKey();
             double buyPrice = entry.getValue();
             double sellPrice = sellPrices.get(currencyName);
-            ItemStack icon =  vendorMenu.getCurrencyService().getCurrencyByName(currencyName).getIcon();
+            ItemStack icon =  vendorMenu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
             CurrencyOption option = new CurrencyOption(icon, buyPrice, sellPrice);
             temp.offer(option);
         }
