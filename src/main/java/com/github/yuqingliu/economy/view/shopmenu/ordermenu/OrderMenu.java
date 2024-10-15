@@ -62,6 +62,12 @@ public class OrderMenu implements Listener {
             if(slot == controller.getPrevSellPagePtr()) {
                 controller.prevSellPage(clickedInventory);
             }
+            if(slot == controller.getCreateBuyOrder()) {
+                controller.createBuyOrder(player);
+            }
+            if(slot == controller.getCreateSellOrder()) {
+                controller.createSellOrder(player);
+            }
             if(slot == controller.getPrev()) {
                 shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection());
             }

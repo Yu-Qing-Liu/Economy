@@ -10,8 +10,10 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
@@ -110,6 +112,14 @@ public class OrderMenuController {
     public void onClose() {
         buyPageData.clear();
         sellPageData.clear();
+    }
+
+    public void createBuyOrder(Player player) {
+
+    }
+
+    public void createSellOrder(Player player) {
+
     }
 
     private void fetchBuyOptions() {
