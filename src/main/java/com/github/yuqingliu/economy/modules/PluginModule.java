@@ -137,8 +137,8 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public InventoryManager provideInventoryManager(EventManager eventManager, CurrencyService currencyService, VendorService vendorService) {
-        return new InventoryManagerImpl(eventManager, currencyService, vendorService);
+    public InventoryManager provideInventoryManager(EventManager eventManager, CurrencyService currencyService, VendorService vendorService, ShopService shopService) {
+        return new InventoryManagerImpl(eventManager, currencyService, vendorService, shopService);
     }
 
     @Provides
