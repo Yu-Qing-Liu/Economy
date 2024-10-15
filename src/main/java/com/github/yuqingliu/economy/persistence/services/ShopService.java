@@ -3,7 +3,9 @@ package com.github.yuqingliu.economy.persistence.services;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
+import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
+import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
 import com.github.yuqingliu.economy.persistence.repositories.ShopItemRepository;
 import com.github.yuqingliu.economy.persistence.repositories.ShopOrderRepository;
@@ -13,6 +15,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Singleton
 @RequiredArgsConstructor
@@ -51,6 +54,20 @@ public class ShopService {
     public void deleteShopSection(String shopName, String sectionName) {
         ShopSectionKey key = new ShopSectionKey(sectionName, shopName);
         shopSectionRepository.delete(key);
+    }
+
+    public boolean addShopItem(String shopName, String sectionName, ItemStack icon) {
+        ShopItemEntity item = new ShopItemEntity();
+        item.setIcon(icon);
+        item.setItemName(PlainTextComponentSerializer.plainText().serialize(icon.displayName()));
+        item.setShopName(shopName);
+        item.setSectionName(sectionName);
+        return shopItemRepository.save(item);
+    }
+
+    public void deleteShopItem(String vendorName, String sectionName, String itemName) {
+        ShopItemKey key = new ShopItemKey(itemName, sectionName, vendorName);
+        shopItemRepository.delete(key);
     }
 }
 

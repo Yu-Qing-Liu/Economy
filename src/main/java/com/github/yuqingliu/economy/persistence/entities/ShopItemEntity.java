@@ -20,6 +20,7 @@ import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -56,11 +57,15 @@ public class ShopItemEntity {
 
     @OneToMany(mappedBy = "shopItem", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ShopOrderEntity> orders = new HashSet<>();
-
+    
+    @Transient
     private TreeSet<ShopOrderEntity> buyOrders = new TreeSet<>(Comparator.comparingDouble(ShopOrderEntity::getUnitPrice).reversed());
+
+    @Transient
     private TreeSet<ShopOrderEntity> sellOrders = new TreeSet<>(Comparator.comparingDouble(ShopOrderEntity::getUnitPrice));
 
     public TreeSet<ShopOrderEntity> getBuyOrders() {
+        buyOrders.clear();
         for (ShopOrderEntity order : orders) {
             if (order.getType() == ShopOrderEntity.OrderType.BUY) {
                 buyOrders.add(order);
@@ -70,6 +75,7 @@ public class ShopItemEntity {
     }
 
     public TreeSet<ShopOrderEntity> getSellOrders() {
+        sellOrders.clear();
         for (ShopOrderEntity order : orders) {
             if (order.getType() == ShopOrderEntity.OrderType.SELL) {
                 sellOrders.add(order);

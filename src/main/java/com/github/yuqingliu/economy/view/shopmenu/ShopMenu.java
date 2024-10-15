@@ -13,6 +13,7 @@ import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
+import com.github.yuqingliu.economy.view.shopmenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.shopmenu.mainmenu.MainMenu;
 
 import net.kyori.adventure.text.Component;
@@ -25,10 +26,11 @@ public class ShopMenu extends AbstractPlayerInventory {
     @Setter protected MenuType currentMenu;
 
     public enum MenuType {
-        MainMenu, ItemMenu, TransactionMenu, TradeMenu;
+        MainMenu, ItemMenu;
     }
 
     protected final MainMenu mainMenu;
+    protected final ItemMenu itemMenu;
 
     @Inject
     public ShopMenu(EventManager eventManager, Component displayName, ShopService shopService, CurrencyService currencyService) {
@@ -40,6 +42,7 @@ public class ShopMenu extends AbstractPlayerInventory {
         this.shopService = shopService;
         this.currencyService = currencyService;
         this.mainMenu = new MainMenu(this);
+        this.itemMenu = new ItemMenu(this);
     }
     
     public String getShopName() {

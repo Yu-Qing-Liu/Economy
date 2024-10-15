@@ -46,7 +46,7 @@ public class ShopSectionCommand implements CommandExecutor {
                         icon.setItemMeta(meta);
                     }
                     if(shopService.addShopSection(args[1], args[2], icon)) {
-                        player.sendMessage(Component.text("Successfully added section with name " + args[2] + " in vendor " + args[1], NamedTextColor.GREEN));
+                        player.sendMessage(Component.text("Successfully added section with name " + args[2] + " in shop " + args[1], NamedTextColor.GREEN));
                     } else {
                         player.sendMessage(Component.text("Invalid parameters. Please enter valid fields.", NamedTextColor.RED));
                         return false;
@@ -54,7 +54,7 @@ public class ShopSectionCommand implements CommandExecutor {
                     break;
                 case "delete":
                     shopService.deleteShopSection(args[1], args[2]);
-                    player.sendMessage(Component.text("Section with name " + args[2] + " has been deleted from vendor " + args[1], NamedTextColor.RED));
+                    player.sendMessage(Component.text("Section with name " + args[2] + " has been deleted from shop " + args[1], NamedTextColor.RED));
                     break;
                 default:
                     return false;
