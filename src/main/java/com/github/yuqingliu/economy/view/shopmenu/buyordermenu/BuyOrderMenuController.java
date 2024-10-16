@@ -1,6 +1,7 @@
 package com.github.yuqingliu.economy.view.shopmenu.buyordermenu;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -8,8 +9,10 @@ import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
@@ -32,20 +35,25 @@ public class BuyOrderMenuController {
     protected final int setCurrencyType = 28;
     protected final int setQuantity = 30;
     protected final int setUnitPrice = 32;
-    protected final int confirmButton = 34;
+    protected final int orderButton = 34;
     protected final int currency = 37;
     protected final int quantity = 39;
     protected final int unitPrice = 41;
-    protected final int result = 43;
+    protected final int confirm = 43;
     protected Material voidOption = Material.GLASS_PANE;
     protected final List<Integer> buttons = Arrays.asList(11,13,15,28,30,32,34);
     protected final List<Integer> results = Arrays.asList(37,39,41,43);
     protected final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25);
     protected ShopItemEntity item;
     protected Player player;
+    protected ItemStack currencyTypeIcon;
+    protected ItemStack quantityIcon;
+    protected ItemStack unitPriceIcon;
+    protected ItemStack orderIcon;
     protected String currencyTypeInput;
-    protected String quantityInput;
-    protected String unitPriceInput;
+    protected int quantityInput;
+    protected double unitPriceInput;
+    protected BukkitTask refreshTask;
     
     public BuyOrderMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
@@ -60,7 +68,10 @@ public class BuyOrderMenuController {
         shopMenu.clear(inv);
         frame(inv);
         buttons(inv);
-        results(inv);
+        refreshTask = Scheduler.runTimerAsync((task) -> {
+            orderButton(inv);
+            results(inv);
+        }, Duration.ofSeconds(1), Duration.ofSeconds(0));
         border(inv);
         displayItem(inv);
     }
@@ -70,14 +81,15 @@ public class BuyOrderMenuController {
         PlayerInventory shop = shopMenu.getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
-        Consumer<String> callback = (currencyName) -> {
+        Consumer<String> callback = (userInput) -> {
             shop.load(player);
             shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
             Scheduler.runAsync((task) -> {
-                CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(currencyName);
+                CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(userInput);
                 if (curr != null) {
-                    currencyTypeInput = currencyName;
-                    shop.getInventory().setItem(currency, curr.getIcon().clone());
+                    currencyTypeInput = userInput;
+                    currencyTypeIcon = curr.getIcon().clone();
+                    shop.getInventory().setItem(currency, currencyTypeIcon);
                 }
             });
         };        
@@ -86,6 +98,64 @@ public class BuyOrderMenuController {
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("currency", NamedTextColor.RED));
         scanner.open(player);
+    }
+
+    public void setQuantity(Inventory inv) {
+        inv.close();
+        PlayerInventory shop = shopMenu.getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+        shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
+
+        Consumer<String> callback = (userInput) -> {
+            shop.load(player);
+            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
+            try {
+                quantityInput = Integer.parseInt(userInput);
+                quantityIcon = new ItemStack(Material.PAPER);
+                ItemMeta meta = quantityIcon.getItemMeta();
+                if(meta != null) {
+                    meta.displayName(Component.text(String.format("%sx", userInput), NamedTextColor.DARK_GREEN));
+                }
+                quantityIcon.setItemMeta(meta);
+                shop.getInventory().setItem(quantity, quantityIcon);
+            } catch (Exception e) {}
+        };        
+
+        TextMenu scanner = (TextMenu) shopMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        scanner.setOnCloseCallback(callback);
+        scanner.setDisplayName(Component.text("quantity", NamedTextColor.RED));
+        scanner.open(player);
+    }
+
+    public void setUnitPrice(Inventory inv) {
+        inv.close();
+        PlayerInventory shop = shopMenu.getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+        shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
+
+        Consumer<String> callback = (userInput) -> {
+            shop.load(player);
+            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
+            try {
+                unitPriceInput = Double.parseDouble(userInput);
+                unitPriceIcon = new ItemStack(Material.PAPER);
+                ItemMeta meta = unitPriceIcon.getItemMeta();
+                if(meta != null) {
+                    meta.displayName(Component.text(String.format("%s $/unit", userInput), NamedTextColor.DARK_GREEN));
+                }
+                unitPriceIcon.setItemMeta(meta);
+                shop.getInventory().setItem(unitPrice, unitPriceIcon);
+            } catch (Exception e) {}
+        };        
+
+        TextMenu scanner = (TextMenu) shopMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        scanner.setOnCloseCallback(callback);
+        scanner.setDisplayName(Component.text("unit price", NamedTextColor.RED));
+        scanner.open(player);
+    }
+
+    public void confirmOrder() {
+        Scheduler.runAsync((task) -> {
+            shopMenu.getShopService().createBuyOrder(player, item, quantityInput, unitPriceInput, currencyTypeInput);
+        });
     }
 
     private void displayItem(Inventory inv) {
@@ -124,8 +194,72 @@ public class BuyOrderMenuController {
         }
         placeholder.setItemMeta(meta);
         for(int i : results) {
-            inv.setItem(i, placeholder);
+            switch (i) {
+                case currency:
+                    if(currencyTypeIcon != null) {
+                        inv.setItem(i, currencyTypeIcon);
+                    } else {
+                        inv.setItem(i, placeholder);
+                    }
+                    break;
+                case quantity:
+                    if(quantityIcon != null) {
+                        inv.setItem(i, quantityIcon);
+                    } else {
+                        inv.setItem(i, placeholder);
+                    }
+                    break;
+                case unitPrice: 
+                    if(unitPriceIcon != null) {
+                        inv.setItem(i, unitPriceIcon);
+                    } else {
+                        inv.setItem(i, placeholder);
+                    }
+                    break;
+                case confirm:
+                    if(unitPriceIcon != null && quantityIcon != null && currencyTypeIcon != null) {
+                        double totalProfit = quantityInput * unitPriceInput;
+                        ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
+                        ItemMeta m = confirmButton.getItemMeta();
+                        if(m != null) {
+                            m.displayName(Component.text("CONFIRM", NamedTextColor.RED));
+                            m.lore(Arrays.asList(Component.text("Total Profit: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(currencyTypeIcon.displayName()))));
+                        }
+                        confirmButton.setItemMeta(m);
+                        inv.setItem(i, confirmButton);
+                    } else {
+                        inv.setItem(i, placeholder);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
+    }
+
+    private void orderButton(Inventory inv) {
+        ItemStack order = new ItemStack(Material.CREEPER_BANNER_PATTERN);
+        ItemMeta orderMeta = order.getItemMeta();
+        if(orderMeta != null) {
+            orderMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+            orderMeta.displayName(Component.text("BUY ORDER:", NamedTextColor.GOLD));
+            List<Component> components = new ArrayList<>();
+            if(currencyTypeIcon != null) {
+                Component currencyComponent = Component.text("Currency: ", NamedTextColor.BLUE).append(Component.text(currencyTypeInput, NamedTextColor.GOLD));
+                components.add(currencyComponent);
+            }
+            if(quantityIcon != null) {
+                Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(quantityInput + "x", NamedTextColor.GOLD));
+                components.add(quantityComponent);
+            }
+            if(unitPriceIcon != null) {
+                Component priceComponent = Component.text("Unit Price: ", NamedTextColor.BLUE).append(Component.text(unitPriceInput + "$/unit", NamedTextColor.GOLD));
+                components.add(priceComponent);
+            }
+            orderMeta.lore(components);
+        }
+        order.setItemMeta(orderMeta);
+        inv.setItem(this.orderButton, order);
     }
 
     private void buttons(Inventory inv) {
@@ -168,13 +302,5 @@ public class BuyOrderMenuController {
         }
         unitPrice.setItemMeta(unitPriceMeta);
         inv.setItem(this.setUnitPrice, unitPrice);
-
-        ItemStack confirm = new ItemStack(Material.CREEPER_BANNER_PATTERN);
-        ItemMeta confirmMeta = confirm.getItemMeta();
-        if(confirmMeta != null) {
-            confirmMeta.displayName(Component.text("Confirm", NamedTextColor.GOLD));
-        }
-        confirm.setItemMeta(confirmMeta);
-        inv.setItem(this.confirmButton, confirm);
     }
 }

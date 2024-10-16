@@ -38,6 +38,7 @@ public class BuyOrderMenu implements Listener {
         if(shopMenu.getCurrentMenu() == MenuType.BuyOrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(slot == controller.getPrev()) {
+                controller.getRefreshTask().cancel();
                 shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection());
             }
             if(slot == controller.getExit()) {
@@ -45,6 +46,19 @@ public class BuyOrderMenu implements Listener {
             }
             if(slot == controller.getSetCurrencyType()) {
                 controller.setCurrencyType(clickedInventory);
+            }
+            if(slot == controller.getSetQuantity()) {
+                controller.setQuantity(clickedInventory);
+            }
+            if(slot == controller.getSetUnitPrice()) {
+                controller.setUnitPrice(clickedInventory);
+            }
+            if(slot == controller.getConfirm()) {
+                if(currentItem.getType() != controller.getVoidOption()) {
+                    controller.confirmOrder();
+                    controller.getRefreshTask().cancel();
+                    shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection());
+                }
             }
         }
     }
