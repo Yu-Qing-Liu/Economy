@@ -222,8 +222,8 @@ public class BuyOrderMenuController {
                         ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
                         ItemMeta m = confirmButton.getItemMeta();
                         if(m != null) {
-                            m.displayName(Component.text("CONFIRM", NamedTextColor.RED));
-                            m.lore(Arrays.asList(Component.text("Total Profit: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(currencyTypeIcon.displayName()))));
+                            m.displayName(Component.text("CONFIRM", NamedTextColor.GREEN));
+                            m.lore(Arrays.asList(Component.text("TOTAL COST: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(currencyTypeIcon.displayName()))));
                         }
                         confirmButton.setItemMeta(m);
                         inv.setItem(i, confirmButton);

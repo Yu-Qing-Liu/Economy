@@ -118,8 +118,8 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository) {
-        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository);
+    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository, CurrencyService currencyService) {
+        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository, currencyService);
     }
 
     // Managers

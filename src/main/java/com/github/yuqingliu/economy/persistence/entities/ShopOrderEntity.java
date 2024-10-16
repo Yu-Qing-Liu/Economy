@@ -70,7 +70,7 @@ public class ShopOrderEntity {
     @Column(name = "currencyType")
     private String currencyType;
 
-    @Column(name = "filled")
-    private boolean filled = false;
+    @Column(name = "filledQantity")
+    private int filledQuantity = 0;
 }
 

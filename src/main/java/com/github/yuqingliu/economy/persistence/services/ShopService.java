@@ -31,6 +31,8 @@ public class ShopService {
     private final ShopItemRepository shopItemRepository;
     @Inject
     private final ShopOrderRepository shopOrderRepository;
+    @Inject 
+    private final CurrencyService currencyService;
 
     public boolean addShop(String shopName) {
         ShopEntity shop = new ShopEntity();
@@ -73,20 +75,28 @@ public class ShopService {
         shopItemRepository.delete(key);
     }
 
-    public void createBuyOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
-        ShopOrderEntity order = new ShopOrderEntity();
-        order.setType(OrderType.BUY);
-        order.setPlayerId(player.getUniqueId());
-        order.setItemName(item.getItemName());
-        order.setSectionName(item.getSectionName());
-        order.setShopName(item.getShopName());
-        order.setQuantity(quantity);
-        order.setUnitPrice(unitPrice);
-        order.setCurrencyType(currencyType);
-        shopOrderRepository.save(order);
+    public boolean createBuyOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        double totalPrice = quantity * unitPrice;
+        if(currencyService.withdrawPlayerPurse(player, currencyType, totalPrice)) {
+            ShopOrderEntity order = new ShopOrderEntity();
+            order.setType(OrderType.BUY);
+            order.setPlayerId(player.getUniqueId());
+            order.setItemName(item.getItemName());
+            order.setSectionName(item.getSectionName());
+            order.setShopName(item.getShopName());
+            order.setQuantity(quantity);
+            order.setUnitPrice(unitPrice);
+            order.setCurrencyType(currencyType);
+            if(shopOrderRepository.save(order)) {
+                return true;
+            } else {
+                currencyService.depositPlayerPurse(player, currencyType, totalPrice);
+            }
+        }
+        return false;
     }
 
-    public void createSellOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+    public boolean createSellOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
         ShopOrderEntity order = new ShopOrderEntity();
         order.setType(OrderType.SELL);
         order.setPlayerId(player.getUniqueId());
@@ -96,7 +106,7 @@ public class ShopService {
         order.setQuantity(quantity);
         order.setUnitPrice(unitPrice);
         order.setCurrencyType(currencyType);
-        shopOrderRepository.save(order);
+        return shopOrderRepository.save(order);
     }
 }
 
