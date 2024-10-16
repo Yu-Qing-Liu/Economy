@@ -41,7 +41,13 @@ public class OrderMenu implements Listener {
             if(controller.getBuyOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getBuyOptions().get(0);
                 if(controller.getBuyPageData() != null && controller.getBuyPageData().containsKey(controller.getBuyPageNumber())) {
-                    // shopMenu.getQuickBuyMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), controller.getBuyPageData().get(controller.getBuyPageNumber())[index]);
+                    // shopMenu.getQuickSellMenu().getController().openQuickSellMenu(clickedInventory, controller.getItem(), controller.getBuyPageData().get(controller.getBuyPageNumber())[index]);
+                }
+            }
+            if(controller.getSellOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
+                int index = slot - controller.getSellOptions().get(0);
+                if(controller.getSellPageData() != null && controller.getSellPageData().containsKey(controller.getSellPageNumber())) {
+                    // shopMenu.getQuickBuyMenu().getController().openQuickBuyMenu(clickedInventory, controller.getItem(), controller.getSellPageData().get(controller.getSellPageNumber())[index]);
                 }
             }
             if(slot == controller.getNextBuyPagePtr()) {
@@ -60,7 +66,7 @@ public class OrderMenu implements Listener {
                 shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(clickedInventory, controller.getItem(), player);
             }
             if(slot == controller.getCreateSellOrder()) {
-
+                shopMenu.getSellOrderMenu().getController().openSellOrderMenu(clickedInventory, controller.getItem(), player);
             }
             if(slot == controller.getPrev()) {
                 shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection());

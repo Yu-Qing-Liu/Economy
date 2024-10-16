@@ -3,6 +3,8 @@ package com.github.yuqingliu.economy.persistence.entities.keys;
 import java.io.Serializable;
 import java.util.UUID;
 
+import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,4 +21,6 @@ public class ShopOrderKey implements Serializable {
     private String itemName;
     private String sectionName;
     private String shopName;
+    private OrderType type;
+    private String currencyType;
 }

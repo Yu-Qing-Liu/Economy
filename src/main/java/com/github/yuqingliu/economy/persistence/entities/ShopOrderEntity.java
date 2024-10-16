@@ -44,6 +44,15 @@ public class ShopOrderEntity {
     @Id
     @Column(name = "shopName", columnDefinition = "VARCHAR(16)")
     private String shopName;
+    
+    @Id
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private OrderType type;
+    
+    @Id
+    @Column(name = "currencyType")
+    private String currencyType;
 
     @ManyToOne
     @JoinColumn(name = "playerId", insertable = false, updatable = false)
@@ -59,16 +68,10 @@ public class ShopOrderEntity {
 
     @Column(name = "quantity")
     private int quantity;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    private OrderType type;
 
     @Column(name = "unitPrice")
     private double unitPrice;
     
-    @Column(name = "currencyType")
-    private String currencyType;
 
     @Column(name = "filledQantity")
     private int filledQuantity = 0;

@@ -16,6 +16,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
@@ -50,6 +51,7 @@ public class OrderMenuController {
     protected int buyPageNumber = 1;
     protected int sellPageNumber = 1;
     protected ShopItemEntity item;
+    protected BukkitTask renderTask;
     
     public OrderMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
@@ -63,14 +65,14 @@ public class OrderMenuController {
         shopMenu.clear(inv);
         frame(inv);
         pagePtrs(inv);
-        buttons(inv);
         border(inv);
         displayItem(inv);
-        Scheduler.runAsync((task) -> {
+        renderTask = Scheduler.runAsync((task) -> {
             fetchBuyOptions();
             fetchSellOptions();
             displayBuyOptions(inv);
             displaySellOptions(inv);
+            buttons(inv);
         });
     }
 
@@ -195,7 +197,7 @@ public class OrderMenuController {
                     ShopOrderEntity element = iterator.next();
                     if(element.getQuantity() - element.getFilledQuantity() > 0) {
                         Component playerComponent = Component.text(Bukkit.getOfflinePlayer(element.getPlayerId()).getName(), NamedTextColor.LIGHT_PURPLE);
-                        Component priceComponent = Component.text("Unit Price: ", NamedTextColor.BLUE).append(Component.text(element.getUnitPrice() + "$/unit", NamedTextColor.GOLD));
+                        Component priceComponent = Component.text("Unit Buy Price: ", NamedTextColor.BLUE).append(Component.text(element.getUnitPrice() + "$/unit", NamedTextColor.GOLD));
                         Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(element.getQuantity() - element.getFilledQuantity() + "x", NamedTextColor.GREEN));
                         Component separator = Component.text("------------------------------------", NamedTextColor.BLUE);
                         topOrders.add(playerComponent);
@@ -226,10 +228,35 @@ public class OrderMenuController {
         OrderOption[] currencyOptions = sellPageData.getOrDefault(sellPageNumber, new OrderOption[length]);
         int currentIndex = 0;
         for(int i : sellOptions) {
-            if(currencyOptions[currentIndex] == null) {
+            OrderOption opt = currencyOptions[currentIndex];
+            if(opt == null) {
                 inv.setItem(i, Placeholder);
             } else {
-                ItemStack item = currencyOptions[currentIndex].getIcon().clone(); 
+                ItemStack item = opt.getIcon().clone(); 
+                List<Component> topOrders = new ArrayList<>();
+                Set<ShopOrderEntity> orders = opt.getOrders();
+                int count = 0;
+                int maxCount = 3;
+                Iterator<ShopOrderEntity> iterator = orders.iterator();
+                while (iterator.hasNext() && count < maxCount) {
+                    ShopOrderEntity element = iterator.next();
+                    if(element.getQuantity() - element.getFilledQuantity() > 0) {
+                        Component playerComponent = Component.text(Bukkit.getOfflinePlayer(element.getPlayerId()).getName(), NamedTextColor.LIGHT_PURPLE);
+                        Component priceComponent = Component.text("Unit Sell Price: ", NamedTextColor.BLUE).append(Component.text(element.getUnitPrice() + "$/unit", NamedTextColor.GOLD));
+                        Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(element.getQuantity() - element.getFilledQuantity() + "x", NamedTextColor.GREEN));
+                        Component separator = Component.text("------------------------------------", NamedTextColor.BLUE);
+                        topOrders.add(playerComponent);
+                        topOrders.add(priceComponent);
+                        topOrders.add(quantityComponent);
+                        topOrders.add(separator);
+                    }
+                    count++;
+                }
+                ItemMeta meta = item.getItemMeta();
+                if(meta != null) {
+                    meta.lore(topOrders);
+                }
+                item.setItemMeta(meta);
                 inv.setItem(i, item);
             }
             currentIndex++;

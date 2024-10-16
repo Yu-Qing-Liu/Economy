@@ -17,6 +17,7 @@ import com.github.yuqingliu.economy.view.shopmenu.buyordermenu.BuyOrderMenu;
 import com.github.yuqingliu.economy.view.shopmenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.shopmenu.mainmenu.MainMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenu;
+import com.github.yuqingliu.economy.view.shopmenu.sellordermenu.SellOrderMenu;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -29,13 +30,14 @@ public class ShopMenu extends AbstractPlayerInventory {
     @Setter protected MenuType currentMenu;
 
     public enum MenuType {
-        MainMenu, ItemMenu, OrderMenu, BuyOrderMenu, SellOrderMenu, QuickBuyMenu;
+        MainMenu, ItemMenu, OrderMenu, BuyOrderMenu, SellOrderMenu, QuickBuyMenu, QuickSellMenu;
     }
 
     protected final MainMenu mainMenu;
     protected final ItemMenu itemMenu;
     protected final OrderMenu orderMenu;
     protected final BuyOrderMenu buyOrderMenu;
+    protected final SellOrderMenu sellOrderMenu;
 
     @Inject
     public ShopMenu(EventManager eventManager, Component displayName, ShopService shopService, CurrencyService currencyService, InventoryManager inventoryManager) {
@@ -51,6 +53,7 @@ public class ShopMenu extends AbstractPlayerInventory {
         this.itemMenu = new ItemMenu(this);
         this.orderMenu = new OrderMenu(this);
         this.buyOrderMenu = new BuyOrderMenu(this);
+        this.sellOrderMenu = new SellOrderMenu(this);
     }
     
     public String getShopName() {
