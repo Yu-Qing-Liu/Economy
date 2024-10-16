@@ -73,16 +73,18 @@ public class BuyOrderMenuController {
         Consumer<String> callback = (currencyName) -> {
             shop.load(player);
             shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
-            CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(currencyName);
-            if (curr != null) {
-                currencyTypeInput = currencyName;
-                inv.setItem(currency, curr.getIcon().clone());
-            }
+            Scheduler.runAsync((task) -> {
+                CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(currencyName);
+                if (curr != null) {
+                    currencyTypeInput = currencyName;
+                    shop.getInventory().setItem(currency, curr.getIcon().clone());
+                }
+            });
         };        
 
         TextMenu scanner = (TextMenu) shopMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
-        scanner.setDisplayName(Component.text("Enter currency name", NamedTextColor.RED));
+        scanner.setDisplayName(Component.text("currency", NamedTextColor.RED));
         scanner.open(player);
     }
 
