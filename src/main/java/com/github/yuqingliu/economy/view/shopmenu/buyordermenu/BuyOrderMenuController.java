@@ -3,6 +3,7 @@ package com.github.yuqingliu.economy.view.shopmenu.buyordermenu;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,6 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
+import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
@@ -31,14 +33,19 @@ public class BuyOrderMenuController {
     protected final int setQuantity = 30;
     protected final int setUnitPrice = 32;
     protected final int confirmButton = 34;
+    protected final int currency = 37;
+    protected final int quantity = 39;
+    protected final int unitPrice = 41;
+    protected final int result = 43;
     protected Material voidOption = Material.GLASS_PANE;
     protected final List<Integer> buttons = Arrays.asList(11,13,15,28,30,32,34);
+    protected final List<Integer> results = Arrays.asList(37,39,41,43);
     protected final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25);
     protected ShopItemEntity item;
     protected Player player;
-    protected String[] currencyType = new String[1];
-    protected String[] quantity = new String[1];
-    protected String[] unitPrice = new String[1];
+    protected String currencyTypeInput;
+    protected String quantityInput;
+    protected String unitPriceInput;
     
     public BuyOrderMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
@@ -53,6 +60,7 @@ public class BuyOrderMenuController {
         shopMenu.clear(inv);
         frame(inv);
         buttons(inv);
+        results(inv);
         border(inv);
         displayItem(inv);
     }
@@ -61,13 +69,19 @@ public class BuyOrderMenuController {
         inv.close();
         PlayerInventory shop = shopMenu.getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
-        Runnable runnable = () -> {
+
+        Consumer<String> callback = (currencyName) -> {
             shop.load(player);
             shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
-        }; 
+            CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(currencyName);
+            if (curr != null) {
+                currencyTypeInput = currencyName;
+                inv.setItem(currency, curr.getIcon().clone());
+            }
+        };        
+
         TextMenu scanner = (TextMenu) shopMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
-        scanner.setInput(currencyType);
-        scanner.setOnCloseCallback(runnable);
+        scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("Enter currency name", NamedTextColor.RED));
         scanner.open(player);
     }
@@ -97,6 +111,18 @@ public class BuyOrderMenuController {
         Placeholder.setItemMeta(meta);
         for (int i : border) {
             inv.setItem(i, Placeholder);
+        }
+    }
+
+    private void results(Inventory inv) {
+        ItemStack placeholder = new ItemStack(voidOption);
+        ItemMeta meta = placeholder.getItemMeta();
+        if(meta != null) {
+            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
+        }
+        placeholder.setItemMeta(meta);
+        for(int i : results) {
+            inv.setItem(i, placeholder);
         }
     }
 
