@@ -31,7 +31,7 @@ public class MainMenuController {
     private final ShopMenu shopMenu;
     private final int prevPagePtr = 16;
     private final int nextPagePtr = 43;
-    private final int prev = 25;
+    private final int orders = 25;
     private final int exit = 34;
     private final int length = 24;
     private Material voidOption = Material.GLASS_PANE;
@@ -164,13 +164,13 @@ public class MainMenuController {
         prevPage.setItemMeta(pmeta);
         inv.setItem(prevPagePtr, prevPage);
 
-        ItemStack prev = new ItemStack(Material.GRAY_WOOL);
+        ItemStack prev = new ItemStack(Material.WRITABLE_BOOK);
         ItemMeta prevmeta = prev.getItemMeta();
         if(prevmeta != null) {
-            prevmeta.displayName(Component.text("Unavailable", NamedTextColor.GRAY));
+            prevmeta.displayName(Component.text("Order Menu", NamedTextColor.GRAY));
         }
         prev.setItemMeta(prevmeta);
-        inv.setItem(this.prev, prev);
+        inv.setItem(this.orders, prev);
 
         ItemStack exit = new ItemStack(Material.RED_WOOL);
         ItemMeta emeta = exit.getItemMeta();
