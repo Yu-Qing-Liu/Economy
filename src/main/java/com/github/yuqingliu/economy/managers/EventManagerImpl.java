@@ -36,6 +36,7 @@ public class EventManagerImpl implements EventManager {
     private void initializeListeners() {
         listeners.put(PlayerJoinsServer.class.getSimpleName(), new PlayerJoinsServer(playerService));
         listeners.put(PlayerOpensVendor.class.getSimpleName(), new PlayerOpensVendor(nameSpacedKeyManager, inventoryManager));
+        listeners.put(PlayerOpensShop.class.getSimpleName(), new PlayerOpensShop(nameSpacedKeyManager, inventoryManager));
     }
     
     public void registerEvents() {

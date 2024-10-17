@@ -73,6 +73,30 @@ public class PluginModule extends AbstractModule {
         return new VendorItemRepository(sessionFactory);
     }
 
+    @Provides
+    @Singleton
+    public ShopRepository provideShopRepository(SessionFactory sessionFactory) {
+        return new ShopRepository(sessionFactory);
+    }
+
+    @Provides
+    @Singleton
+    public ShopSectionRepository provideShopSectionRepository(SessionFactory sessionFactory) {
+        return new ShopSectionRepository(sessionFactory);
+    }
+
+    @Provides
+    @Singleton
+    public ShopItemRepository provideShopItemRepository(SessionFactory sessionFactory) {
+        return new ShopItemRepository(sessionFactory);
+    }
+
+    @Provides
+    @Singleton
+    public ShopOrderRepository provideShopOrderRepository(SessionFactory sessionFactory) {
+        return new ShopOrderRepository(sessionFactory);
+    }
+
     // Services
     @Provides
     @Singleton
@@ -92,6 +116,12 @@ public class PluginModule extends AbstractModule {
         return new VendorService(vendorRepository, vendorSectionRepository, vendorItemRepository);
     }
 
+    @Provides
+    @Singleton
+    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository, CurrencyService currencyService) {
+        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository, currencyService);
+    }
+
     // Managers
     @Provides
     @Singleton
@@ -107,8 +137,8 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public InventoryManager provideInventoryManager(EventManager eventManager, CurrencyService currencyService, VendorService vendorService) {
-        return new InventoryManagerImpl(eventManager, currencyService, vendorService);
+    public InventoryManager provideInventoryManager(EventManager eventManager, CurrencyService currencyService, VendorService vendorService, ShopService shopService) {
+        return new InventoryManagerImpl(eventManager, currencyService, vendorService, shopService);
     }
 
     @Provides
@@ -117,6 +147,7 @@ public class PluginModule extends AbstractModule {
         InventoryManager inventoryManager,
         CurrencyService currencyService,
         VendorService vendorService,
+        ShopService shopService,
         NameSpacedKeyManager nameSpacedKeyManager
     ) {
         return new CommandManagerImpl(
@@ -124,6 +155,7 @@ public class PluginModule extends AbstractModule {
             inventoryManager,
             currencyService,
             vendorService,
+            shopService,
             nameSpacedKeyManager
         );
     }

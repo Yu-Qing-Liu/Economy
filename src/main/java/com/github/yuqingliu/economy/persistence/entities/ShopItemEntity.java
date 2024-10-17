@@ -2,8 +2,10 @@ package com.github.yuqingliu.economy.persistence.entities;
 
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.inventory.ItemStack;
 
@@ -20,6 +22,7 @@ import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -56,23 +59,40 @@ public class ShopItemEntity {
 
     @OneToMany(mappedBy = "shopItem", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ShopOrderEntity> orders = new HashSet<>();
+    
+    @Transient
+    private Map<String, Set<ShopOrderEntity>> buyOrders = new ConcurrentHashMap<>(); 
 
-    private TreeSet<ShopOrderEntity> buyOrders = new TreeSet<>(Comparator.comparingDouble(ShopOrderEntity::getUnitPrice).reversed());
-    private TreeSet<ShopOrderEntity> sellOrders = new TreeSet<>(Comparator.comparingDouble(ShopOrderEntity::getUnitPrice));
+    @Transient
+    private Map<String, Set<ShopOrderEntity>> sellOrders = new ConcurrentHashMap<>();
 
-    public TreeSet<ShopOrderEntity> getBuyOrders() {
+    public Map<String, Set<ShopOrderEntity>> getBuyOrders() {
+        buyOrders.clear();
         for (ShopOrderEntity order : orders) {
             if (order.getType() == ShopOrderEntity.OrderType.BUY) {
-                buyOrders.add(order);
+                if(buyOrders.containsKey(order.getCurrencyType())) {
+                    buyOrders.get(order.getCurrencyType()).add(order);
+                } else {
+                    Set<ShopOrderEntity> set = new TreeSet<>(Comparator.comparingDouble(ShopOrderEntity::getUnitPrice).reversed());
+                    set.add(order);
+                    buyOrders.put(order.getCurrencyType(), set);
+                }
             } 
         }
         return buyOrders;
     }
 
-    public TreeSet<ShopOrderEntity> getSellOrders() {
+    public Map<String, Set<ShopOrderEntity>> getSellOrders() {
+        sellOrders.clear();
         for (ShopOrderEntity order : orders) {
             if (order.getType() == ShopOrderEntity.OrderType.SELL) {
-                sellOrders.add(order);
+                if(sellOrders.containsKey(order.getCurrencyType())) {
+                    sellOrders.get(order.getCurrencyType()).add(order);
+                } else {
+                    Set<ShopOrderEntity> set = new TreeSet<>(Comparator.comparingDouble(ShopOrderEntity::getUnitPrice));
+                    set.add(order);
+                    sellOrders.put(order.getCurrencyType(), set);
+                }
             } 
         }
         return sellOrders;

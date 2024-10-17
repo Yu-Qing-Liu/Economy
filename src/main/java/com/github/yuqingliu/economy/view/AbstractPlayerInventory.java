@@ -17,6 +17,7 @@ import net.kyori.adventure.text.Component;
 
 @Getter
 public abstract class AbstractPlayerInventory implements PlayerInventory {
+    protected Inventory inventory;
     protected EventManager eventManager;
     @Setter protected Component displayName;
     protected final int inventorySize;
@@ -42,20 +43,29 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         }
     }
 
+    
     public boolean removeItemToPlayer(Player player, ItemStack item, int quantity) {
+        int remaining = quantity;
         for (ItemStack inventoryItem : player.getInventory().getContents()) {
             if (inventoryItem != null && inventoryItem.isSimilar(item)) {
-                if(inventoryItem.getAmount() >= quantity) {
-                    inventoryItem.setAmount(inventoryItem.getAmount() - quantity);
+                int amount = inventoryItem.getAmount();
+                if (amount >= remaining) {
+                    inventoryItem.setAmount(amount - remaining);
                     return true;
                 } else {
-                    return false;
+                    inventoryItem.setAmount(0);
+                    remaining -= amount;
                 }
             }
         }
         return false;
     }
 
+
+    @Override
+    public abstract void load(Player player);
+
     @Override
     public abstract void open(Player player);
+
 }

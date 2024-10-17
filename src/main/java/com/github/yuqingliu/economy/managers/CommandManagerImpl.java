@@ -11,6 +11,7 @@ import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
 import com.github.yuqingliu.economy.commands.*;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
+import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -21,6 +22,7 @@ public class CommandManagerImpl implements CommandManager {
     private final InventoryManager inventoryManager;
     private final CurrencyService currencyService;
     private final VendorService vendorService;
+    private final ShopService shopService;
     private final NameSpacedKeyManager nameSpacedKeyManager;
     private Map<String, CommandExecutor> commands = new HashMap<>();
         
@@ -30,12 +32,14 @@ public class CommandManagerImpl implements CommandManager {
         InventoryManager inventoryManager,
         CurrencyService currencyService,
         VendorService vendorService,
+        ShopService shopService,
         NameSpacedKeyManager nameSpacedKeyManager
     ) {
         this.plugin = plugin;
         this.inventoryManager = inventoryManager;
         this.currencyService = currencyService;
         this.vendorService = vendorService;
+        this.shopService = shopService;
         this.nameSpacedKeyManager = nameSpacedKeyManager;
         initializeCommands();
         registerCommands();
@@ -52,6 +56,10 @@ public class CommandManagerImpl implements CommandManager {
         commands.put("vendor", new VendorCommand(nameSpacedKeyManager, vendorService));
         commands.put("vendorsection", new VendorSectionCommand(vendorService));
         commands.put("vendoritem", new VendorItemCommand(vendorService, currencyService));
+        // Shop commands
+        commands.put("shop", new ShopCommand(nameSpacedKeyManager, shopService));
+        commands.put("shopsection", new ShopSectionCommand(shopService));
+        commands.put("shopitem", new ShopItemCommand(shopService));
     }
 
     private void registerCommands() {
