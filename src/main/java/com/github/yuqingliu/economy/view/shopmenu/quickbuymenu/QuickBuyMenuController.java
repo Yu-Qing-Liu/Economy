@@ -56,23 +56,37 @@ public class QuickBuyMenuController {
     }
 
     public void quickBuy(int amount, Player player) {
-        int required = amount;
-        for(ShopOrderEntity order : orderOption.getOrders()) {
-            int qty = order.getQuantity();
-            if(qty > required) {
-                order.setFilledQuantity(required);
-                if(shopMenu.getShopService().updateOrder(order)) {
+        Scheduler.runAsync((task) -> {
+            int required = amount;
+            for(ShopOrderEntity order : orderOption.getOrders()) {
+                int qty = order.getQuantity();
+                if(qty > required) {
+                    order.setFilledQuantity(required);
+                    boolean sucessfulWithdrawal = shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
+                    if(!sucessfulWithdrawal) {
+                        return;
+                    }
+                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                    if(!sucessfulOrderUpdate) {
+                        return;
+                    }
                     shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
                     break;
-                }
-            } else {
-                order.setFilledQuantity(qty);
-                if(shopMenu.getShopService().updateOrder(order)) {
+                } else {
+                    boolean sucessfulWithdrawal = shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), qty * order.getUnitPrice());
+                    if(!sucessfulWithdrawal) {
+                        return;
+                    }
+                    order.setFilledQuantity(qty);
+                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                    if(!sucessfulOrderUpdate) {
+                        return;
+                    }
                     shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
                     required -= qty;
                 }
             }
-        }
+        });
     }
 
     private void displayItem(Inventory inv) {

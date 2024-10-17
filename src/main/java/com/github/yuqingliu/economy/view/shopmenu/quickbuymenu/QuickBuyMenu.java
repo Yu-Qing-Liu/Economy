@@ -42,7 +42,7 @@ public class QuickBuyMenu implements Listener {
                 controller.quickBuy(amount, player);
             }
             if(slot == controller.getPrev()) {
-                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
+                shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

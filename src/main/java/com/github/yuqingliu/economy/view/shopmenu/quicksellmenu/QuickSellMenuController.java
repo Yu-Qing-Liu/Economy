@@ -56,33 +56,47 @@ public class QuickSellMenuController {
     }
 
     public void quickSell(int amount, Player player) {
-        int required = amount;
-        for(ShopOrderEntity order : orderOption.getOrders()) {
-            int qty = order.getQuantity();
-            if(qty > required) {
-                order.setFilledQuantity(required);
-                boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
-                boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
-                boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
-                if(sucessfulItemRemoval && sucessfulOrderUpdate && sucessfulDeposit) {
+        Scheduler.runAsync((task) -> {
+            int required = amount;
+            for(ShopOrderEntity order : orderOption.getOrders()) {
+                int qty = order.getQuantity();
+                if(qty > required) {
+                    order.setFilledQuantity(required);
+                    boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
+                    if(!sucessfulItemRemoval) {
+                        return;
+                    }
+                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                    if(!sucessfulOrderUpdate) {
+                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        return;
+                    }
+                    boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
+                    if(!sucessfulDeposit) {
+                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        return;
+                    }
                     break;
                 } else {
-                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
-                    shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
-                }
-            } else {
-                order.setFilledQuantity(qty);
-                boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
-                boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
-                boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
-                if(sucessfulItemRemoval && sucessfulOrderUpdate && sucessfulDeposit) {
+                    order.setFilledQuantity(qty);
+                    boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
+                    if(!sucessfulItemRemoval) {
+                        return;
+                    }
+                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                    if(!sucessfulOrderUpdate) {
+                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        return;
+                    }
+                    boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
+                    if(!sucessfulDeposit) {
+                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        return;
+                    }
                     required -= qty;
-                } else {
-                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
-                    shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
                 }
             }
-        }
+        });
     }
 
     private void displayItem(Inventory inv) {

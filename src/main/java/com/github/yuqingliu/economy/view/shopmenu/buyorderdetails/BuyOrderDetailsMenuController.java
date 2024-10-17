@@ -60,43 +60,47 @@ public class BuyOrderDetailsMenuController {
     }
 
     public void cancelOrder(Inventory inv, Player player) {
-        ShopOrderEntity order = playersData.get(player);
-        int amount = order.getFilledQuantity();
-        order.setQuantity(order.getQuantity() - order.getFilledQuantity());
-        order.setFilledQuantity(0);
-        if(shopMenu.getShopService().updateOrder(order)) {
-            shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
-            playersData.put(player, order);
-            double refund = order.getQuantity() * order.getUnitPrice();
-            if(shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), refund)) {
-                if(shopMenu.getShopService().deleteOrder(order)) {
-                    playersData.remove(player);
-                    shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
-                    return;
+        Scheduler.runAsync((task) -> {
+            ShopOrderEntity order = playersData.get(player);
+            int amount = order.getFilledQuantity();
+            order.setQuantity(order.getQuantity() - order.getFilledQuantity());
+            order.setFilledQuantity(0);
+            if(shopMenu.getShopService().updateOrder(order)) {
+                shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
+                playersData.put(player, order);
+                double refund = order.getQuantity() * order.getUnitPrice();
+                if(shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), refund)) {
+                    if(shopMenu.getShopService().deleteOrder(order)) {
+                        playersData.remove(player);
+                        shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                        return;
+                    }
+                    shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), refund);
                 }
-                shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), refund);
             }
-        }
-        reload(inv, player);
+            reload(inv, player);
+        });
     }
 
     public void claimOrder(Inventory inv, Player player) {
-        ShopOrderEntity order = playersData.get(player);
-        int amount = order.getFilledQuantity();
-        order.setQuantity(order.getQuantity() - order.getFilledQuantity());
-        order.setFilledQuantity(0);
-        if(shopMenu.getShopService().updateOrder(order)) {
-            shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
-            playersData.put(player, order);
-            if(order.getQuantity() == 0) {
-                if(shopMenu.getShopService().deleteOrder(order)) {
-                    playersData.remove(player);
-                    shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
-                    return;
-                }
-            } 
-        }
-        reload(inv, player);
+        Scheduler.runAsync((task) -> {
+            ShopOrderEntity order = playersData.get(player);
+            int amount = order.getFilledQuantity();
+            order.setQuantity(order.getQuantity() - order.getFilledQuantity());
+            order.setFilledQuantity(0);
+            if(shopMenu.getShopService().updateOrder(order)) {
+                shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
+                playersData.put(player, order);
+                if(order.getQuantity() == 0) {
+                    if(shopMenu.getShopService().deleteOrder(order)) {
+                        playersData.remove(player);
+                        shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                        return;
+                    }
+                } 
+            }
+            reload(inv, player);
+        });
     }
 
     private void displayItem(Inventory inv, Player player) {

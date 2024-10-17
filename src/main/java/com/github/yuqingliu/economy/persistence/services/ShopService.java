@@ -90,7 +90,8 @@ public class ShopService {
             order.setQuantity(quantity);
             order.setUnitPrice(unitPrice);
             order.setCurrencyType(currencyType);
-            if(shopOrderRepository.save(order)) {
+            item.getOrders().add(order);
+            if(shopItemRepository.update(item)) {
                 return true;
             } else {
                 currencyService.depositPlayerPurse(player, currencyType, totalPrice);

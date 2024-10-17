@@ -17,7 +17,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
@@ -221,7 +220,9 @@ public class OrderMenuController {
                     meta.lore(topOrders);
                 }
                 item.setItemMeta(meta);
-                inv.setItem(i, item);
+                if(count > 0) {
+                    inv.setItem(i, item);
+                }
             }
             currentIndex++;
         }
