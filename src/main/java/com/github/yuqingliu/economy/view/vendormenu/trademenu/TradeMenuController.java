@@ -23,21 +23,21 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class TradeMenuController {
     private final VendorMenu vendorMenu;
-    protected final int itemSlot = 13;
-    protected final int buy1 = 29;
-    protected final int buyInventory = 33;
-    protected final int sell1 = 38;
-    protected final int sellInventory = 42;
-    protected final int prev = 20;
-    protected final int exit = 24;
-    protected final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
-    protected final List<Integer> border = Arrays.asList(3,4,5,12,14,21,22,23);
-    protected final List<Integer> buyOptions = Arrays.asList(29,30,31,32,33);
-    protected final List<Integer> sellOptions = Arrays.asList(38,39,40,41,42);
-    protected final List<Integer> buttons = Arrays.asList(20,24);
-    protected final int[] quantities = new int[] {1, 16, 32, 64};
-    protected VendorItemEntity item;
-    protected CurrencyOption currencyOption;
+    private final int itemSlot = 13;
+    private final int buy1 = 29;
+    private final int buyInventory = 33;
+    private final int sell1 = 38;
+    private final int sellInventory = 42;
+    private final int prev = 20;
+    private final int exit = 24;
+    private final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
+    private final List<Integer> border = Arrays.asList(3,4,5,12,14,21,22,23);
+    private final List<Integer> buyOptions = Arrays.asList(29,30,31,32,33);
+    private final List<Integer> sellOptions = Arrays.asList(38,39,40,41,42);
+    private final List<Integer> buttons = Arrays.asList(20,24);
+    private final int[] quantities = new int[] {1, 16, 32, 64};
+    private VendorItemEntity item;
+    private CurrencyOption currencyOption;
     
     public TradeMenuController(VendorMenu vendorMenu) {
         this.vendorMenu = vendorMenu;

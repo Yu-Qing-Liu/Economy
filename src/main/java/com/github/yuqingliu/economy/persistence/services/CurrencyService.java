@@ -68,16 +68,7 @@ public class CurrencyService {
     }
 
     public boolean deleteCurrencyFromAll(String currencyName) {
-        Set<CurrencyEntity> currencies = currencyRepository.findAll();
-        for(CurrencyEntity currency : currencies) {
-            if(currency.getCurrencyName().equals(currencyName)) {
-                CurrencyKey key = new CurrencyKey(currency.getCurrencyName(), currency.getPurseId(), currency.getAccountId());
-                if(!currencyRepository.delete(key)) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return currencyRepository.deleteAllByCurrencyName(currencyName);
     }
 
     public Set<CurrencyEntity> getPlayerPurseCurrencies(OfflinePlayer player) {

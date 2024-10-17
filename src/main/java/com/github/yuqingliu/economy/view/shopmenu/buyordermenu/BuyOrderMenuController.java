@@ -31,24 +31,24 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class BuyOrderMenuController {
     private final ShopMenu shopMenu;
-    protected final int prev = 11;
-    protected final int exit = 15;
-    protected final int itemSlot = 13;
-    protected final int setCurrencyType = 28;
-    protected final int setQuantity = 30;
-    protected final int setUnitPrice = 32;
-    protected final int orderButton = 34;
-    protected final int currency = 37;
-    protected final int quantity = 39;
-    protected final int unitPrice = 41;
-    protected final int confirm = 43;
-    protected Material voidOption = Material.GLASS_PANE;
-    protected final List<Integer> buttons = Arrays.asList(11,13,15,28,30,32,34);
-    protected final List<Integer> results = Arrays.asList(37,39,41,43);
-    protected final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25);
-    protected ShopItemEntity item;
-    protected Map<Player, PlayerData> playersData = new ConcurrentHashMap<>();
-    protected BukkitTask refreshTask;
+    private final int prev = 11;
+    private final int exit = 15;
+    private final int itemSlot = 13;
+    private final int setCurrencyType = 28;
+    private final int setQuantity = 30;
+    private final int setUnitPrice = 32;
+    private final int orderButton = 34;
+    private final int currency = 37;
+    private final int quantity = 39;
+    private final int unitPrice = 41;
+    private final int confirm = 43;
+    private Material voidOption = Material.GLASS_PANE;
+    private final List<Integer> buttons = Arrays.asList(11,13,15,28,30,32,34);
+    private final List<Integer> results = Arrays.asList(37,39,41,43);
+    private final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25);
+    private ShopItemEntity item;
+    private Map<Player, PlayerData> playersData = new ConcurrentHashMap<>();
+    private BukkitTask refreshTask;
     
     public BuyOrderMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;

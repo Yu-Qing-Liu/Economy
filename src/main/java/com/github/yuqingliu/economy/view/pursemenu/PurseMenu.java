@@ -19,14 +19,14 @@ import net.kyori.adventure.text.Component;
 
 @Getter
 public class PurseMenu extends AbstractPlayerInventory {
-    protected final CurrencyService currencyService;
-    protected Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
+    private final CurrencyService currencyService;
+    private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
         MainMenu;
     }
 
-    protected final MainMenu mainMenu;
+    private final MainMenu mainMenu;
 
     @Inject
     public PurseMenu(EventManager eventManager, Component displayName, CurrencyService currencyService) {

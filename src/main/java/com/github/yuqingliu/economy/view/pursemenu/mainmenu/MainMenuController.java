@@ -4,11 +4,11 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -34,14 +34,15 @@ public class MainMenuController {
     private Material voidOption = Material.GLASS_PANE;
     private final List<Integer> options = Arrays.asList(11,12,13,14,15);
     private final List<Integer> buttons = Arrays.asList(10,16);
-    private Map<Integer, CurrencyEntity[]> pageData = new HashMap<>();
-    private int pageNumber = 1;
+    private Map<Integer, CurrencyEntity[]> pageData = new ConcurrentHashMap<>();
+    private Map<Player, int[]> pageNumbers = new ConcurrentHashMap<>();
 
     public MainMenuController(PurseMenu purseMenu) {
         this.purseMenu = purseMenu;
     }
     
     public void openMainMenu(Player player, Inventory inv) {
+        pageNumbers.put(player, new int[]{1});
         Scheduler.runLaterAsync((task) -> {
             purseMenu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
         }, Duration.ofMillis(50));
@@ -55,28 +56,29 @@ public class MainMenuController {
     }
 
     public void nextPage(Player player, Inventory inv) {
-        pageNumber++;
-        if(pageData.containsKey(pageNumber)) {
+        pageNumbers.get(player)[0]++;
+        if(pageData.containsKey(pageNumbers.get(player)[0])) {
             displayCurrencies(player, inv); 
         } else {
-            pageNumber--;
+            pageNumbers.get(player)[0]--;
         }     
     }
 
     public void prevPage(Player player, Inventory inv) {
-        pageNumber--;
-        if(pageNumber > 0) {
+        pageNumbers.get(player)[0]--;
+        if(pageNumbers.get(player)[0] > 0) {
             displayCurrencies(player, inv);
         } else {
-            pageNumber++;
+            pageNumbers.get(player)[0]++;
         }
     }
 
-    public void onClose() {
-        pageData.clear();
+    public void onClose(Player player) {
+        pageNumbers.remove(player);
     }
 
     private void fetchCurrencies(Player player) {
+        pageData.clear();
         Set<CurrencyEntity> currencies = purseMenu.getCurrencyService().getPlayerPurseCurrencies(player);
         if(currencies.isEmpty()) {
             return;
@@ -105,7 +107,7 @@ public class MainMenuController {
             pmeta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
         }
         Placeholder.setItemMeta(pmeta);
-        CurrencyEntity[] options = pageData.getOrDefault(pageNumber, new CurrencyEntity[length]);
+        CurrencyEntity[] options = pageData.getOrDefault(pageNumbers.get(player)[0], new CurrencyEntity[length]);
         int currentIndex = 0;
         for (int i : this.options) {
             if(options[currentIndex] == null) {

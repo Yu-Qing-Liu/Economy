@@ -39,17 +39,16 @@ public class MainMenu implements Listener {
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
-                // Open item menu
                 int index = slot - controller.getOptions().get(0);
-                if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
-                    shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getPageData().get(controller.getPageNumber())[index], player);
+                if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumbers().get(player)[0])) {
+                    shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getPageData().get(controller.getPageNumbers().get(player)[0])[index], player);
                 }
             }
             if(slot == controller.getNextPagePtr()) {
-                controller.nextPage(clickedInventory);
+                controller.nextPage(clickedInventory, player);
             } 
             if(slot == controller.getPrevPagePtr()) {
-                controller.prevPage(clickedInventory);
+                controller.prevPage(clickedInventory, player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();
@@ -60,7 +59,7 @@ public class MainMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(shopMenu.getDisplayName())) {
-            controller.onClose();
+            controller.onClose((Player) event.getPlayer());
         }
     }
 }
