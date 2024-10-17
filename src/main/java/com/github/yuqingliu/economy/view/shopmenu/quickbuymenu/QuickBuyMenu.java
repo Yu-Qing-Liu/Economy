@@ -39,7 +39,7 @@ public class QuickBuyMenu implements Listener {
             int slot = event.getSlot();
             if(controller.getBuyOptions().contains(slot)) {
                 int amount = controller.getQuantities()[slot - controller.getBuy1()];
-                controller.quickBuy(amount);
+                controller.quickBuy(amount, player);
             }
             if(slot == controller.getPrev()) {
                 shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);

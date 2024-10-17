@@ -45,17 +45,17 @@ public class BuyOrderMenu implements Listener {
                 clickedInventory.close();
             }
             if(slot == controller.getSetCurrencyType()) {
-                controller.setCurrencyType(clickedInventory);
+                controller.setCurrencyType(clickedInventory, player);
             }
             if(slot == controller.getSetQuantity()) {
-                controller.setQuantity(clickedInventory);
+                controller.setQuantity(clickedInventory, player);
             }
             if(slot == controller.getSetUnitPrice()) {
-                controller.setUnitPrice(clickedInventory);
+                controller.setUnitPrice(clickedInventory, player);
             }
             if(slot == controller.getConfirm()) {
                 if(currentItem.getType() != controller.getVoidOption()) {
-                    controller.confirmOrder();
+                    controller.confirmOrder(player);
                     controller.getRefreshTask().cancel();
                     shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
                 }

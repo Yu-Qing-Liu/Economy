@@ -57,7 +57,7 @@ public class QuickBuyMenuController {
         displayBuyOptions(inv);
     }
 
-    public void quickBuy(int amount) {
+    public void quickBuy(int amount, Player player) {
         int filled = 0;
         for(ShopOrderEntity order : orderOption.getOrders()) {
             int qty = order.getQuantity();
