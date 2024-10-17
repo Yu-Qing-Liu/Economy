@@ -11,6 +11,7 @@ import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
+import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
 import com.github.yuqingliu.economy.persistence.repositories.ShopItemRepository;
 import com.github.yuqingliu.economy.persistence.repositories.ShopOrderRepository;
@@ -113,6 +114,11 @@ public class ShopService {
 
     public boolean updateOrder(ShopOrderEntity newOrder) {
         return shopOrderRepository.update(newOrder);
+    }
+
+    public boolean deleteOrder(ShopOrderEntity order) {
+        ShopOrderKey key = new ShopOrderKey(order.getPlayerId(), order.getItemName(), order.getSectionName(), order.getShopName(), order.getType(), order.getCurrencyType());
+        return shopOrderRepository.delete(key);
     }
 
     public List<ShopOrderEntity> getPlayerBuyOrders(OfflinePlayer player) {

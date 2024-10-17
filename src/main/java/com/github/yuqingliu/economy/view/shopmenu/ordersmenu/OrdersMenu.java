@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.shopmenu.ordersmenu;
 
+import java.util.Map;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -8,6 +10,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 
@@ -40,9 +43,11 @@ public class OrdersMenu implements Listener {
             int slot = event.getSlot();
             if(controller.getBuyOrders().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getBuyOrders().get(0);
-                // if(controller.getBuyPageData() != null && controller.getBuyPageData().containsKey(controller.getBuyPageNumbers().get(player)[0])) {
-                //     shopMenu.getQuickSellMenu().getController().openQuickSellMenu(clickedInventory, controller.getItem(), controller.getBuyPageData().get(controller.getBuyPageNumbers().get(player)[0])[index], player);
-                // }
+                PlayerBuyOrdersData data = controller.getPlayerBuyOrdersData().get(player);
+                Map<Integer, ShopOrderEntity[]> pageData = controller.getPlayerBuyOrdersData().get(player).getBuyOrdersPageData();
+                if(pageData != null && pageData.containsKey(data.getPageNumber()[0])) {
+                    shopMenu.getBuyOrderDetailsMenu().getController().openBuyOrderDetailsMenu(clickedInventory, pageData.get(data.getPageNumber()[0])[index], player);
+                }
             }
             if(controller.getSellOrders().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getSellOrders().get(0);

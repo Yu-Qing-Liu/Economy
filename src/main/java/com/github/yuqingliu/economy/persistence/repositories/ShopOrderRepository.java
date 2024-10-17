@@ -8,8 +8,10 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
+import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -58,8 +60,11 @@ public class ShopOrderRepository {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             ShopOrderEntity order = session.get(ShopOrderEntity.class, key);
+            ShopItemEntity item = session.get(ShopItemEntity.class, new ShopItemKey(key.getItemName(), key.getSectionName(), key.getShopName()));
             if (order != null) {
+                item.getOrders().remove(order);
                 session.remove(order);
+                session.persist(item);
             }
             transaction.commit();
             return true;

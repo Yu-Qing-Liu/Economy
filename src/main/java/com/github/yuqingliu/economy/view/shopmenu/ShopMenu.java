@@ -15,6 +15,7 @@ import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
+import com.github.yuqingliu.economy.view.shopmenu.buyorderdetails.BuyOrderDetailsMenu;
 import com.github.yuqingliu.economy.view.shopmenu.buyordermenu.BuyOrderMenu;
 import com.github.yuqingliu.economy.view.shopmenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.shopmenu.mainmenu.MainMenu;
@@ -35,7 +36,7 @@ public class ShopMenu extends AbstractPlayerInventory {
     private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
-        MainMenu, ItemMenu, OrderMenu, OrdersMenu, BuyOrderMenu, SellOrderMenu, QuickBuyMenu, QuickSellMenu;
+        MainMenu, ItemMenu, OrderMenu, OrdersMenu, BuyOrderMenu, SellOrderMenu, QuickBuyMenu, QuickSellMenu, BuyOrderDetailsMenu, SellOrderDetailsMenu;
     }
 
     private final MainMenu mainMenu;
@@ -46,6 +47,7 @@ public class ShopMenu extends AbstractPlayerInventory {
     private final QuickBuyMenu quickBuyMenu;
     private final QuickSellMenu quickSellMenu;
     private final OrdersMenu ordersMenu;
+    private final BuyOrderDetailsMenu buyOrderDetailsMenu;
 
     @Inject
     public ShopMenu(EventManager eventManager, Component displayName, ShopService shopService, CurrencyService currencyService, InventoryManager inventoryManager) {
@@ -65,6 +67,7 @@ public class ShopMenu extends AbstractPlayerInventory {
         this.quickBuyMenu = new QuickBuyMenu(this);
         this.quickSellMenu = new QuickSellMenu(this);
         this.ordersMenu = new OrdersMenu(this);
+        this.buyOrderDetailsMenu = new BuyOrderDetailsMenu(this);
     }
     
     public String getShopName() {
