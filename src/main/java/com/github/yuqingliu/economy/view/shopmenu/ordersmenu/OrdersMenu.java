@@ -51,9 +51,11 @@ public class OrdersMenu implements Listener {
             }
             if(controller.getSellOrders().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getSellOrders().get(0);
-                // if(controller.getSellPageData() != null && controller.getSellPageData().containsKey(controller.getSellPageNumbers().get(player)[0])) {
-                //     shopMenu.getQuickBuyMenu().getController().openQuickBuyMenu(clickedInventory, controller.getItem(), controller.getSellPageData().get(controller.getSellPageNumbers().get(player)[0])[index], player);
-                // }
+                PlayerSellOrdersData data = controller.getPlayerSellOrdersData().get(player);
+                Map<Integer, ShopOrderEntity[]> pageData = controller.getPlayerSellOrdersData().get(player).getSellOrdersPageData();
+                if(pageData != null && pageData.containsKey(data.getPageNumber()[0])) {
+                    shopMenu.getSellOrderDetailsMenu().getController().openSellOrderDetailsMenu(clickedInventory, pageData.get(data.getPageNumber()[0])[index], player);
+                }
             }
             if(slot == controller.getNextBuyOrders()) {
                 controller.nextBuyOrdersPage(clickedInventory, player);

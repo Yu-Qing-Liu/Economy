@@ -78,7 +78,7 @@ public class SellOrderMenuController {
 
         Consumer<String> callback = (userInput) -> {
             shop.load(player);
-            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
+            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(shop.getInventory(), item, player);
             Scheduler.runAsync((task) -> {
                 CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(userInput);
                 if (curr != null) {
@@ -110,7 +110,7 @@ public class SellOrderMenuController {
 
         Consumer<String> callback = (userInput) -> {
             shop.load(player);
-            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
+            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(shop.getInventory(), item, player);
             try {
                 int quantityInput = Integer.parseInt(userInput);
                 ItemStack quantityIcon = new ItemStack(Material.PAPER);
@@ -145,7 +145,7 @@ public class SellOrderMenuController {
 
         Consumer<String> callback = (userInput) -> {
             shop.load(player);
-            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
+            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(shop.getInventory(), item, player);
             try {
                 double unitPriceInput = Double.parseDouble(userInput);
                 ItemStack unitPriceIcon = new ItemStack(Material.PAPER);
@@ -173,10 +173,15 @@ public class SellOrderMenuController {
         scanner.open(player);
     }
 
-    public void confirmOrder(Player player) {
+    public void confirmOrder(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
         Scheduler.runAsync((task) -> {
-            shopMenu.getShopService().createBuyOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput());
+            if(shopMenu.removeItemToPlayer(player, item.getIcon().clone(), data.getQuantityInput())) {
+                if(!shopMenu.getShopService().createSellOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput())) {
+                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), data.getQuantityInput());
+                }
+                shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
+            }
         });
     }
 

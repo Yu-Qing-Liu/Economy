@@ -23,6 +23,7 @@ import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ordersmenu.OrdersMenu;
 import com.github.yuqingliu.economy.view.shopmenu.quickbuymenu.QuickBuyMenu;
 import com.github.yuqingliu.economy.view.shopmenu.quicksellmenu.QuickSellMenu;
+import com.github.yuqingliu.economy.view.shopmenu.sellorderdetails.SellOrderDetailsMenu;
 import com.github.yuqingliu.economy.view.shopmenu.sellordermenu.SellOrderMenu;
 
 import net.kyori.adventure.text.Component;
@@ -48,6 +49,7 @@ public class ShopMenu extends AbstractPlayerInventory {
     private final QuickSellMenu quickSellMenu;
     private final OrdersMenu ordersMenu;
     private final BuyOrderDetailsMenu buyOrderDetailsMenu;
+    private final SellOrderDetailsMenu sellOrderDetailsMenu;
 
     @Inject
     public ShopMenu(EventManager eventManager, Component displayName, ShopService shopService, CurrencyService currencyService, InventoryManager inventoryManager) {
@@ -68,6 +70,7 @@ public class ShopMenu extends AbstractPlayerInventory {
         this.quickSellMenu = new QuickSellMenu(this);
         this.ordersMenu = new OrdersMenu(this);
         this.buyOrderDetailsMenu = new BuyOrderDetailsMenu(this);
+        this.sellOrderDetailsMenu = new SellOrderDetailsMenu(this);
     }
     
     public String getShopName() {

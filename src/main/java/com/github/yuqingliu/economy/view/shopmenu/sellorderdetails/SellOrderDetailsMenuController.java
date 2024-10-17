@@ -1,4 +1,4 @@
-package com.github.yuqingliu.economy.view.shopmenu.buyorderdetails;
+package com.github.yuqingliu.economy.view.shopmenu.sellorderdetails;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -23,7 +23,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class BuyOrderDetailsMenuController {
+public class SellOrderDetailsMenuController {
     private final ShopMenu shopMenu;
     private final int itemSlot = 13;
     private final int prev = 11;
@@ -37,14 +37,14 @@ public class BuyOrderDetailsMenuController {
     private final List<Integer> buttons = Arrays.asList(20,24,29,31,33);
     private Map<Player, ShopOrderEntity> playersData = new ConcurrentHashMap<>();
     
-    public BuyOrderDetailsMenuController(ShopMenu shopMenu) {
+    public SellOrderDetailsMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
     }   
 
-    public void openBuyOrderDetailsMenu(Inventory inv, ShopOrderEntity order, Player player) {
+    public void openSellOrderDetailsMenu(Inventory inv, ShopOrderEntity order, Player player) {
         playersData.put(player, order);
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.BuyOrderDetailsMenu);
+            shopMenu.getPlayerMenuTypes().put(player, MenuType.SellOrderDetailsMenu);
         }, Duration.ofMillis(50));
         reload(inv, player);
     }
@@ -61,32 +61,30 @@ public class BuyOrderDetailsMenuController {
 
     public void cancelOrder(Inventory inv, Player player) {
         ShopOrderEntity order = playersData.get(player);
-        int amount = order.getFilledQuantity();
+        double profit = order.getFilledQuantity() * order.getUnitPrice();
         order.setQuantity(order.getQuantity() - order.getFilledQuantity());
         order.setFilledQuantity(0);
         if(shopMenu.getShopService().updateOrder(order)) {
-            shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
+            shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), profit);
             playersData.put(player, order);
-            double refund = order.getQuantity() * order.getUnitPrice();
-            if(shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), refund)) {
-                if(shopMenu.getShopService().deleteOrder(order)) {
-                    playersData.remove(player);
-                    shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
-                    return;
-                }
-                shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), refund);
-            }
+            int amount = order.getQuantity() - order.getFilledQuantity();
+            if(shopMenu.getShopService().deleteOrder(order)) {
+                shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
+                playersData.remove(player);
+                shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                return;
+            } 
         }
         reload(inv, player);
     }
 
     public void claimOrder(Inventory inv, Player player) {
         ShopOrderEntity order = playersData.get(player);
-        int amount = order.getFilledQuantity();
+        double profit = order.getFilledQuantity() * order.getUnitPrice();
         order.setQuantity(order.getQuantity() - order.getFilledQuantity());
         order.setFilledQuantity(0);
         if(shopMenu.getShopService().updateOrder(order)) {
-            shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
+            shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), profit);
             playersData.put(player, order);
             if(order.getQuantity() == 0) {
                 if(shopMenu.getShopService().deleteOrder(order)) {
@@ -110,7 +108,7 @@ public class BuyOrderDetailsMenuController {
         ItemMeta meta = orderIcon.getItemMeta();
         if(meta != null) {
             meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
-            meta.displayName(Component.text("BUY ORDER", NamedTextColor.GOLD));
+            meta.displayName(Component.text("SELL ORDER", NamedTextColor.GOLD));
             Component nameComponent = Component.text(order.getItemName(), NamedTextColor.AQUA);
             Component currencyComponent = Component.text("Currency: ", NamedTextColor.BLUE).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD));
             Component priceComponent = Component.text("Unit Buy Price: ", NamedTextColor.BLUE).append(Component.text(order.getUnitPrice() + "$/unit", NamedTextColor.GOLD));
@@ -151,7 +149,7 @@ public class BuyOrderDetailsMenuController {
         ItemStack cancelButton = new ItemStack(Material.RED_WOOL);
         ItemMeta cancelMeta = cancelButton.getItemMeta();
         if(cancelMeta != null) {
-            double refund = (order.getQuantity() - order.getFilledQuantity()) * order.getUnitPrice(); 
+            double refund = order.getFilledQuantity() * order.getUnitPrice();
             cancelMeta.displayName(Component.text("Cancel Order", NamedTextColor.RED));
             cancelMeta.lore(Arrays.asList(
                 Component.text("Refund: ", NamedTextColor.BLUE).append(Component.text(refund + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD))),
@@ -164,9 +162,10 @@ public class BuyOrderDetailsMenuController {
         ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
         ItemMeta confirmMeta = confirmButton.getItemMeta();
         if(confirmMeta != null) {
+            double profit = order.getFilledQuantity() * order.getUnitPrice(); 
             confirmMeta.displayName(Component.text("Claim Order", NamedTextColor.GREEN));
             confirmMeta.lore(Arrays.asList(
-                Component.text("Collect: ", NamedTextColor.BLUE).append(Component.text(order.getFilledQuantity() + "x ", NamedTextColor.DARK_GREEN).append(Component.text("items", NamedTextColor.GOLD)))
+                Component.text("Collect: ", NamedTextColor.BLUE).append(Component.text(profit + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD)))
             ));
         }
         confirmButton.setItemMeta(confirmMeta);

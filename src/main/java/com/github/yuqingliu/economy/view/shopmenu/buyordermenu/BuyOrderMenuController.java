@@ -172,10 +172,11 @@ public class BuyOrderMenuController {
         scanner.open(player);
     }
 
-    public void confirmOrder(Player player) {
+    public void confirmOrder(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
         Scheduler.runAsync((task) -> {
             shopMenu.getShopService().createBuyOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput());
+            shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
         });
     }
 
