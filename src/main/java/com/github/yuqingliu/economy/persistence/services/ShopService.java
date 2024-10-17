@@ -108,5 +108,9 @@ public class ShopService {
         order.setCurrencyType(currencyType);
         return shopOrderRepository.save(order);
     }
+
+    public boolean updateOrder(ShopOrderEntity newOrder) {
+        return shopOrderRepository.update(newOrder);
+    }
 }
 

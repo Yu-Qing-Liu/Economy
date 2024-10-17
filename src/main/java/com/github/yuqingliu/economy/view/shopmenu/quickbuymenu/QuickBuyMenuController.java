@@ -58,12 +58,21 @@ public class QuickBuyMenuController {
     }
 
     public void quickBuy(int amount, Player player) {
-        int filled = 0;
+        int required = amount;
         for(ShopOrderEntity order : orderOption.getOrders()) {
             int qty = order.getQuantity();
-            if(amount > qty) {
-                filled += amount;
-
+            if(qty > required) {
+                order.setFilledQuantity(required);
+                if(shopMenu.getShopService().updateOrder(order)) {
+                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                    break;
+                }
+            } else {
+                order.setFilledQuantity(qty);
+                if(shopMenu.getShopService().updateOrder(order)) {
+                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
+                    required -= qty;
+                }
             }
         }
     }
@@ -81,14 +90,14 @@ public class QuickBuyMenuController {
             iconMeta.displayName(Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED)));
             double cost = 0;
             int qty = quantities[index];
-            int count = 0;
             for(ShopOrderEntity order : orderOption.getOrders()) {
-                for (int j = 0; j < order.getQuantity(); j++) {
-                    if(count >= qty) {
-                        break;
-                    }
-                    cost += order.getUnitPrice();
-                    count++;
+                int amount = order.getQuantity() - order.getFilledQuantity();
+                if(amount > qty) {
+                    cost = qty * order.getUnitPrice();
+                    break;
+                } else {
+                    qty -= amount;
+                    cost += amount * order.getUnitPrice();
                 }
             }
             Component costComponent = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
