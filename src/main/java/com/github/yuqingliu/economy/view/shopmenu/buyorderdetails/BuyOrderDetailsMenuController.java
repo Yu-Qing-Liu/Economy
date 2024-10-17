@@ -155,7 +155,7 @@ public class BuyOrderDetailsMenuController {
             cancelMeta.displayName(Component.text("Cancel Order", NamedTextColor.RED));
             cancelMeta.lore(Arrays.asList(
                 Component.text("Refund: ", NamedTextColor.BLUE).append(Component.text(refund + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD))),
-                Component.text("Return: ", NamedTextColor.BLUE).append(Component.text(order.getQuantity() - order.getFilledQuantity() + "x ", NamedTextColor.DARK_GREEN).append(Component.text("items", NamedTextColor.GOLD)))
+                Component.text("Return: ", NamedTextColor.BLUE).append(Component.text(order.getFilledQuantity() + "x ", NamedTextColor.DARK_GREEN).append(Component.text("items", NamedTextColor.GOLD)))
             ));
         }
         cancelButton.setItemMeta(cancelMeta);

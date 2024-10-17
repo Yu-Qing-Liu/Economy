@@ -71,6 +71,9 @@ public class OrderMenu implements Listener {
             if(slot == controller.getPrev()) {
                 shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
             }
+            if(slot == controller.getRefresh()) {
+                controller.reload(clickedInventory, player);
+            }
             if(slot == controller.getExit()) {
                 clickedInventory.close();
             }

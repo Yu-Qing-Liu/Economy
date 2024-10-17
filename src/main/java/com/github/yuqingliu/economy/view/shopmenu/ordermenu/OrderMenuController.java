@@ -38,6 +38,7 @@ public class OrderMenuController {
     private final int nextSellPagePtr = 43;
     private final int prev = 11;
     private final int exit = 15;
+    private final int refresh = 16;
     private final int createBuyOrder = 29;
     private final int createSellOrder = 38;
     private final int itemSlot = 13;
@@ -52,7 +53,6 @@ public class OrderMenuController {
     private Map<Player, int[]> buyPageNumbers = new ConcurrentHashMap<>();
     private Map<Player, int[]> sellPageNumbers = new ConcurrentHashMap<>();
     private ShopItemEntity item;
-    private BukkitTask renderTask;
     
     public OrderMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
@@ -70,13 +70,17 @@ public class OrderMenuController {
         pagePtrs(inv);
         border(inv);
         displayItem(inv);
-        renderTask = Scheduler.runAsync((task) -> {
-            fetchBuyOptions();
-            fetchSellOptions();
-            displayBuyOptions(inv, player);
-            displaySellOptions(inv, player);
-            buttons(inv);
+        Scheduler.runAsync((task) -> {
+            reload(inv, player);
         });
+    }
+
+    public void reload(Inventory inv, Player player) {
+        fetchBuyOptions();
+        fetchSellOptions();
+        displayBuyOptions(inv, player);
+        displaySellOptions(inv, player);
+        buttons(inv);
     }
 
     public void nextBuyPage(Inventory inv, Player player) {
@@ -344,5 +348,13 @@ public class OrderMenuController {
         }
         exit.setItemMeta(emeta);
         inv.setItem(this.exit, exit);
+
+        ItemStack refresh = new ItemStack(Material.YELLOW_WOOL);
+        ItemMeta rmeta = refresh.getItemMeta();
+        if(rmeta != null) {
+            rmeta.displayName(Component.text("Refresh", NamedTextColor.RED));
+        }
+        refresh.setItemMeta(rmeta);
+        inv.setItem(this.refresh, refresh);
     }
 }

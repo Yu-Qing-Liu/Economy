@@ -109,7 +109,8 @@ public class ShopService {
         order.setQuantity(quantity);
         order.setUnitPrice(unitPrice);
         order.setCurrencyType(currencyType);
-        return shopOrderRepository.save(order);
+        item.getOrders().add(order);
+        return shopItemRepository.update(item);
     }
 
     public boolean updateOrder(ShopOrderEntity newOrder) {
