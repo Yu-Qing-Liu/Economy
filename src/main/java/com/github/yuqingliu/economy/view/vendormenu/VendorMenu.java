@@ -24,18 +24,18 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Getter
 public class VendorMenu extends AbstractPlayerInventory {
-    protected final VendorService vendorService;
-    protected final CurrencyService currencyService;
-    protected Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
+    private final VendorService vendorService;
+    private final CurrencyService currencyService;
+    private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
         MainMenu, ItemMenu, TransactionMenu, TradeMenu;
     }
 
-    protected final MainMenu mainMenu;
-    protected final ItemMenu itemMenu;
-    protected final TransactionMenu transactionMenu;
-    protected final TradeMenu tradeMenu;
+    private final MainMenu mainMenu;
+    private final ItemMenu itemMenu;
+    private final TransactionMenu transactionMenu;
+    private final TradeMenu tradeMenu;
 
     @Inject
     public VendorMenu(EventManager eventManager, Component displayName, VendorService vendorService, CurrencyService currencyService) {

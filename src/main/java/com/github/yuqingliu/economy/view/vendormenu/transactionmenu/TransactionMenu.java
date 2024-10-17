@@ -40,15 +40,15 @@ public class TransactionMenu implements Listener {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getOptions().get(0);
-                if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
-                    vendorMenu.getTradeMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), controller.getPageData().get(controller.getPageNumber())[index], player);
+                if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumbers().get(player)[0])) {
+                    vendorMenu.getTradeMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), controller.getPageData().get(controller.getPageNumbers().get(player)[0])[index], player);
                 }
             }
             if(slot == controller.getNextPagePtr()) {
-                controller.nextPage(clickedInventory);
+                controller.nextPage(clickedInventory, player);
             }
             if(slot == controller.getPrevPagePtr()) {
-                controller.prevPage(clickedInventory);
+                controller.prevPage(clickedInventory, player);
             }
             if(slot == controller.getPrev()) {
                 vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection(), player);
@@ -62,7 +62,7 @@ public class TransactionMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(vendorMenu.getDisplayName())) {
-            controller.onClose();
+            controller.onClose((Player) event.getPlayer());
         }
     }
 }

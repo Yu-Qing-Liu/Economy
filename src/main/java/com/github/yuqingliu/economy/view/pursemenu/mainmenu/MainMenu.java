@@ -53,8 +53,7 @@ public class MainMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(purseMenu.getDisplayName())) {
-            controller.onClose();
-            purseMenu.getEventManager().unregisterEvent(this.getClass().getSimpleName());
+            controller.onClose((Player) event.getPlayer());
         }
     }
 }

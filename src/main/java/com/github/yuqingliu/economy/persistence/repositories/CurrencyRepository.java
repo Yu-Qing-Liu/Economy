@@ -5,7 +5,11 @@ import java.util.Set;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.MutationQuery;
+
+import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
+import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
 import com.github.yuqingliu.economy.persistence.entities.keys.CurrencyKey;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -67,12 +71,39 @@ public class CurrencyRepository {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
             CurrencyEntity currency = session.find(CurrencyEntity.class, key);
+            PurseEntity purse = session.get(PurseEntity.class, key.getPurseId());
+            AccountEntity account = session.get(AccountEntity.class, key.getAccountId());
             if (currency != null) {
+                purse.getCurrencies().remove(currency);
+                account.getCurrencies().remove(currency);
                 session.remove(currency);
+                session.persist(purse);
+                session.persist(account);
             }
             transaction.commit();
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteAllByCurrencyName(String currencyName) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            String hql = "DELETE FROM CurrencyEntity c WHERE c.currencyName = :currencyName";
+            MutationQuery query = session.createMutationQuery(hql);
+            query.setParameter("currencyName", currencyName);
+            int deletedCount = query.executeUpdate();
+
+            transaction.commit();
+            return deletedCount > 0;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
             e.printStackTrace();
             return false;
         }

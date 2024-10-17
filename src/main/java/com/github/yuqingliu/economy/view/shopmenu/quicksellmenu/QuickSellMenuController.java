@@ -1,4 +1,4 @@
-package com.github.yuqingliu.economy.view.shopmenu.quickbuymenu;
+package com.github.yuqingliu.economy.view.shopmenu.quicksellmenu;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -22,54 +22,64 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class QuickBuyMenuController {
+public class QuickSellMenuController {
     private final ShopMenu shopMenu;
     private final int itemSlot = 13;
-    private final int buy1 = 29;
-    private final int buyInventory = 33;
+    private final int sell1 = 29;
+    private final int sellInventory = 33;
     private final int prev = 20;
     private final int exit = 24;
     private final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
     private final List<Integer> border = Arrays.asList(3,4,5,12,14,21,22,23,38,39,40,41,42);
-    private final List<Integer> buyOptions = Arrays.asList(29,30,31,32,33);
+    private final List<Integer> sellOptions = Arrays.asList(29,30,31,32,33);
     private final List<Integer> buttons = Arrays.asList(20,24);
     private final int[] quantities = new int[] {1, 16, 32, 64};
     private ShopItemEntity item;
     private OrderOption orderOption;
     
-    public QuickBuyMenuController(ShopMenu shopMenu) {
+    public QuickSellMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
     }   
 
-    public void openQuickBuyMenu(Inventory inv, ShopItemEntity item, OrderOption orderOption, Player player) {
+    public void openQuickSellMenu(Inventory inv, ShopItemEntity item, OrderOption orderOption, Player player) {
         this.item = item;
         this.orderOption = orderOption;
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.QuickBuyMenu);
+            shopMenu.getPlayerMenuTypes().put(player, MenuType.QuickSellMenu);
         }, Duration.ofMillis(50));
         shopMenu.clear(inv);
         frame(inv);
         border(inv);
         pagePtrs(inv);
         displayItem(inv);
-        displayBuyOptions(inv);
+        displaySellOptions(inv);
     }
 
-    public void quickBuy(int amount, Player player) {
+    public void quickSell(int amount, Player player) {
         int required = amount;
         for(ShopOrderEntity order : orderOption.getOrders()) {
             int qty = order.getQuantity();
             if(qty > required) {
                 order.setFilledQuantity(required);
-                if(shopMenu.getShopService().updateOrder(order)) {
-                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
+                boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
+                if(sucessfulItemRemoval && sucessfulOrderUpdate && sucessfulDeposit) {
                     break;
+                } else {
+                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                    shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
                 }
             } else {
                 order.setFilledQuantity(qty);
-                if(shopMenu.getShopService().updateOrder(order)) {
-                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
+                boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
+                boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
+                if(sucessfulItemRemoval && sucessfulOrderUpdate && sucessfulDeposit) {
                     required -= qty;
+                } else {
+                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                    shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
                 }
             }
         }
@@ -79,32 +89,32 @@ public class QuickBuyMenuController {
         inv.setItem(itemSlot, item.getIcon().clone());
     }
 
-    private void displayBuyOptions(Inventory inv) {
-        for (int i = buy1; i < buyInventory; i++) {
-            int index = i - buy1;
-            ItemStack icon = new ItemStack(Material.LIME_STAINED_GLASS);
+    private void displaySellOptions(Inventory inv) {
+        for (int i = sell1; i < sellInventory; i++) {
+            int index = i - sell1;
+            ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS);
             icon.setAmount(quantities[index]);
             ItemMeta iconMeta = icon.getItemMeta();
-            iconMeta.displayName(Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED)));
-            double cost = 0;
+            iconMeta.displayName(Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED)));
+            double profit = 0;
             int qty = quantities[index];
             for(ShopOrderEntity order : orderOption.getOrders()) {
                 int amount = order.getQuantity() - order.getFilledQuantity();
                 if(amount > qty) {
-                    cost = qty * order.getUnitPrice();
+                    profit = qty * order.getUnitPrice();
                     break;
                 } else {
                     qty -= amount;
-                    cost += amount * order.getUnitPrice();
+                    profit += amount * order.getUnitPrice();
                 }
             }
-            Component costComponent = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
+            Component costComponent = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
             iconMeta.lore(Arrays.asList(costComponent));
             icon.setItemMeta(iconMeta);
             inv.setItem(i, icon);
         }
         ItemStack inventoryOption = new ItemStack(Material.CHEST);
-        inv.setItem(buyInventory, inventoryOption);
+        inv.setItem(sellInventory, inventoryOption);
     }
 
     private void frame(Inventory inv) {

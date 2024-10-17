@@ -4,12 +4,12 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -32,27 +32,27 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class OrderMenuController {
     private final ShopMenu shopMenu;
-    protected final int prevBuyPagePtr = 28;
-    protected final int nextBuyPagePtr = 34;
-    protected final int prevSellPagePtr = 37;
-    protected final int nextSellPagePtr = 43;
-    protected final int prev = 11;
-    protected final int exit = 15;
-    protected final int createBuyOrder = 29;
-    protected final int createSellOrder = 38;
-    protected final int itemSlot = 13;
-    protected final int length = 4;
-    protected Material voidOption = Material.GLASS_PANE;
-    protected final List<Integer> buyOptions = Arrays.asList(30,31,32,33);
-    protected final List<Integer> sellOptions = Arrays.asList(39,40,41,42);
-    protected final List<Integer> buttons = Arrays.asList(10,11,13,15,16,28,34,37,43);
-    protected final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25);
-    protected Map<Integer, OrderOption[]> buyPageData = new HashMap<>();
-    protected Map<Integer, OrderOption[]> sellPageData = new HashMap<>();
-    protected int buyPageNumber = 1;
-    protected int sellPageNumber = 1;
-    protected ShopItemEntity item;
-    protected BukkitTask renderTask;
+    private final int prevBuyPagePtr = 28;
+    private final int nextBuyPagePtr = 34;
+    private final int prevSellPagePtr = 37;
+    private final int nextSellPagePtr = 43;
+    private final int prev = 11;
+    private final int exit = 15;
+    private final int createBuyOrder = 29;
+    private final int createSellOrder = 38;
+    private final int itemSlot = 13;
+    private final int length = 4;
+    private Material voidOption = Material.GLASS_PANE;
+    private final List<Integer> buyOptions = Arrays.asList(30,31,32,33);
+    private final List<Integer> sellOptions = Arrays.asList(39,40,41,42);
+    private final List<Integer> buttons = Arrays.asList(10,11,13,15,16,28,34,37,43);
+    private final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25);
+    private Map<Integer, OrderOption[]> buyPageData = new ConcurrentHashMap<>();
+    private Map<Integer, OrderOption[]> sellPageData = new ConcurrentHashMap<>();
+    private Map<Player, int[]> buyPageNumbers = new ConcurrentHashMap<>();
+    private Map<Player, int[]> sellPageNumbers = new ConcurrentHashMap<>();
+    private ShopItemEntity item;
+    private BukkitTask renderTask;
     
     public OrderMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
@@ -60,6 +60,8 @@ public class OrderMenuController {
 
     public void openOrderMenu(Inventory inv, ShopItemEntity item, Player player) {
         this.item = item;
+        buyPageNumbers.put(player, new int[]{1});
+        sellPageNumbers.put(player, new int[]{1});
         Scheduler.runLaterAsync((task) -> {
             shopMenu.getPlayerMenuTypes().put(player, MenuType.OrderMenu);
         }, Duration.ofMillis(50));
@@ -71,54 +73,55 @@ public class OrderMenuController {
         renderTask = Scheduler.runAsync((task) -> {
             fetchBuyOptions();
             fetchSellOptions();
-            displayBuyOptions(inv);
-            displaySellOptions(inv);
+            displayBuyOptions(inv, player);
+            displaySellOptions(inv, player);
             buttons(inv);
         });
     }
 
-    public void nextBuyPage(Inventory inv) {
-        buyPageNumber++;
-        if(buyPageData.containsKey(buyPageNumber)) {
-            displayBuyOptions(inv);
+    public void nextBuyPage(Inventory inv, Player player) {
+        buyPageNumbers.get(player)[0]++;
+        if(buyPageData.containsKey(buyPageNumbers.get(player)[0])) {
+            displayBuyOptions(inv, player);
         } else {
-            buyPageNumber--;
+            buyPageNumbers.get(player)[0]--;
         }     
     }
 
-    public void prevBuyPage(Inventory inv) {
-        buyPageNumber--;
-        if(buyPageNumber > 0) {
-            displayBuyOptions(inv);
+    public void prevBuyPage(Inventory inv, Player player) {
+        buyPageNumbers.get(player)[0]--;
+        if(buyPageNumbers.get(player)[0] > 0) {
+            displayBuyOptions(inv, player);
         } else {
-            buyPageNumber++;
+            buyPageNumbers.get(player)[0]++;
         }
     }
 
-    public void nextSellPage(Inventory inv) {
-            buyPageNumber++;
-            if(buyPageData.containsKey(buyPageNumber)) {
-                displayBuyOptions(inv);
+    public void nextSellPage(Inventory inv, Player player) {
+        sellPageNumbers.get(player)[0]++;
+            if(sellPageData.containsKey(sellPageNumbers.get(player)[0])) {
+                displayBuyOptions(inv, player);
             } else {
-                buyPageNumber--;
+                sellPageNumbers.get(player)[0]--;
             }     
         }
 
-    public void prevSellPage(Inventory inv) {
-        buyPageNumber--;
-        if(buyPageNumber > 0) {
-            displayBuyOptions(inv);
+    public void prevSellPage(Inventory inv, Player player) {
+        sellPageNumbers.get(player)[0]--;
+        if(sellPageNumbers.get(player)[0] > 0) {
+            displayBuyOptions(inv, player);
         } else {
-            buyPageNumber++;
+            sellPageNumbers.get(player)[0]++;
         }
     }
 
-    public void onClose() {
-        buyPageData.clear();
-        sellPageData.clear();
+    public void onClose(Player player) {
+        buyPageNumbers.remove(player);
+        sellPageNumbers.remove(player);
     }
 
     private void fetchBuyOptions() {
+        buyPageData.clear();
         Map<String, Set<ShopOrderEntity>> buyOrders = item.getBuyOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
         for(Map.Entry<String, Set<ShopOrderEntity>> entry : buyOrders.entrySet()) {
@@ -145,6 +148,7 @@ public class OrderMenuController {
     }
 
     private void fetchSellOptions() {
+        sellPageData.clear();
         Map<String, Set<ShopOrderEntity>> sellOrders = item.getSellOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
         for(Map.Entry<String, Set<ShopOrderEntity>> entry : sellOrders.entrySet()) {
@@ -174,14 +178,14 @@ public class OrderMenuController {
         inv.setItem(itemSlot, item.getIcon().clone());
     }
 
-    private void displayBuyOptions(Inventory inv) {
+    private void displayBuyOptions(Inventory inv, Player player) {
         ItemStack Placeholder = new ItemStack(voidOption);
         ItemMeta pmeta = Placeholder.getItemMeta();
         if(pmeta != null) {
             pmeta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
         }
         Placeholder.setItemMeta(pmeta);
-        OrderOption[] currencyOptions = buyPageData.getOrDefault(buyPageNumber, new OrderOption[length]);
+        OrderOption[] currencyOptions = buyPageData.getOrDefault(buyPageNumbers.get(player)[0], new OrderOption[length]);
         int currentIndex = 0;
         for(int i : buyOptions) {
             OrderOption opt = currencyOptions[currentIndex];
@@ -219,14 +223,14 @@ public class OrderMenuController {
         }
     }
 
-    private void displaySellOptions(Inventory inv) {
+    private void displaySellOptions(Inventory inv, Player player) {
         ItemStack Placeholder = new ItemStack(voidOption);
         ItemMeta pmeta = Placeholder.getItemMeta();
         if(pmeta != null) {
             pmeta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
         }
         Placeholder.setItemMeta(pmeta);
-        OrderOption[] currencyOptions = sellPageData.getOrDefault(sellPageNumber, new OrderOption[length]);
+        OrderOption[] currencyOptions = sellPageData.getOrDefault(sellPageNumbers.get(player)[0], new OrderOption[length]);
         int currentIndex = 0;
         for(int i : sellOptions) {
             OrderOption opt = currencyOptions[currentIndex];

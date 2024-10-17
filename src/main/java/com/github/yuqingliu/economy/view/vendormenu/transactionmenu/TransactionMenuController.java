@@ -3,10 +3,10 @@ package com.github.yuqingliu.economy.view.vendormenu.transactionmenu;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -26,19 +26,19 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class TransactionMenuController {
     private final VendorMenu vendorMenu;
-    protected final int prevPagePtr = 28;
-    protected final int nextPagePtr = 34;
-    protected final int prev = 11;
-    protected final int exit = 15;
-    protected final int itemSlot = 13;
-    protected final int length = 5;
-    protected Material voidOption = Material.GLASS_PANE;
-    protected final List<Integer> options = Arrays.asList(29,30,31,32,33);
-    protected final List<Integer> buttons = Arrays.asList(11,13,15,28,34);
-    protected final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25,37,38,39,40,41,42,43);
-    protected Map<Integer, CurrencyOption[]> pageData = new HashMap<>();
-    protected int pageNumber = 1;
-    protected VendorItemEntity item;
+    private final int prevPagePtr = 28;
+    private final int nextPagePtr = 34;
+    private final int prev = 11;
+    private final int exit = 15;
+    private final int itemSlot = 13;
+    private final int length = 5;
+    private Material voidOption = Material.GLASS_PANE;
+    private final List<Integer> options = Arrays.asList(29,30,31,32,33);
+    private final List<Integer> buttons = Arrays.asList(11,13,15,28,34);
+    private final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25,37,38,39,40,41,42,43);
+    private Map<Integer, CurrencyOption[]> pageData = new ConcurrentHashMap<>();
+    private Map<Player, int[]> pageNumbers = new ConcurrentHashMap<>();
+    private VendorItemEntity item;
     
     public TransactionMenuController(VendorMenu vendorMenu) {
         this.vendorMenu = vendorMenu;
@@ -46,6 +46,7 @@ public class TransactionMenuController {
 
     public void openTransactionMenu(Inventory inv, VendorItemEntity item, Player player) {
         this.item = item;
+        pageNumbers.put(player, new int[]{1});
         Scheduler.runLaterAsync((task) -> {
             vendorMenu.getPlayerMenuTypes().put(player, MenuType.TransactionMenu);
         }, Duration.ofMillis(50));
@@ -56,33 +57,34 @@ public class TransactionMenuController {
         displayItem(inv);
         Scheduler.runAsync((task) -> {
             fetchOptions();
-            displayOptions(inv);
+            displayOptions(inv, player);
         });
     }
 
-    public void nextPage(Inventory inv) {
-        pageNumber++;
-        if(pageData.containsKey(pageNumber)) {
-            displayOptions(inv);
+    public void nextPage(Inventory inv, Player player) {
+        pageNumbers.get(player)[0]++;
+        if(pageData.containsKey(pageNumbers.get(player)[0])) {
+            displayOptions(inv, player);
         } else {
-            pageNumber--;
+            pageNumbers.get(player)[0]--;
         }     
     }
 
-    public void prevPage(Inventory inv) {
-        pageNumber--;
-        if(pageNumber > 0) {
-            displayOptions(inv);
+    public void prevPage(Inventory inv, Player player) {
+        pageNumbers.get(player)[0]--;
+        if(pageNumbers.get(player)[0] > 0) {
+            displayOptions(inv, player);
         } else {
-            pageNumber++;
+            pageNumbers.get(player)[0]++;
         }
     }
 
-    public void onClose() {
-        pageData.clear();
+    public void onClose(Player player) {
+        pageNumbers.remove(player);
     }
 
     private void fetchOptions() {
+        pageData.clear();
         Map<String, Double> buyPrices = item.getBuyPrices();
         Map<String, Double> sellPrices = item.getSellPrices();
         Queue<CurrencyOption> temp = new ArrayDeque<>();
@@ -114,14 +116,14 @@ public class TransactionMenuController {
         inv.setItem(itemSlot, item.getIcon().clone());
     }
 
-    private void displayOptions(Inventory inv) {
+    private void displayOptions(Inventory inv, Player player) {
         ItemStack Placeholder = new ItemStack(voidOption);
         ItemMeta pmeta = Placeholder.getItemMeta();
         if(pmeta != null) {
             pmeta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
         }
         Placeholder.setItemMeta(pmeta);
-        CurrencyOption[] currencyOptions = pageData.getOrDefault(pageNumber, new CurrencyOption[length]);
+        CurrencyOption[] currencyOptions = pageData.getOrDefault(pageNumbers.get(player)[0], new CurrencyOption[length]);
         int currentIndex = 0;
         for(int i : options) {
             if(currencyOptions[currentIndex] == null) {
