@@ -1,12 +1,14 @@
 package com.github.yuqingliu.economy.view.shopmenu;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.google.inject.Inject;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
@@ -28,7 +30,7 @@ public class ShopMenu extends AbstractPlayerInventory {
     protected final ShopService shopService;
     protected final CurrencyService currencyService;
     protected final InventoryManager inventoryManager;
-    @Setter protected MenuType currentMenu;
+    protected Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
         MainMenu, ItemMenu, OrderMenu, BuyOrderMenu, SellOrderMenu, QuickBuyMenu, QuickSellMenu;
@@ -80,6 +82,6 @@ public class ShopMenu extends AbstractPlayerInventory {
     public void open(Player player) {
         inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
-        mainMenu.getController().openMainMenu(inventory);
+        mainMenu.getController().openMainMenu(inventory, player);
     }
 }

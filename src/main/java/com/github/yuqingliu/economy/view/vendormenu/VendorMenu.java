@@ -1,5 +1,8 @@
 package com.github.yuqingliu.economy.view.vendormenu;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -10,7 +13,6 @@ import com.github.yuqingliu.economy.view.vendormenu.transactionmenu.TransactionM
 import com.google.inject.Inject;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
@@ -24,7 +26,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 public class VendorMenu extends AbstractPlayerInventory {
     protected final VendorService vendorService;
     protected final CurrencyService currencyService;
-    @Setter protected MenuType currentMenu;
+    protected Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
         MainMenu, ItemMenu, TransactionMenu, TradeMenu;
@@ -71,6 +73,6 @@ public class VendorMenu extends AbstractPlayerInventory {
     public void open(Player player) {
         inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
-        mainMenu.getController().openMainMenu(inventory);
+        mainMenu.getController().openMainMenu(inventory, player);
     }
 }

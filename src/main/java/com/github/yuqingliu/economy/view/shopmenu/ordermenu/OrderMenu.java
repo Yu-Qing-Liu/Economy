@@ -36,7 +36,7 @@ public class OrderMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(shopMenu.getCurrentMenu() == MenuType.OrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.OrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getBuyOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getBuyOptions().get(0);
@@ -47,7 +47,7 @@ public class OrderMenu implements Listener {
             if(controller.getSellOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getSellOptions().get(0);
                 if(controller.getSellPageData() != null && controller.getSellPageData().containsKey(controller.getSellPageNumber())) {
-                    shopMenu.getQuickBuyMenu().getController().openQuickBuyMenu(clickedInventory, controller.getItem(), controller.getSellPageData().get(controller.getSellPageNumber())[index]);
+                    shopMenu.getQuickBuyMenu().getController().openQuickBuyMenu(clickedInventory, controller.getItem(), controller.getSellPageData().get(controller.getSellPageNumber())[index], player);
                 }
             }
             if(slot == controller.getNextBuyPagePtr()) {
@@ -69,7 +69,7 @@ public class OrderMenu implements Listener {
                 shopMenu.getSellOrderMenu().getController().openSellOrderMenu(clickedInventory, controller.getItem(), player);
             }
             if(slot == controller.getPrev()) {
-                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection());
+                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

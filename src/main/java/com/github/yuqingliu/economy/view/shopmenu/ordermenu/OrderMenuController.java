@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -57,10 +58,10 @@ public class OrderMenuController {
         this.shopMenu = shopMenu;
     }
 
-    public void openOrderMenu(Inventory inv, ShopItemEntity item) {
+    public void openOrderMenu(Inventory inv, ShopItemEntity item, Player player) {
         this.item = item;
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.setCurrentMenu(MenuType.OrderMenu);
+            shopMenu.getPlayerMenuTypes().put(player, MenuType.OrderMenu);
         }, Duration.ofMillis(50));
         shopMenu.clear(inv);
         frame(inv);

@@ -36,12 +36,12 @@ public class TransactionMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(vendorMenu.getCurrentMenu() == MenuType.TransactionMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(vendorMenu.getPlayerMenuTypes().get(player) == MenuType.TransactionMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getOptions().get(0);
                 if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
-                    vendorMenu.getTradeMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), controller.getPageData().get(controller.getPageNumber())[index]);
+                    vendorMenu.getTradeMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), controller.getPageData().get(controller.getPageNumber())[index], player);
                 }
             }
             if(slot == controller.getNextPagePtr()) {
@@ -51,7 +51,7 @@ public class TransactionMenu implements Listener {
                 controller.prevPage(clickedInventory);
             }
             if(slot == controller.getPrev()) {
-                vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection());
+                vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection(), player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

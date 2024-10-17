@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.textmenu;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import org.bukkit.Material;
@@ -10,7 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -27,7 +28,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Getter
 public class TextMenu extends AbstractPlayerInventory implements Listener {
-    private AnvilView view;
+    private Map<Player, AnvilView> views = new ConcurrentHashMap<>();
     private String input;
     @Setter private Consumer<String> onCloseCallback;
 
@@ -49,6 +50,7 @@ public class TextMenu extends AbstractPlayerInventory implements Listener {
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(meta);
         AnvilView view = (AnvilView) player.openAnvil(null, true);
+        views.put(player, view);
         inventory = view.getTopInventory();
         inventory.setItem(0, item);
         inventory.setItem(1, item);
@@ -62,7 +64,8 @@ public class TextMenu extends AbstractPlayerInventory implements Listener {
         meta.addEnchant(Enchantment.SHARPNESS, 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(meta);
-        view = (AnvilView) player.openAnvil(null, true);
+        AnvilView view = (AnvilView) player.openAnvil(null, true);
+        views.put(player, view);
         inventory = view.getTopInventory();
         inventory.setItem(0, item);
         inventory.setItem(1, item);
@@ -70,15 +73,15 @@ public class TextMenu extends AbstractPlayerInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getInventory().getType() == InventoryType.ANVIL && event.getSlotType() == SlotType.RESULT) {
+        if (event.getInventory().getType() == InventoryType.ANVIL) {
             event.setCancelled(true);
             Player player = (Player) event.getWhoClicked();
             ItemStack result = event.getClickedInventory().getItem(0);
             String resultName = PlainTextComponentSerializer.plainText().serialize(result.displayName());
             String dName = PlainTextComponentSerializer.plainText().serialize(displayName);
             if(resultName.contains(dName)) {
-                input = view.getRenameText();
-                inventory.clear();
+                input = views.get(player).getRenameText();
+                views.get(player).getTopInventory().clear();
                 player.closeInventory();
                 if (onCloseCallback != null) {
                     onCloseCallback.accept(input);
@@ -90,7 +93,8 @@ public class TextMenu extends AbstractPlayerInventory implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getInventory().getType() == InventoryType.ANVIL) {
-            inventory.clear();
+            Player player = (Player) event.getPlayer();
+            views.get(player).getTopInventory().clear();
         }
     }
 }

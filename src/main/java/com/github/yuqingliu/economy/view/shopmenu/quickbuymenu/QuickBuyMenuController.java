@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -42,11 +43,11 @@ public class QuickBuyMenuController {
         this.shopMenu = shopMenu;
     }   
 
-    public void openQuickBuyMenu(Inventory inv, ShopItemEntity item, OrderOption orderOption) {
+    public void openQuickBuyMenu(Inventory inv, ShopItemEntity item, OrderOption orderOption, Player player) {
         this.item = item;
         this.orderOption = orderOption;
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.setCurrentMenu(MenuType.QuickBuyMenu);
+            shopMenu.getPlayerMenuTypes().put(player, MenuType.QuickBuyMenu);
         }, Duration.ofMillis(50));
         shopMenu.clear(inv);
         frame(inv);
@@ -56,7 +57,7 @@ public class QuickBuyMenuController {
         displayBuyOptions(inv);
     }
 
-    public void quickBuy(int amount) {
+    public void quickBuy(int amount, Player player) {
         int filled = 0;
         for(ShopOrderEntity order : orderOption.getOrders()) {
             int qty = order.getQuantity();

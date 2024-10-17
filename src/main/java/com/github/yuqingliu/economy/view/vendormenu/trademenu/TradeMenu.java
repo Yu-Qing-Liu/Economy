@@ -37,7 +37,7 @@ public class TradeMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(vendorMenu.getCurrentMenu() == MenuType.TradeMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(vendorMenu.getPlayerMenuTypes().get(player) == MenuType.TradeMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getBuyOptions().contains(slot)) {
                 int amount = controller.getQuantities()[slot - controller.getBuy1()];
@@ -59,7 +59,7 @@ public class TradeMenu implements Listener {
                 }
             }
             if(slot == controller.getPrev()) {
-                vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection());
+                vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection(), player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

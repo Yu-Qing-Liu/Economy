@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -42,11 +43,11 @@ public class TradeMenuController {
         this.vendorMenu = vendorMenu;
     }   
 
-    public void openTradeMenu(Inventory inv, VendorItemEntity item, CurrencyOption currencyOption) {
+    public void openTradeMenu(Inventory inv, VendorItemEntity item, CurrencyOption currencyOption, Player player) {
         this.item = item;
         this.currencyOption = currencyOption;
         Scheduler.runLaterAsync((task) -> {
-            vendorMenu.setCurrentMenu(MenuType.TradeMenu);
+            vendorMenu.getPlayerMenuTypes().put(player, MenuType.TradeMenu);
         }, Duration.ofMillis(50));
         vendorMenu.clear(inv);
         frame(inv);

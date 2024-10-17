@@ -9,6 +9,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.view.pursemenu.PurseMenu;
+import com.github.yuqingliu.economy.view.pursemenu.PurseMenu.MenuType;
 
 import lombok.Getter;
 
@@ -35,7 +36,7 @@ public class MainMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(purseMenu.getCurrentMenu().name().equals("MainMenu") && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(purseMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot)) {
                 // Open currency details
