@@ -38,6 +38,36 @@ public class OrdersMenu implements Listener {
 
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.OrdersMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
+            if(controller.getBuyOrders().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
+                int index = slot - controller.getBuyOrders().get(0);
+                // if(controller.getBuyPageData() != null && controller.getBuyPageData().containsKey(controller.getBuyPageNumbers().get(player)[0])) {
+                //     shopMenu.getQuickSellMenu().getController().openQuickSellMenu(clickedInventory, controller.getItem(), controller.getBuyPageData().get(controller.getBuyPageNumbers().get(player)[0])[index], player);
+                // }
+            }
+            if(controller.getSellOrders().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
+                int index = slot - controller.getSellOrders().get(0);
+                // if(controller.getSellPageData() != null && controller.getSellPageData().containsKey(controller.getSellPageNumbers().get(player)[0])) {
+                //     shopMenu.getQuickBuyMenu().getController().openQuickBuyMenu(clickedInventory, controller.getItem(), controller.getSellPageData().get(controller.getSellPageNumbers().get(player)[0])[index], player);
+                // }
+            }
+            if(slot == controller.getNextBuyOrders()) {
+                controller.nextBuyOrdersPage(clickedInventory, player);
+            }
+            if(slot == controller.getPrevBuyOrders()) {
+                controller.prevBuyOrdersPage(clickedInventory, player);
+            }
+            if(slot == controller.getNextSellOrders()) {
+                controller.nextSellOrdersPage(clickedInventory, player);
+            }
+            if(slot == controller.getPrevSellOrders()) {
+                controller.prevSellOrdersPage(clickedInventory, player);
+            }
+            if(slot == controller.getPrev()) {
+                shopMenu.getMainMenu().getController().openMainMenu(clickedInventory, player);
+            }
+            if(slot == controller.getExit()) {
+                clickedInventory.close();
+            }
         }
     }
 

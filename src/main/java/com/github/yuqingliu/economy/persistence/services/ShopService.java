@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.persistence.services;
 
+import java.util.List;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
@@ -111,6 +113,14 @@ public class ShopService {
 
     public boolean updateOrder(ShopOrderEntity newOrder) {
         return shopOrderRepository.update(newOrder);
+    }
+
+    public List<ShopOrderEntity> getPlayerBuyOrders(OfflinePlayer player) {
+        return shopOrderRepository.getBuyOrdersByPlayer(player.getUniqueId());
+    }
+
+    public List<ShopOrderEntity> getPlayerSellOrders(OfflinePlayer player) {
+        return shopOrderRepository.getSellOrdersByPlayer(player.getUniqueId());
     }
 }
 

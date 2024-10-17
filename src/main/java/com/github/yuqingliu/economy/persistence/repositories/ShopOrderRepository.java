@@ -1,10 +1,15 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
+import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -61,6 +66,32 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public List<ShopOrderEntity> getBuyOrdersByPlayer(UUID playerId) {
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM ShopOrderEntity WHERE playerId = :playerId AND type = :orderType";
+            Query<ShopOrderEntity> query = session.createQuery(hql, ShopOrderEntity.class);
+            query.setParameter("playerId", playerId);
+            query.setParameter("orderType", OrderType.BUY);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<ShopOrderEntity> getSellOrdersByPlayer(UUID playerId) {
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM ShopOrderEntity WHERE playerId = :playerId AND type = :orderType";
+            Query<ShopOrderEntity> query = session.createQuery(hql, ShopOrderEntity.class);
+            query.setParameter("playerId", playerId);
+            query.setParameter("orderType", OrderType.SELL);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

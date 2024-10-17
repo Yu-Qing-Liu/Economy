@@ -51,10 +51,10 @@ public class MainMenuController {
         }, Duration.ofMillis(50));
         shopMenu.clear(inv);
         frame(inv);
-        pagePtrs(inv);
         Scheduler.runAsync((task) -> {
             fetchSections();
             displaySections(inv, player);
+            pagePtrs(inv);
         });
     }
 
