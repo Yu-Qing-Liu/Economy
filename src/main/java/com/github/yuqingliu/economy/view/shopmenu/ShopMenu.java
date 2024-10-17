@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import com.google.inject.Inject;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;

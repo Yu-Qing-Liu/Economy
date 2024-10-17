@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Queue;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -43,10 +44,10 @@ public class TransactionMenuController {
         this.vendorMenu = vendorMenu;
     }
 
-    public void openTransactionMenu(Inventory inv, VendorItemEntity item) {
+    public void openTransactionMenu(Inventory inv, VendorItemEntity item, Player player) {
         this.item = item;
         Scheduler.runLaterAsync((task) -> {
-            vendorMenu.setCurrentMenu(MenuType.TransactionMenu);
+            vendorMenu.getPlayerMenuTypes().put(player, MenuType.TransactionMenu);
         }, Duration.ofMillis(50));
         vendorMenu.clear(inv);
         frame(inv);

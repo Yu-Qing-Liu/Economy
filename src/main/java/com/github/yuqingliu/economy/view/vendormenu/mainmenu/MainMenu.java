@@ -36,13 +36,13 @@ public class MainMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(vendorMenu.getCurrentMenu() == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(vendorMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 // Open item menu
                 int index = slot - controller.getOptions().get(0);
                 if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumber())) {
-                    vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getPageData().get(controller.getPageNumber())[index]);
+                    vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getPageData().get(controller.getPageNumber())[index], player);
                 }
             }
             if(slot == controller.getNextPagePtr()) {

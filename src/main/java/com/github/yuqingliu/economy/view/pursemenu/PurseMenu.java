@@ -1,5 +1,8 @@
 package com.github.yuqingliu.economy.view.pursemenu;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -7,7 +10,6 @@ import com.github.yuqingliu.economy.view.pursemenu.mainmenu.MainMenu;
 import com.google.inject.Inject;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
@@ -18,7 +20,7 @@ import net.kyori.adventure.text.Component;
 @Getter
 public class PurseMenu extends AbstractPlayerInventory {
     protected final CurrencyService currencyService;
-    @Setter protected MenuType currentMenu;
+    protected Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
         MainMenu;

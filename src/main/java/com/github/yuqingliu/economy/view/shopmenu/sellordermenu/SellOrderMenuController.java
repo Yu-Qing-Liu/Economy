@@ -55,10 +55,10 @@ public class SellOrderMenuController {
         this.shopMenu = shopMenu;
     }
 
-    public void openBuyOrderMenu(Inventory inv, ShopItemEntity item, Player player) {
+    public void openSellOrderMenu(Inventory inv, ShopItemEntity item, Player player) {
         this.item = item;
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.BuyOrderMenu);
+            shopMenu.getPlayerMenuTypes().put(player, MenuType.SellOrderMenu);
         }, Duration.ofMillis(50));
         shopMenu.clear(inv);
         frame(inv);
@@ -219,28 +219,28 @@ public class SellOrderMenuController {
         for(int i : results) {
             switch (i) {
                 case currency:
-                    if(data.getCurrencyTypeIcon() != null) {
+                    if(data != null && data.getCurrencyTypeIcon() != null) {
                         inv.setItem(i, data.getCurrencyTypeIcon());
                     } else {
                         inv.setItem(i, placeholder);
                     }
                     break;
                 case quantity:
-                    if(data.getQuantityIcon() != null) {
+                    if(data != null && data.getQuantityIcon() != null) {
                         inv.setItem(i, data.getQuantityIcon());
                     } else {
                         inv.setItem(i, placeholder);
                     }
                     break;
                 case unitPrice: 
-                    if(data.getUnitPriceIcon() != null) {
+                    if(data != null && data.getUnitPriceIcon() != null) {
                         inv.setItem(i, data.getUnitPriceIcon());
                     } else {
                         inv.setItem(i, placeholder);
                     }
                     break;
                 case confirm:
-                    if(data.getUnitPriceIcon() != null && data.getQuantityIcon() != null && data.getCurrencyTypeIcon() != null) {
+                    if(data != null && data.getUnitPriceIcon() != null && data.getQuantityIcon() != null && data.getCurrencyTypeIcon() != null) {
                         double totalProfit = data.getQuantityInput() * data.getUnitPriceInput();
                         ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
                         ItemMeta m = confirmButton.getItemMeta();
@@ -264,7 +264,7 @@ public class SellOrderMenuController {
         PlayerData data = playersData.get(player);
         ItemStack order = new ItemStack(Material.CREEPER_BANNER_PATTERN);
         ItemMeta orderMeta = order.getItemMeta();
-        if(orderMeta != null) {
+        if(orderMeta != null && data != null) {
             orderMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             orderMeta.displayName(Component.text("SELL ORDER:", NamedTextColor.GOLD));
             List<Component> components = new ArrayList<>();

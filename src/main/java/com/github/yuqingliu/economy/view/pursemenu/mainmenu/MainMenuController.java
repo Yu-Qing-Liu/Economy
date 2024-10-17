@@ -43,7 +43,7 @@ public class MainMenuController {
     
     public void openMainMenu(Player player, Inventory inv) {
         Scheduler.runLaterAsync((task) -> {
-            purseMenu.setCurrentMenu(MenuType.MainMenu);
+            purseMenu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
         }, Duration.ofMillis(50));
         purseMenu.clear(inv);
         frame(inv);
