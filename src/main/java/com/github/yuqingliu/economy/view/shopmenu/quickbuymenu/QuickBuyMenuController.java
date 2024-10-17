@@ -31,7 +31,7 @@ public class QuickBuyMenuController {
     private final int exit = 24;
     private final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
     private final List<Integer> border = Arrays.asList(3,4,5,12,14,21,22,23,38,39,40,41,42);
-    private final List<Integer> buyOptions = Arrays.asList(29,30,31,32,33);
+    private final List<Integer> buyOptions = Arrays.asList(29,30,31,32);
     private final List<Integer> buttons = Arrays.asList(20,24);
     private final int[] quantities = new int[] {1, 16, 32, 64};
     private ShopItemEntity item;
