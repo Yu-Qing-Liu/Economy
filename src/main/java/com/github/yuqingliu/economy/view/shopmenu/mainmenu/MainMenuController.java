@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -43,9 +44,9 @@ public class MainMenuController {
         this.shopMenu = shopMenu;
     }
 
-    public void openMainMenu(Inventory inv) {
+    public void openMainMenu(Inventory inv, Player player) {
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.setCurrentMenu(MenuType.MainMenu);
+            shopMenu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
         }, Duration.ofMillis(50));
         shopMenu.clear(inv);
         frame(inv);

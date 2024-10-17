@@ -63,7 +63,7 @@ public class BuyOrderMenuController {
         this.item = item;
         this.player = player;
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.setCurrentMenu(MenuType.BuyOrderMenu);
+            shopMenu.getPlayerMenuTypes().put(player, MenuType.BuyOrderMenu);
         }, Duration.ofMillis(50));
         shopMenu.clear(inv);
         frame(inv);

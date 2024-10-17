@@ -14,21 +14,13 @@ import lombok.Getter;
 
 @Getter
 public class QuickBuyMenu implements Listener {
-    private static QuickBuyMenu instance;
     private final ShopMenu shopMenu;
     private final QuickBuyMenuController controller;
 
     public QuickBuyMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
         this.controller = new QuickBuyMenuController(shopMenu);
-    }
-
-    public static QuickBuyMenu getInstance(ShopMenu shopMenu) {
-        if (instance == null) {
-            instance = new QuickBuyMenu(shopMenu);
-            shopMenu.getEventManager().registerEvent(instance);
-        }
-        return instance;
+        shopMenu.getEventManager().registerEvent(this);
     }
 
     @EventHandler
@@ -43,14 +35,14 @@ public class QuickBuyMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(shopMenu.getCurrentMenu() == MenuType.QuickBuyMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.QuickBuyMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(controller.getBuyOptions().contains(slot)) {
                 int amount = controller.getQuantities()[slot - controller.getBuy1()];
                 controller.quickBuy(amount);
             }
             if(slot == controller.getPrev()) {
-                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection());
+                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

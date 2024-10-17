@@ -35,11 +35,11 @@ public class SellOrderMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(shopMenu.getCurrentMenu() == MenuType.SellOrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.SellOrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(slot == controller.getPrev()) {
                 controller.getRefreshTask().cancel();
-                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection());
+                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();
@@ -57,7 +57,7 @@ public class SellOrderMenu implements Listener {
                 if(currentItem.getType() != controller.getVoidOption()) {
                     controller.confirmOrder();
                     controller.getRefreshTask().cancel();
-                    shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection());
+                    shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
                 }
             }
         }
