@@ -47,7 +47,7 @@ public class OrderMenu implements Listener {
             if(controller.getSellOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getSellOptions().get(0);
                 if(controller.getSellPageData() != null && controller.getSellPageData().containsKey(controller.getSellPageNumber())) {
-                    // shopMenu.getQuickBuyMenu().getController().openQuickBuyMenu(clickedInventory, controller.getItem(), controller.getSellPageData().get(controller.getSellPageNumber())[index]);
+                    shopMenu.getQuickBuyMenu().getController().openQuickBuyMenu(clickedInventory, controller.getItem(), controller.getSellPageData().get(controller.getSellPageNumber())[index]);
                 }
             }
             if(slot == controller.getNextBuyPagePtr()) {
