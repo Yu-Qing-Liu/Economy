@@ -181,7 +181,7 @@ public class BuyOrderMenuController {
                 shopMenu.getSoundManager().playConfirmOrderSound(player);
                 shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
             } else {
-                shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough currency.");
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not create buy order. Either not enough currency or duplicate order (same item, same currency).");
             }
         });
     }
