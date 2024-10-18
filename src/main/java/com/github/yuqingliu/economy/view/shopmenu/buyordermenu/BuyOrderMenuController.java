@@ -175,14 +175,19 @@ public class BuyOrderMenuController {
     public void confirmOrder(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
         Scheduler.runAsync((task) -> {
-            boolean sucessfulOrder = shopMenu.getShopService().createBuyOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput());
-            if(sucessfulOrder) {
-                shopMenu.getLogger().sendPlayerAcknowledgementMessage(player, String.format("Buy order created for %s", item.getItemName()));
-                shopMenu.getSoundManager().playConfirmOrderSound(player);
-                shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
-            } else {
-                shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not create buy order. Either not enough currency or duplicate order (same item, same currency).");
+            boolean sucessfulWithdrawal = shopMenu.getCurrencyService().withdrawPlayerPurse(player, data.getCurrencyTypeInput(), data.getQuantityInput() * data.getUnitPriceInput());
+            if(!sucessfulWithdrawal) {
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough currency.");
+                return;
             }
+            boolean sucessfulOrder = shopMenu.getShopService().createBuyOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput());
+            if(!sucessfulOrder) {
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not create buy order. Duplicate order (same item, same currency).");
+                return;
+            }
+            shopMenu.getLogger().sendPlayerAcknowledgementMessage(player, String.format("Buy order created for %s", item.getItemName()));
+            shopMenu.getSoundManager().playConfirmOrderSound(player);
+            shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
         });
     }
 

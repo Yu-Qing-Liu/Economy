@@ -79,25 +79,17 @@ public class ShopService {
     }
 
     public boolean createBuyOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
-        double totalPrice = quantity * unitPrice;
-        if(currencyService.withdrawPlayerPurse(player, currencyType, totalPrice)) {
-            ShopOrderEntity order = new ShopOrderEntity();
-            order.setType(OrderType.BUY);
-            order.setPlayerId(player.getUniqueId());
-            order.setItemName(item.getItemName());
-            order.setSectionName(item.getSectionName());
-            order.setShopName(item.getShopName());
-            order.setQuantity(quantity);
-            order.setUnitPrice(unitPrice);
-            order.setCurrencyType(currencyType);
-            item.getOrders().add(order);
-            if(shopItemRepository.update(item)) {
-                return true;
-            } else {
-                currencyService.depositPlayerPurse(player, currencyType, totalPrice);
-            }
-        }
-        return false;
+        ShopOrderEntity order = new ShopOrderEntity();
+        order.setType(OrderType.BUY);
+        order.setPlayerId(player.getUniqueId());
+        order.setItemName(item.getItemName());
+        order.setSectionName(item.getSectionName());
+        order.setShopName(item.getShopName());
+        order.setQuantity(quantity);
+        order.setUnitPrice(unitPrice);
+        order.setCurrencyType(currencyType);
+        item.getOrders().add(order);
+        return shopItemRepository.update(item);
     }
 
     public boolean createSellOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
