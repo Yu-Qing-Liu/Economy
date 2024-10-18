@@ -199,6 +199,7 @@ public class OrderMenuController {
                 List<Component> topOrders = new ArrayList<>();
                 Set<ShopOrderEntity> orders = opt.getOrders();
                 int count = 0;
+                int valid = 0;
                 int maxCount = 3;
                 Iterator<ShopOrderEntity> iterator = orders.iterator();
                 while (iterator.hasNext() && count < maxCount) {
@@ -212,6 +213,7 @@ public class OrderMenuController {
                         topOrders.add(priceComponent);
                         topOrders.add(quantityComponent);
                         topOrders.add(separator);
+                        valid++;
                     }
                     count++;
                 }
@@ -220,8 +222,10 @@ public class OrderMenuController {
                     meta.lore(topOrders);
                 }
                 item.setItemMeta(meta);
-                if(count > 0) {
+                if(valid > 0) {
                     inv.setItem(i, item);
+                } else {
+                    inv.setItem(i, Placeholder);
                 }
             }
             currentIndex++;
@@ -246,6 +250,7 @@ public class OrderMenuController {
                 List<Component> topOrders = new ArrayList<>();
                 Set<ShopOrderEntity> orders = opt.getOrders();
                 int count = 0;
+                int valid = 0;
                 int maxCount = 3;
                 Iterator<ShopOrderEntity> iterator = orders.iterator();
                 while (iterator.hasNext() && count < maxCount) {
@@ -259,6 +264,7 @@ public class OrderMenuController {
                         topOrders.add(priceComponent);
                         topOrders.add(quantityComponent);
                         topOrders.add(separator);
+                        valid++;
                     }
                     count++;
                 }
@@ -267,7 +273,11 @@ public class OrderMenuController {
                     meta.lore(topOrders);
                 }
                 item.setItemMeta(meta);
-                inv.setItem(i, item);
+                if(valid > 0) {
+                    inv.setItem(i, item);
+                } else {
+                    inv.setItem(i, Placeholder);
+                }
             }
             currentIndex++;
         }

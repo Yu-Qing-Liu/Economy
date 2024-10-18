@@ -43,8 +43,11 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         }
     }
 
-    
     public boolean removeItemToPlayer(Player player, ItemStack item, int quantity) {
+        int totalItemCount = countItemToPlayer(player, item);
+        if (totalItemCount < quantity) {
+            return false;
+        }
         int remaining = quantity;
         for (ItemStack inventoryItem : player.getInventory().getContents()) {
             if (inventoryItem != null && inventoryItem.isSimilar(item)) {

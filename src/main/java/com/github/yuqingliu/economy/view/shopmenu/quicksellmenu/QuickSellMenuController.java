@@ -59,9 +59,12 @@ public class QuickSellMenuController {
         Scheduler.runAsync((task) -> {
             int required = amount;
             for(ShopOrderEntity order : orderOption.getOrders()) {
-                int qty = order.getQuantity();
-                if(qty > required) {
-                    order.setFilledQuantity(required);
+                if(order.getQuantity() == order.getFilledQuantity()) {
+                    return;
+                }
+                int qty = order.getQuantity() - order.getFilledQuantity();
+                if(qty >= required) {
+                    order.setFilledQuantity(order.getFilledQuantity() + required);
                     boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
                     if(!sucessfulItemRemoval) {
                         return;
@@ -78,19 +81,19 @@ public class QuickSellMenuController {
                     }
                     break;
                 } else {
-                    order.setFilledQuantity(qty);
-                    boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
+                    order.setFilledQuantity(order.getFilledQuantity() + qty);
+                    boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), qty);
                     if(!sucessfulItemRemoval) {
                         return;
                     }
                     boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
                     if(!sucessfulOrderUpdate) {
-                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
                         return;
                     }
-                    boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
+                    boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), qty * order.getUnitPrice());
                     if(!sucessfulDeposit) {
-                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
                         return;
                     }
                     required -= qty;
