@@ -11,7 +11,9 @@ import com.google.inject.Inject;
 
 import lombok.Getter;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 
@@ -29,9 +31,11 @@ public class PurseMenu extends AbstractPlayerInventory {
     private final MainMenu mainMenu;
 
     @Inject
-    public PurseMenu(EventManager eventManager, Component displayName, CurrencyService currencyService) {
+    public PurseMenu(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName, CurrencyService currencyService) {
         super(
             eventManager,
+            soundManager,
+            logger,
             displayName,
             27
         );

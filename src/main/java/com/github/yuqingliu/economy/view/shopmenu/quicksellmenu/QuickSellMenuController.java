@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -58,46 +59,88 @@ public class QuickSellMenuController {
     public void quickSell(int amount, Player player) {
         Scheduler.runAsync((task) -> {
             int required = amount;
+            double cost = 0;
             for(ShopOrderEntity order : orderOption.getOrders()) {
                 if(order.getQuantity() == order.getFilledQuantity()) {
-                    return;
+                    continue;
                 }
                 int qty = order.getQuantity() - order.getFilledQuantity();
-                if(qty >= required) {
+                if(qty > required) {
                     order.setFilledQuantity(order.getFilledQuantity() + required);
                     boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
                     if(!sucessfulItemRemoval) {
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
                         return;
                     }
                     boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
                     if(!sucessfulOrderUpdate) {
                         shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
                         return;
                     }
                     boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
                     if(!sucessfulDeposit) {
                         shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
                         return;
                     }
+                    cost += required * order.getUnitPrice();
+                    required = 0;
+                    break;
+                } else if(qty == required) {
+                    order.setFilledQuantity(order.getFilledQuantity() + required);
+                    boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
+                    if(!sucessfulItemRemoval) {
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
+                        return;
+                    }
+                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                    if(!sucessfulOrderUpdate) {
+                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
+                        return;
+                    }
+                    boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
+                    if(!sucessfulDeposit) {
+                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
+                        return;
+                    }
+                    cost += required * order.getUnitPrice();
+                    Player owner = Bukkit.getPlayer(order.getPlayerId());
+                    if(owner != null) {
+                        shopMenu.getLogger().sendPlayerNotificationMessage(owner, String.format("Order for %s has been filled.", order.getItemName()));
+                    }
+                    required = 0;
                     break;
                 } else {
                     order.setFilledQuantity(order.getFilledQuantity() + qty);
                     boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), qty);
                     if(!sucessfulItemRemoval) {
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
                         return;
                     }
                     boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
                     if(!sucessfulOrderUpdate) {
                         shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
                         return;
                     }
                     boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), qty * order.getUnitPrice());
                     if(!sucessfulDeposit) {
                         shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
+                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
                         return;
                     }
                     required -= qty;
+                    cost += qty * order.getUnitPrice();
                 }
+            }
+            if(required != amount) {
+                shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d item(s) for %.2f %s", amount - required, cost, orderOption.getCurrencyName()));
+                shopMenu.getSoundManager().playTransactionSound(player);
+            } else {
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "No more offers.");
             }
         });
     }

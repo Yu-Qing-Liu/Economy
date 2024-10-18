@@ -1,6 +1,8 @@
 package com.github.yuqingliu.economy.view;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
 import com.google.inject.Inject;
 
@@ -19,12 +21,16 @@ import net.kyori.adventure.text.Component;
 public abstract class AbstractPlayerInventory implements PlayerInventory {
     protected Inventory inventory;
     protected EventManager eventManager;
+    protected final SoundManager soundManager;
+    protected final Logger logger;
     @Setter protected Component displayName;
     protected final int inventorySize;
         
     @Inject
-    public AbstractPlayerInventory(EventManager eventManager, Component displayName, int inventorySize) {
+    public AbstractPlayerInventory(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName, int inventorySize) {
         this.eventManager = eventManager;
+        this.soundManager = soundManager;
+        this.logger = logger;
         this.displayName = displayName;
         this.inventorySize = inventorySize;
     }

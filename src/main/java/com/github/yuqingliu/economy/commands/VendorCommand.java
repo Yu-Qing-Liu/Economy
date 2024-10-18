@@ -9,6 +9,7 @@ import org.bukkit.entity.Villager;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
@@ -23,13 +24,15 @@ public class VendorCommand implements CommandExecutor {
     private final NameSpacedKeyManager nameSpacedKeyManager;
     @Inject
     private final VendorService vendorService;
+    @Inject
+    private final Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(cmd.getName().equalsIgnoreCase("vendor") && sender instanceof Player) {
             Player player = (Player) sender;
             if (!sender.hasPermission("economy.admin")) {
-                player.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
+                logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
             if (args.length != 2) {
@@ -38,21 +41,26 @@ public class VendorCommand implements CommandExecutor {
             switch (args[0]) {
                 case "create":
                     if(vendorService.addVendor(args[1])) {
-                        player.sendMessage(Component.text("Successfully created vendor with name " + args[1], NamedTextColor.GREEN));
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Successfully created vendor with name %s", args[1]));
+                    } else {
+                        logger.sendPlayerWarningMessage(player, "Vendor already exists. Providing another entrypoint.");
                     } 
                     Villager villager = (Villager) player.getWorld().spawnEntity(player.getLocation(), EntityType.VILLAGER);
                     PersistentDataContainer container = villager.getPersistentDataContainer();
                     container.set(nameSpacedKeyManager.getVendorKey(), PersistentDataType.STRING, args[1]);
                     villager.setPersistent(true);
-                    break;
+                    return true;
                 case "delete":
-                    vendorService.deleteVendor(args[1]);
-                    player.sendMessage(Component.text("Vendor with name " + args[1] + " has been deleted", NamedTextColor.RED));
-                    break;
+                    if(vendorService.deleteVendor(args[1])) {
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Vendor with name %s has been deleted.", args[1]));
+                        return true;
+                    } else {
+                        logger.sendPlayerErrorMessage(player, "Vendor could not be deleted.");
+                        return false;
+                    }
                 default:
                     return false;
             }
-            return true;
         }
         return false;
     }

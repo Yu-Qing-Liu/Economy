@@ -34,8 +34,8 @@ public class VendorService {
         return vendorRepository.save(vendor);
     }
 
-    public void deleteVendor(String vendorName) {
-        vendorRepository.delete(vendorName);
+    public boolean deleteVendor(String vendorName) {
+        return vendorRepository.delete(vendorName);
     }
 
     public VendorEntity getVendor(String vendorName) {
@@ -50,9 +50,9 @@ public class VendorService {
         return vendorSectionRepository.save(section);
     }
 
-    public void deleteVendorSection(String vendorName, String sectionName) {
+    public boolean deleteVendorSection(String vendorName, String sectionName) {
         VendorSectionKey key = new VendorSectionKey(sectionName, vendorName);
-        vendorSectionRepository.delete(key);
+        return vendorSectionRepository.delete(key);
     }
 
     public boolean addVendorItem(String vendorName, String sectionName, ItemStack icon, Map<String, Double> buyPrices, Map<String, Double> sellPrices) {
@@ -69,9 +69,9 @@ public class VendorService {
         return false;
     }
 
-    public void deleteVendorItem(String vendorName, String sectionName, String itemName) {
+    public boolean deleteVendorItem(String vendorName, String sectionName, String itemName) {
         VendorItemKey key = new VendorItemKey(itemName, sectionName, vendorName);
-        vendorItemRepository.delete(key);
+        return vendorItemRepository.delete(key);
     }
 }
 

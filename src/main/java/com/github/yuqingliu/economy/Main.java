@@ -1,6 +1,7 @@
 package com.github.yuqingliu.economy;
 
 import com.github.yuqingliu.economy.api.Economy;
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
@@ -16,6 +17,8 @@ import lombok.Getter;
 public class Main extends Economy {
     private Injector injector;
 
+    @Inject
+    private Logger economyLogger;
     @Inject
     private EventManager eventManager;
     @Inject

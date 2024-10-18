@@ -176,12 +176,20 @@ public class SellOrderMenuController {
     public void confirmOrder(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
         Scheduler.runAsync((task) -> {
-            if(shopMenu.removeItemToPlayer(player, item.getIcon().clone(), data.getQuantityInput())) {
-                if(!shopMenu.getShopService().createSellOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput())) {
-                    shopMenu.addItemToPlayer(player, item.getIcon().clone(), data.getQuantityInput());
-                }
-                shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
+            boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), data.getQuantityInput());
+            if(!sucessfulItemRemoval) {
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
+                return;
             }
+            boolean successfulOrder = shopMenu.getShopService().createSellOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput());
+            if(!successfulOrder) {
+                shopMenu.addItemToPlayer(player, item.getIcon().clone(), data.getQuantityInput());
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not create order. Duplicate order (same item, same currency).");
+                return;
+            }
+            shopMenu.getLogger().sendPlayerAcknowledgementMessage(player, String.format("Sell order created for %s", item.getItemName()));
+            shopMenu.getSoundManager().playConfirmOrderSound(player);
+            shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
         });
     }
 

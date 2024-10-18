@@ -11,8 +11,6 @@ import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
 
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
 public class TradeMenu implements Listener {
@@ -41,25 +39,14 @@ public class TradeMenu implements Listener {
             int slot = event.getSlot();
             if(controller.getBuyOptions().contains(slot)) {
                 int amount = controller.getQuantities()[slot - controller.getBuy1()];
-                double cost = controller.getCurrencyOption().getBuyPrice(amount);
-                if(vendorMenu.getCurrencyService().withdrawPlayerPurse(player, controller.getCurrencyOption().getCurrencyName(), cost)) {
-                    vendorMenu.addItemToPlayer(player, controller.getItem().getIcon().clone(), amount);                            
-                } else {
-                    player.sendMessage(Component.text("Failed to purchase Item(s).", NamedTextColor.RED));
-                }
+                controller.buy(player, amount);
             }
             if(controller.getSellOptions().contains(slot)) {
                 int amount = controller.getQuantities()[slot - controller.getSell1()];
-                double profit = controller.getCurrencyOption().getSellPrice(amount);
-                if(vendorMenu.removeItemToPlayer(player, controller.getItem().getIcon().clone(), amount)) {
-                    if(!vendorMenu.getCurrencyService().depositPlayerPurse(player, controller.getCurrencyOption().getCurrencyName(), profit)) {
-                        player.sendMessage(Component.text("Item(s) were not sold.", NamedTextColor.RED));
-                        vendorMenu.addItemToPlayer(player, controller.getItem().getIcon().clone(), amount);
-                    } 
-                }
+                controller.sell(player, amount);
             }
             if(slot == controller.getPrev()) {
-                vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection(), player);
+                vendorMenu.getTransactionMenu().getController().openTransactionMenu(clickedInventory, controller.getItem(), player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();
