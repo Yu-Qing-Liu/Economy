@@ -1,4 +1,4 @@
-package com.github.yuqingliu.economy.view.shopmenu.quickbuymenu;
+package com.github.yuqingliu.economy.view.shopmenu.buyorderdetails;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,13 +13,13 @@ import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 import lombok.Getter;
 
 @Getter
-public class QuickBuyMenu implements Listener {
+public class BuyOrderDetailsMenu implements Listener {
     private final ShopMenu shopMenu;
-    private final QuickBuyMenuController controller;
+    private final BuyOrderDetailsMenuController controller;
 
-    public QuickBuyMenu(ShopMenu shopMenu) {
+    public BuyOrderDetailsMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
-        this.controller = new QuickBuyMenuController(shopMenu);
+        this.controller = new BuyOrderDetailsMenuController(shopMenu);
         shopMenu.getEventManager().registerEvent(this);
     }
 
@@ -35,17 +35,19 @@ public class QuickBuyMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.QuickBuyMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.BuyOrderDetailsMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
-            if(controller.getBuyOptions().contains(slot)) {
-                int amount = controller.getQuantities()[slot - controller.getBuy1()];
-                controller.quickBuy(amount, player);
-            }
             if(slot == controller.getPrev()) {
-                shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                shopMenu.getOrdersMenu().getController().openOrdersMenu(clickedInventory, player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();
+            }
+            if(slot == controller.getCancelOrder()) {
+                controller.cancelOrder(clickedInventory, player);
+            }
+            if(slot == controller.getClaimOrder()) {
+                controller.claimOrder(clickedInventory, player);
             }
         }
     }

@@ -31,7 +31,7 @@ public class QuickBuyMenuController {
     private final int exit = 24;
     private final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
     private final List<Integer> border = Arrays.asList(3,4,5,12,14,21,22,23,38,39,40,41,42);
-    private final List<Integer> buyOptions = Arrays.asList(29,30,31,32,33);
+    private final List<Integer> buyOptions = Arrays.asList(29,30,31,32);
     private final List<Integer> buttons = Arrays.asList(20,24);
     private final int[] quantities = new int[] {1, 16, 32, 64};
     private ShopItemEntity item;
@@ -56,23 +56,40 @@ public class QuickBuyMenuController {
     }
 
     public void quickBuy(int amount, Player player) {
-        int required = amount;
-        for(ShopOrderEntity order : orderOption.getOrders()) {
-            int qty = order.getQuantity();
-            if(qty > required) {
-                order.setFilledQuantity(required);
-                if(shopMenu.getShopService().updateOrder(order)) {
+        Scheduler.runAsync((task) -> {
+            int required = amount;
+            for(ShopOrderEntity order : orderOption.getOrders()) {
+                if(order.getQuantity() == order.getFilledQuantity()) {
+                    return;
+                }
+                int qty = order.getQuantity() - order.getFilledQuantity();
+                if(qty >= required) {
+                    order.setFilledQuantity(order.getFilledQuantity() + required);
+                    boolean sucessfulWithdrawal = shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
+                    if(!sucessfulWithdrawal) {
+                        return;
+                    }
+                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                    if(!sucessfulOrderUpdate) {
+                        return;
+                    }
                     shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
                     break;
-                }
-            } else {
-                order.setFilledQuantity(qty);
-                if(shopMenu.getShopService().updateOrder(order)) {
+                } else {
+                    order.setFilledQuantity(order.getFilledQuantity() + qty);
+                    boolean sucessfulWithdrawal = shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), qty * order.getUnitPrice());
+                    if(!sucessfulWithdrawal) {
+                        return;
+                    }
+                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
+                    if(!sucessfulOrderUpdate) {
+                        return;
+                    }
                     shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
                     required -= qty;
                 }
             }
-        }
+        });
     }
 
     private void displayItem(Inventory inv) {

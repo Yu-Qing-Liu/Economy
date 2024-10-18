@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.persistence.services;
 
+import java.util.List;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
@@ -9,6 +11,7 @@ import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
+import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
 import com.github.yuqingliu.economy.persistence.repositories.ShopItemRepository;
 import com.github.yuqingliu.economy.persistence.repositories.ShopOrderRepository;
@@ -87,7 +90,8 @@ public class ShopService {
             order.setQuantity(quantity);
             order.setUnitPrice(unitPrice);
             order.setCurrencyType(currencyType);
-            if(shopOrderRepository.save(order)) {
+            item.getOrders().add(order);
+            if(shopItemRepository.update(item)) {
                 return true;
             } else {
                 currencyService.depositPlayerPurse(player, currencyType, totalPrice);
@@ -106,11 +110,25 @@ public class ShopService {
         order.setQuantity(quantity);
         order.setUnitPrice(unitPrice);
         order.setCurrencyType(currencyType);
-        return shopOrderRepository.save(order);
+        item.getOrders().add(order);
+        return shopItemRepository.update(item);
     }
 
     public boolean updateOrder(ShopOrderEntity newOrder) {
         return shopOrderRepository.update(newOrder);
+    }
+
+    public boolean deleteOrder(ShopOrderEntity order) {
+        ShopOrderKey key = new ShopOrderKey(order.getPlayerId(), order.getItemName(), order.getSectionName(), order.getShopName(), order.getType(), order.getCurrencyType());
+        return shopOrderRepository.delete(key);
+    }
+
+    public List<ShopOrderEntity> getPlayerBuyOrders(OfflinePlayer player) {
+        return shopOrderRepository.getBuyOrdersByPlayer(player.getUniqueId());
+    }
+
+    public List<ShopOrderEntity> getPlayerSellOrders(OfflinePlayer player) {
+        return shopOrderRepository.getSellOrdersByPlayer(player.getUniqueId());
     }
 }
 

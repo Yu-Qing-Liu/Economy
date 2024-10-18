@@ -39,7 +39,7 @@ public class SellOrderMenu implements Listener {
             int slot = event.getSlot();
             if(slot == controller.getPrev()) {
                 controller.getRefreshTask().cancel();
-                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
+                shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();
@@ -55,9 +55,8 @@ public class SellOrderMenu implements Listener {
             }
             if(slot == controller.getConfirm()) {
                 if(currentItem.getType() != controller.getVoidOption()) {
-                    controller.confirmOrder(player);
+                    controller.confirmOrder(clickedInventory, player);
                     controller.getRefreshTask().cancel();
-                    shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
                 }
             }
         }

@@ -15,12 +15,15 @@ import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
+import com.github.yuqingliu.economy.view.shopmenu.buyorderdetails.BuyOrderDetailsMenu;
 import com.github.yuqingliu.economy.view.shopmenu.buyordermenu.BuyOrderMenu;
 import com.github.yuqingliu.economy.view.shopmenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.shopmenu.mainmenu.MainMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenu;
+import com.github.yuqingliu.economy.view.shopmenu.ordersmenu.OrdersMenu;
 import com.github.yuqingliu.economy.view.shopmenu.quickbuymenu.QuickBuyMenu;
 import com.github.yuqingliu.economy.view.shopmenu.quicksellmenu.QuickSellMenu;
+import com.github.yuqingliu.economy.view.shopmenu.sellorderdetails.SellOrderDetailsMenu;
 import com.github.yuqingliu.economy.view.shopmenu.sellordermenu.SellOrderMenu;
 
 import net.kyori.adventure.text.Component;
@@ -34,7 +37,7 @@ public class ShopMenu extends AbstractPlayerInventory {
     private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
-        MainMenu, ItemMenu, OrderMenu, BuyOrderMenu, SellOrderMenu, QuickBuyMenu, QuickSellMenu;
+        MainMenu, ItemMenu, OrderMenu, OrdersMenu, BuyOrderMenu, SellOrderMenu, QuickBuyMenu, QuickSellMenu, BuyOrderDetailsMenu, SellOrderDetailsMenu;
     }
 
     private final MainMenu mainMenu;
@@ -44,6 +47,9 @@ public class ShopMenu extends AbstractPlayerInventory {
     private final SellOrderMenu sellOrderMenu;
     private final QuickBuyMenu quickBuyMenu;
     private final QuickSellMenu quickSellMenu;
+    private final OrdersMenu ordersMenu;
+    private final BuyOrderDetailsMenu buyOrderDetailsMenu;
+    private final SellOrderDetailsMenu sellOrderDetailsMenu;
 
     @Inject
     public ShopMenu(EventManager eventManager, Component displayName, ShopService shopService, CurrencyService currencyService, InventoryManager inventoryManager) {
@@ -62,6 +68,9 @@ public class ShopMenu extends AbstractPlayerInventory {
         this.sellOrderMenu = new SellOrderMenu(this);
         this.quickBuyMenu = new QuickBuyMenu(this);
         this.quickSellMenu = new QuickSellMenu(this);
+        this.ordersMenu = new OrdersMenu(this);
+        this.buyOrderDetailsMenu = new BuyOrderDetailsMenu(this);
+        this.sellOrderDetailsMenu = new SellOrderDetailsMenu(this);
     }
     
     public String getShopName() {

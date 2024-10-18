@@ -43,8 +43,11 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         }
     }
 
-    
     public boolean removeItemToPlayer(Player player, ItemStack item, int quantity) {
+        int totalItemCount = countItemToPlayer(player, item);
+        if (totalItemCount < quantity) {
+            return false;
+        }
         int remaining = quantity;
         for (ItemStack inventoryItem : player.getInventory().getContents()) {
             if (inventoryItem != null && inventoryItem.isSimilar(item)) {
@@ -61,6 +64,15 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         return false;
     }
 
+    public int countItemToPlayer(Player player, ItemStack item) {
+        int count = 0;
+        for (ItemStack inventoryItem : player.getInventory().getContents()) {
+            if (inventoryItem != null && inventoryItem.isSimilar(item)) {
+                count += inventoryItem.getAmount();
+            }
+        }
+        return count;
+    }
 
     @Override
     public abstract void load(Player player);

@@ -53,6 +53,9 @@ public class MainMenu implements Listener {
             if(slot == controller.getExit()) {
                 clickedInventory.close();
             }
+            if(slot == controller.getOrders()) {
+                shopMenu.getOrdersMenu().getController().openOrdersMenu(clickedInventory, player);
+            }
         }
     }
     
