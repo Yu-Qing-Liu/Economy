@@ -1,9 +1,14 @@
 package com.github.yuqingliu.economy.persistence.services;
 
+import java.util.Set;
+import java.util.UUID;
+
 import org.bukkit.OfflinePlayer;
 
+import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
 import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
+import com.github.yuqingliu.economy.persistence.repositories.CurrencyRepository;
 import com.github.yuqingliu.economy.persistence.repositories.PlayerRepository;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -15,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 public class PlayerService {
     @Inject
     private final PlayerRepository playerRepository;
+    @Inject 
+    private final CurrencyRepository currencyRepository;
 
     public boolean containsPlayer(OfflinePlayer player) {
         return playerRepository.get(player.getUniqueId()) != null;
@@ -28,6 +35,18 @@ public class PlayerService {
             playerPurse.setPlayerId(player.getUniqueId());
             playerEntity.setPurse(playerPurse);
             playerRepository.save(playerEntity);
+            Set<CurrencyEntity> currencies = currencyRepository.findAllUniqueCurrencies();
+            for(CurrencyEntity entity : currencies) {
+                CurrencyEntity currency = new CurrencyEntity();
+                currency.setCurrencyName(entity.getCurrencyName());
+                currency.setAmount(0);
+                currency.setIcon(entity.getIcon());
+                currency.setPurseId(playerPurse.getPlayerId());
+                currency.setAccountId(UUID.randomUUID());
+                currency.setPurse(playerPurse);
+                currency.setAccount(null);
+                currencyRepository.save(currency);
+            }
         }
     }
 

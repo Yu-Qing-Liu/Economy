@@ -100,8 +100,8 @@ public class PluginModule extends AbstractModule {
     // Services
     @Provides
     @Singleton
-    public PlayerService providePlayerService(PlayerRepository playerRepository) {
-        return new PlayerService(playerRepository);
+    public PlayerService providePlayerService(PlayerRepository playerRepository, CurrencyRepository currencyRepository) {
+        return new PlayerService(playerRepository, currencyRepository);
     }
 
     @Provides

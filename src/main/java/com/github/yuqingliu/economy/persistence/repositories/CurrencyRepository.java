@@ -109,6 +109,19 @@ public class CurrencyRepository {
         }
     }
 
+    public Set<CurrencyEntity> findAllUniqueCurrencies() {
+        try (Session session = sessionFactory.openSession()) {
+            return Set.copyOf(session.createQuery(
+                    "FROM CurrencyEntity c WHERE c.currencyName IN (" +
+                    "SELECT DISTINCT c2.currencyName FROM CurrencyEntity c2)", 
+                    CurrencyEntity.class)
+                    .list());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Set.of();
+        }
+    }
+
     public Set<CurrencyEntity> findAll() {
         try (Session session = sessionFactory.openSession()) {
             return Set.copyOf(session.createQuery("from CurrencyEntity", CurrencyEntity.class).list());
