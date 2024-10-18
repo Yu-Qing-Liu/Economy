@@ -175,8 +175,14 @@ public class BuyOrderMenuController {
     public void confirmOrder(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
         Scheduler.runAsync((task) -> {
-            shopMenu.getShopService().createBuyOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput());
-            shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
+            boolean sucessfulOrder = shopMenu.getShopService().createBuyOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput());
+            if(sucessfulOrder) {
+                shopMenu.getLogger().sendPlayerAcknowledgementMessage(player, String.format("Buy order created for %s", item.getItemName()));
+                shopMenu.getSoundManager().playConfirmOrderSound(player);
+                shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
+            } else {
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough currency.");
+            }
         });
     }
 

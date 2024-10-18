@@ -10,4 +10,9 @@ public class SoundManagerImpl implements SoundManager {
     public void playTransactionSound(Player player) {
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
     }
+
+    @Override
+    public void playConfirmOrderSound(Player player) {
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
+    }
 }
