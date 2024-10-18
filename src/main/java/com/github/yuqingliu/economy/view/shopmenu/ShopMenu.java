@@ -10,8 +10,10 @@ import com.google.inject.Inject;
 
 import lombok.Getter;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
@@ -52,9 +54,11 @@ public class ShopMenu extends AbstractPlayerInventory {
     private final SellOrderDetailsMenu sellOrderDetailsMenu;
 
     @Inject
-    public ShopMenu(EventManager eventManager, Component displayName, ShopService shopService, CurrencyService currencyService, InventoryManager inventoryManager) {
+    public ShopMenu(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName, ShopService shopService, CurrencyService currencyService, InventoryManager inventoryManager) {
         super(
             eventManager,
+            soundManager,
+            logger,
             displayName,
             54
         );

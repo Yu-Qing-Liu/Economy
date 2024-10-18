@@ -9,7 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @NoArgsConstructor
-public class EconomyLogger implements Logger {
+public class LoggerImpl implements Logger {
     @Override
     public void sendPlayerErrorMessage(Player player, String message) {
         player.sendMessage(Component.text(message, NamedTextColor.RED));
@@ -23,6 +23,11 @@ public class EconomyLogger implements Logger {
     @Override
     public void sendPlayerAcknowledgementMessage(Player player, String message) {
         player.sendMessage(Component.text(message, NamedTextColor.GREEN));
+    }
+
+    @Override
+    public void sendPlayerNotificationMessage(Player player, String message) {
+        player.sendMessage(Component.text(message, NamedTextColor.GOLD));
     }
 
     @Override

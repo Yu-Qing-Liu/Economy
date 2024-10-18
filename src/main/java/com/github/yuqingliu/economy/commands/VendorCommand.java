@@ -25,7 +25,7 @@ public class VendorCommand implements CommandExecutor {
     @Inject
     private final VendorService vendorService;
     @Inject
-    private Logger logger;
+    private final Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {

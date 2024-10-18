@@ -2,7 +2,7 @@ package com.github.yuqingliu.economy.modules;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.*;
-import com.github.yuqingliu.economy.logger.EconomyLogger;
+import com.github.yuqingliu.economy.logger.LoggerImpl;
 import com.github.yuqingliu.economy.managers.*;
 import com.github.yuqingliu.economy.persistence.repositories.*;
 import com.github.yuqingliu.economy.persistence.services.*;
@@ -29,7 +29,7 @@ public class PluginModule extends AbstractModule {
     @Provides
     @Singleton
     public Logger provideEconomyLogger() {
-        return new EconomyLogger();
+        return new LoggerImpl();
     }
 
     // Repositories
@@ -139,19 +139,49 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public EventManager provideEventManager(PlayerService playerService, NameSpacedKeyManager nameSpacedKeyManager, InventoryManager inventoryManager) {
-        return new EventManagerImpl(plugin, playerService, nameSpacedKeyManager, inventoryManager);
+    public SoundManager provideSoundManager() {
+        return new SoundManagerImpl();
     }
 
     @Provides
     @Singleton
-    public InventoryManager provideInventoryManager(EventManager eventManager, CurrencyService currencyService, VendorService vendorService, ShopService shopService) {
-        return new InventoryManagerImpl(eventManager, currencyService, vendorService, shopService);
+    public EventManager provideEventManager(
+        PlayerService playerService,
+        NameSpacedKeyManager nameSpacedKeyManager,
+        InventoryManager inventoryManager
+    ) {
+        return new EventManagerImpl(
+            plugin,
+            playerService,
+            nameSpacedKeyManager,
+            inventoryManager
+        );
+    }
+
+    @Provides
+    @Singleton
+    public InventoryManager provideInventoryManager(
+        EventManager eventManager,
+        SoundManager soundManager,
+        Logger logger,
+        CurrencyService currencyService,
+        VendorService vendorService,
+        ShopService shopService
+    ) {
+        return new InventoryManagerImpl(
+            eventManager,
+            soundManager,
+            logger,
+            currencyService,
+            vendorService,
+            shopService
+        );
     }
 
     @Provides
     @Singleton
     public CommandManager provideCommandManager(
+        Logger logger,
         InventoryManager inventoryManager,
         CurrencyService currencyService,
         VendorService vendorService,
@@ -160,6 +190,7 @@ public class PluginModule extends AbstractModule {
     ) {
         return new CommandManagerImpl(
             plugin,
+            logger,
             inventoryManager,
             currencyService,
             vendorService,

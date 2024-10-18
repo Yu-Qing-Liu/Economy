@@ -18,7 +18,7 @@ public class DepositCommand implements CommandExecutor {
     @Inject
     private final CurrencyService currencyService;
     @Inject
-    private Logger logger;
+    private final Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {

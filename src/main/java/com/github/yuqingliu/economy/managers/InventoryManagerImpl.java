@@ -3,8 +3,10 @@ package com.github.yuqingliu.economy.managers;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
@@ -24,14 +26,18 @@ import net.kyori.adventure.text.format.TextDecoration;
 @Singleton
 public class InventoryManagerImpl implements InventoryManager {
     private final EventManager eventManager;
+    private final SoundManager soundManager;
+    private final Logger logger;
     private final CurrencyService currencyService;
     private final VendorService vendorService;
     private final ShopService shopService;
     private Map<String, AbstractPlayerInventory> inventories = new HashMap<>();
     
     @Inject
-    public InventoryManagerImpl(EventManager eventManager, CurrencyService currencyService, VendorService vendorService, ShopService shopService) {
+    public InventoryManagerImpl(EventManager eventManager, SoundManager soundManager, Logger logger, CurrencyService currencyService, VendorService vendorService, ShopService shopService) {
         this.eventManager = eventManager;
+        this.soundManager = soundManager;
+        this.logger = logger;
         this.currencyService = currencyService;
         this.vendorService = vendorService;
         this.shopService = shopService;
@@ -43,6 +49,8 @@ public class InventoryManagerImpl implements InventoryManager {
             PurseMenu.class.getSimpleName(),
             new PurseMenu(
                 eventManager,
+                soundManager,
+                logger,
                 Component.text("Purse", NamedTextColor.GOLD).decorate(TextDecoration.BOLD),
                 currencyService
             )
@@ -51,6 +59,8 @@ public class InventoryManagerImpl implements InventoryManager {
             VendorMenu.class.getSimpleName(),
             new VendorMenu(
                 eventManager,
+                soundManager,
+                logger,
                 null,
                 vendorService,
                 currencyService
@@ -58,12 +68,19 @@ public class InventoryManagerImpl implements InventoryManager {
         );
         inventories.put(
             TextMenu.class.getSimpleName(),
-            new TextMenu(eventManager, null)
+            new TextMenu(
+                eventManager,
+                soundManager,
+                logger,
+                null
+            )
         );
         inventories.put(
             ShopMenu.class.getSimpleName(),
             new ShopMenu(
                 eventManager,
+                soundManager,
+                logger,
                 null,
                 shopService,
                 currencyService,

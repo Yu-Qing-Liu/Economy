@@ -7,5 +7,6 @@ public interface Logger {
     void sendPlayerErrorMessage(Player player, String message);
     void sendPlayerWarningMessage(Player player, String message);
     void sendPlayerAcknowledgementMessage(Player player, String message);
+    void sendPlayerNotificationMessage(Player player, String message);
     void sendPlayerMessage(Player player, String message, NamedTextColor color);
 }

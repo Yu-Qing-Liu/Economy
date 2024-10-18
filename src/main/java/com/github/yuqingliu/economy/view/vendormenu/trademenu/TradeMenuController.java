@@ -58,6 +58,39 @@ public class TradeMenuController {
         displaySellOptions(inv);
     }
 
+    public void buy(Player player, int slotAmount) {
+        Scheduler.runAsync((task) -> {
+            double cost = slotAmount * currencyOption.getBuyPrice();
+            boolean successfulWithdrawal = vendorMenu.getCurrencyService().withdrawPlayerPurse(player, currencyOption.getCurrencyName(), cost);
+            if(!successfulWithdrawal) {
+                vendorMenu.getLogger().sendPlayerErrorMessage(player, "Not enough currency.");
+                return;
+            }
+            vendorMenu.addItemToPlayer(player, item.getIcon().clone(), slotAmount);
+            vendorMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Bought %d item(s) for %.2f %s", slotAmount, cost, currencyOption.getCurrencyName()));
+            vendorMenu.getSoundManager().playTransactionSound(player);
+        });
+    }
+
+    public void sell(Player player, int slotAmount) {
+        Scheduler.runAsync((task) -> {
+            int amount = Math.min(vendorMenu.countItemToPlayer(player, item.getIcon().clone()), slotAmount);
+            double profit = amount * currencyOption.getSellPrice();
+            boolean sucessfulItemRemoval = vendorMenu.removeItemToPlayer(player, item.getIcon().clone(), amount);
+            if(!sucessfulItemRemoval) {
+                vendorMenu.getLogger().sendPlayerErrorMessage(player, "Not enough items to sell.");
+                return;
+            }
+            boolean sucessfulDeposit = vendorMenu.getCurrencyService().depositPlayerPurse(player, currencyOption.getCurrencyName(), profit);
+            if(!sucessfulDeposit) {
+                vendorMenu.getLogger().sendPlayerErrorMessage(player, "Could not sell item(s)");
+                vendorMenu.addItemToPlayer(player, item.getIcon().clone(), amount);
+            }
+            vendorMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d item(s) for %.2f %s", amount, profit, currencyOption.getCurrencyName()));
+            vendorMenu.getSoundManager().playTransactionSound(player);
+        });
+    }
+
     private void displayItem(Inventory inv) {
         inv.setItem(itemSlot, item.getIcon().clone());
     }

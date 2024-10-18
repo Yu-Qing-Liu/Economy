@@ -6,6 +6,7 @@ import java.util.Map;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
@@ -19,6 +20,7 @@ import com.google.inject.Singleton;
 @Singleton
 public class CommandManagerImpl implements CommandManager {
     private final JavaPlugin plugin;
+    private final Logger logger;
     private final InventoryManager inventoryManager;
     private final CurrencyService currencyService;
     private final VendorService vendorService;
@@ -29,6 +31,7 @@ public class CommandManagerImpl implements CommandManager {
     @Inject
     public CommandManagerImpl(
         JavaPlugin plugin,
+        Logger logger,
         InventoryManager inventoryManager,
         CurrencyService currencyService,
         VendorService vendorService,
@@ -36,6 +39,7 @@ public class CommandManagerImpl implements CommandManager {
         NameSpacedKeyManager nameSpacedKeyManager
     ) {
         this.plugin = plugin;
+        this.logger = logger;
         this.inventoryManager = inventoryManager;
         this.currencyService = currencyService;
         this.vendorService = vendorService;
@@ -47,19 +51,19 @@ public class CommandManagerImpl implements CommandManager {
 
     private void initializeCommands() {
         // Currency commands
-        commands.put("currency", new CurrencyCommand(currencyService));
+        commands.put("currency", new CurrencyCommand(currencyService, logger));
         // Purse commands
-        commands.put("purse", new PurseCommand(inventoryManager));
-        commands.put("deposit", new DepositCommand(currencyService));
-        commands.put("withdraw", new WithdrawCommand(currencyService));
+        commands.put("purse", new PurseCommand(inventoryManager, logger));
+        commands.put("deposit", new DepositCommand(currencyService, logger));
+        commands.put("withdraw", new WithdrawCommand(currencyService, logger));
         // Vendor commands
-        commands.put("vendor", new VendorCommand(nameSpacedKeyManager, vendorService));
-        commands.put("vendorsection", new VendorSectionCommand(vendorService));
-        commands.put("vendoritem", new VendorItemCommand(vendorService, currencyService));
+        commands.put("vendor", new VendorCommand(nameSpacedKeyManager, vendorService, logger));
+        commands.put("vendorsection", new VendorSectionCommand(vendorService, logger));
+        commands.put("vendoritem", new VendorItemCommand(vendorService, currencyService, logger));
         // Shop commands
-        commands.put("shop", new ShopCommand(nameSpacedKeyManager, shopService));
-        commands.put("shopsection", new ShopSectionCommand(shopService));
-        commands.put("shopitem", new ShopItemCommand(shopService));
+        commands.put("shop", new ShopCommand(nameSpacedKeyManager, shopService, logger));
+        commands.put("shopsection", new ShopSectionCommand(shopService, logger));
+        commands.put("shopitem", new ShopItemCommand(shopService, logger));
     }
 
     private void registerCommands() {

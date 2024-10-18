@@ -22,7 +22,7 @@ public class ShopSectionCommand implements CommandExecutor {
     @Inject
     private final ShopService shopService;
     @Inject
-    private Logger logger;
+    private final Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
