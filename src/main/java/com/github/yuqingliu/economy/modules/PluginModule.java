@@ -1,6 +1,8 @@
 package com.github.yuqingliu.economy.modules;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.*;
+import com.github.yuqingliu.economy.logger.EconomyLogger;
 import com.github.yuqingliu.economy.managers.*;
 import com.github.yuqingliu.economy.persistence.repositories.*;
 import com.github.yuqingliu.economy.persistence.services.*;
@@ -22,6 +24,12 @@ public class PluginModule extends AbstractModule {
     @Singleton
     public SessionFactory provideSessionFactory() {
         return HibernateModule.createSessionFactory(plugin.getDataFolder().getAbsolutePath());
+    }
+
+    @Provides
+    @Singleton
+    public Logger provideEconomyLogger() {
+        return new EconomyLogger();
     }
 
     // Repositories

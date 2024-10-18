@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.google.inject.Inject;
 
@@ -20,13 +21,15 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class CurrencyCommand implements CommandExecutor {
     @Inject
     private final CurrencyService currencyService;
+    @Inject
+    private Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(cmd.getName().equalsIgnoreCase("currency") && sender instanceof Player) {
             Player player = (Player) sender;
             if (!sender.hasPermission("economy.admin")) {
-                player.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
+                logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
             if (args.length != 2) {
@@ -36,7 +39,7 @@ public class CurrencyCommand implements CommandExecutor {
                 case "add":
                     ItemStack icon = player.getInventory().getItemInMainHand().clone();
                     if(icon.getType() == Material.AIR) {
-                        player.sendMessage(Component.text("Invalid section icon. Please have a valid item in main hand.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid section icon. Please have a valid item in main hand.");
                         return false;
                     }
                     icon.setAmount(1);
@@ -45,13 +48,24 @@ public class CurrencyCommand implements CommandExecutor {
                         meta.displayName(Component.text(args[1], NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
                         icon.setItemMeta(meta);
                     }
-                    return currencyService.addCurrencyToAll(args[1], 0, icon);
+                    if(currencyService.addCurrencyToAll(args[1], 0, icon)) {
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Added %s currency to all!", args[1]));
+                        return true;
+                    } else {
+                        logger.sendPlayerErrorMessage(player, String.format("Could not add %s currency", args[1]));
+                        return false;
+                    }
                 case "remove":
-                    return currencyService.deleteCurrencyFromAll(args[1]);
+                    if(currencyService.deleteCurrencyFromAll(args[1])) {
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Removed %s currency from all!", args[1]));
+                        return true;
+                    } else {
+                        logger.sendPlayerErrorMessage(player, String.format("Could not remove %s currency", args[1]));
+                        return false;
+                    }
                 default:
-                    break;
+                    return false;
             }
-            return true;
         }
         return false;
     }

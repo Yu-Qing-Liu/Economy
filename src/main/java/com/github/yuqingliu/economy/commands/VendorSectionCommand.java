@@ -7,6 +7,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
 
@@ -19,13 +21,15 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class VendorSectionCommand implements CommandExecutor {
     @Inject
     private final VendorService vendorService;
+    @Inject
+    private Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(cmd.getName().equalsIgnoreCase("vendorsection") && sender instanceof Player) {
             Player player = (Player) sender;
             if (!sender.hasPermission("economy.admin")) {
-                player.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
+                logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
             if (args.length != 3) {
@@ -35,7 +39,7 @@ public class VendorSectionCommand implements CommandExecutor {
                 case "create":
                     ItemStack icon = player.getInventory().getItemInMainHand().clone();
                     if(icon.getType() == Material.AIR) {
-                        player.sendMessage(Component.text("Invalid section icon. Please have a valid item in main hand.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid item icon. Please have a valid item in main hand.");
                         return false;
                     }
                     icon.setAmount(1);
@@ -45,20 +49,23 @@ public class VendorSectionCommand implements CommandExecutor {
                         icon.setItemMeta(meta);
                     }
                     if(vendorService.addVendorSection(args[1], args[2], icon)) {
-                        player.sendMessage(Component.text("Successfully added section with name " + args[2] + " in vendor " + args[1], NamedTextColor.GREEN));
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Successfully added section with name %s in vendor %s", args[2], args[1]));
+                        return true;
                     } else {
-                        player.sendMessage(Component.text("Invalid parameters. Please enter valid fields.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Could not add section");
                         return false;
                     }
-                    break;
                 case "delete":
-                    vendorService.deleteVendorSection(args[1], args[2]);
-                    player.sendMessage(Component.text("Section with name " + args[2] + " has been deleted from vendor " + args[1], NamedTextColor.RED));
-                    break;
+                    if(vendorService.deleteVendorSection(args[1], args[2])) {
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Section with name %s has been deleted from vendor %s", args[2], args[1]));
+                        return true;
+                    } else {
+                        logger.sendPlayerErrorMessage(player, "Section could not be deleted.");
+                        return false;
+                    }
                 default:
                     return false;
             }
-            return true;
         }
         return false;
     }

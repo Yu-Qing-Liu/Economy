@@ -43,8 +43,8 @@ public class ShopService {
         return shopRepository.save(shop);
     }
 
-    public void deleteShop(String shopName) {
-        shopRepository.delete(shopName);
+    public boolean deleteShop(String shopName) {
+        return shopRepository.delete(shopName);
     }
 
     public ShopEntity getShop(String shopName) {
@@ -59,9 +59,9 @@ public class ShopService {
         return shopSectionRepository.save(section);
     }
 
-    public void deleteShopSection(String shopName, String sectionName) {
+    public boolean deleteShopSection(String shopName, String sectionName) {
         ShopSectionKey key = new ShopSectionKey(sectionName, shopName);
-        shopSectionRepository.delete(key);
+        return shopSectionRepository.delete(key);
     }
 
     public boolean addShopItem(String shopName, String sectionName, ItemStack icon) {
@@ -73,9 +73,9 @@ public class ShopService {
         return shopItemRepository.save(item);
     }
 
-    public void deleteShopItem(String shopName, String sectionName, String itemName) {
+    public boolean deleteShopItem(String shopName, String sectionName, String itemName) {
         ShopItemKey key = new ShopItemKey(itemName, sectionName, shopName);
-        shopItemRepository.delete(key);
+        return shopItemRepository.delete(key);
     }
 
     public boolean createBuyOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {

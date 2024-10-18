@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.google.inject.Inject;
 
@@ -19,13 +20,15 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 public class ShopItemCommand implements CommandExecutor {
     @Inject
     private final ShopService shopService;
+    @Inject
+    private Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(cmd.getName().equalsIgnoreCase("shopitem") && sender instanceof Player) {
             Player player = (Player) sender;
             if (!sender.hasPermission("economy.admin")) {
-                player.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
+                logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
             if(args.length < 3) {
@@ -35,30 +38,33 @@ public class ShopItemCommand implements CommandExecutor {
                 case "add":
                     ItemStack icon = player.getInventory().getItemInMainHand().clone();
                     if(icon.getType() == Material.AIR) {
-                        player.sendMessage(Component.text("Invalid item icon. Please have a valid item in main hand.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid item icon. Please have a valid item in main hand.");
                         return false;
                     }
                     icon.setAmount(1);
                     if(shopService.addShopItem(args[1], args[2], icon)) {
-                        player.sendMessage(Component.text("Successfully added item to shop", NamedTextColor.GREEN));
+                        logger.sendPlayerAcknowledgementMessage(player, "Successfully added item to shop");
+                        return true;
                     } else {
-                        player.sendMessage(Component.text("Invalid parameters. Please enter valid fields.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid parameters. Please enter valid parameters.");
                         return false;
                     }
-                    break;
                 case "remove":
                     ItemStack item = player.getInventory().getItemInMainHand().clone();
                     if(item.getType() == Material.AIR) {
-                        player.sendMessage(Component.text("Invalid item icon. Please have a valid item in main hand.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid item icon. Please have a valid item in main hand.");
                         return false;
                     }
-                    shopService.deleteShopItem(args[1], args[2], PlainTextComponentSerializer.plainText().serialize(item.displayName()));
-                    player.sendMessage(Component.text("Item sucessfully deleted from shop" + args[1], NamedTextColor.RED));
-                    break;
+                    if(shopService.deleteShopItem(args[1], args[2], PlainTextComponentSerializer.plainText().serialize(item.displayName()))) {
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Item sucessfully deleted from shop %s", args[1]));
+                        return true;
+                    } else {
+                        logger.sendPlayerErrorMessage(player, "Shop item could not be deleted.");
+                        return false;
+                    }
                 default:
                     return false;
             }
-            return true;
         }
         return false;
     }

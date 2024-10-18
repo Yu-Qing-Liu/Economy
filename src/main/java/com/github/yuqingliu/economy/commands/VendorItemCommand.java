@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
@@ -25,13 +26,15 @@ public class VendorItemCommand implements CommandExecutor {
     private final VendorService vendorService;
     @Inject
     private final CurrencyService currencyService;
+    @Inject
+    private Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(cmd.getName().equalsIgnoreCase("vendoritem") && sender instanceof Player) {
             Player player = (Player) sender;
             if (!sender.hasPermission("economy.admin")) {
-                player.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
+                logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
             if(args.length < 3) {
@@ -41,7 +44,7 @@ public class VendorItemCommand implements CommandExecutor {
                 case "add":
                     ItemStack icon = player.getInventory().getItemInMainHand().clone();
                     if(icon.getType() == Material.AIR) {
-                        player.sendMessage(Component.text("Invalid item icon. Please have a valid item in main hand.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid item icon. Please have a valid item in main hand.");
                         return false;
                     }
                     icon.setAmount(1);
@@ -53,6 +56,7 @@ public class VendorItemCommand implements CommandExecutor {
                     try {
                         for (int i = 3; i < args.length; i+=3) {
                             if(currencyService.getCurrencyByName(args[i]) == null) {
+                                logger.sendPlayerErrorMessage(player, "Invalid parameters. Please enter valid parameters.");
                                 return false;
                             }
                             buyPrices.put(args[i], Double.parseDouble(args[i+1]));
@@ -62,25 +66,28 @@ public class VendorItemCommand implements CommandExecutor {
                         return false;
                     }
                     if(vendorService.addVendorItem(args[1], args[2], icon, buyPrices, sellPrices)) {
-                        player.sendMessage(Component.text("Successfully added item to vendor", NamedTextColor.GREEN));
+                        logger.sendPlayerAcknowledgementMessage(player, "Successfully added item to vendor");
+                        return true;
                     } else {
-                        player.sendMessage(Component.text("Invalid parameters. Please enter valid fields.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Could not add item to vendor.");
                         return false;
                     }
-                    break;
                 case "remove":
                     ItemStack item = player.getInventory().getItemInMainHand().clone();
                     if(item.getType() == Material.AIR) {
-                        player.sendMessage(Component.text("Invalid item icon. Please have a valid item in main hand.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid item icon. Please have a valid item in main hand.");
                         return false;
                     }
-                    vendorService.deleteVendorItem(args[1], args[2], PlainTextComponentSerializer.plainText().serialize(item.displayName()));
-                    player.sendMessage(Component.text("Item sucessfully deleted from vendor" + args[1], NamedTextColor.RED));
-                    break;
+                    if(vendorService.deleteVendorItem(args[1], args[2], PlainTextComponentSerializer.plainText().serialize(item.displayName()))) {
+                        logger.sendPlayerAcknowledgementMessage(player, "Successfully deleted item from vendor.");
+                        return true;
+                    } else {
+                        logger.sendPlayerErrorMessage(player, "Could not delete item from vendor.");
+                        return false;
+                    }
                 default:
                     return false;
             }
-            return true;
         }
         return false;
     }

@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.google.inject.Inject;
 
@@ -20,13 +21,15 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class ShopSectionCommand implements CommandExecutor {
     @Inject
     private final ShopService shopService;
+    @Inject
+    private Logger logger;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(cmd.getName().equalsIgnoreCase("shopsection") && sender instanceof Player) {
             Player player = (Player) sender;
             if (!sender.hasPermission("economy.admin")) {
-                player.sendMessage(Component.text("You do not have permission to use this command.", NamedTextColor.RED));
+                logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
             if (args.length != 3) {
@@ -36,7 +39,7 @@ public class ShopSectionCommand implements CommandExecutor {
                 case "create":
                     ItemStack icon = player.getInventory().getItemInMainHand().clone();
                     if(icon.getType() == Material.AIR) {
-                        player.sendMessage(Component.text("Invalid section icon. Please have a valid item in main hand.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid item icon. Please have a valid item in main hand.");
                         return false;
                     }
                     icon.setAmount(1);
@@ -46,20 +49,23 @@ public class ShopSectionCommand implements CommandExecutor {
                         icon.setItemMeta(meta);
                     }
                     if(shopService.addShopSection(args[1], args[2], icon)) {
-                        player.sendMessage(Component.text("Successfully added section with name " + args[2] + " in shop " + args[1], NamedTextColor.GREEN));
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Successfully added section with name %s in shop %s", args[2], args[1]));
+                        return true;
                     } else {
-                        player.sendMessage(Component.text("Invalid parameters. Please enter valid fields.", NamedTextColor.RED));
+                        logger.sendPlayerErrorMessage(player, "Invalid parameters. Please enter valid parameters.");
                         return false;
                     }
-                    break;
                 case "delete":
-                    shopService.deleteShopSection(args[1], args[2]);
-                    player.sendMessage(Component.text("Section with name " + args[2] + " has been deleted from shop " + args[1], NamedTextColor.RED));
-                    break;
+                    if(shopService.deleteShopSection(args[1], args[2])) {
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Section with name %s has been deleted from shop %s", args[2], args[1]));
+                        return true;
+                    } else {
+                        logger.sendPlayerErrorMessage(player, "Shop section could not be deleted.");
+                        return false;
+                    }
                 default:
                     return false;
             }
-            return true;
         }
         return false;
     }
