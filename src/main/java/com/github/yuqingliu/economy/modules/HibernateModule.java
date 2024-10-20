@@ -20,8 +20,8 @@ public class HibernateModule {
         configuration.setProperty("hibernate.connection.driver_class", "org.sqlite.JDBC");
         configuration.setProperty("hibernate.dialect", "org.hibernate.community.dialect.SQLiteDialect");
         configuration.setProperty("hibernate.hbm2ddl.auto", "update"); // "update", "create", "create-drop"
-        configuration.setProperty("hibernate.show_sql", "true");
-        configuration.setProperty("hibernate.format_sql", "true");
+        configuration.setProperty("hibernate.show_sql", "false");
+        configuration.setProperty("hibernate.format_sql", "false");
 
         // Use CHAR type for UUIDs
         configuration.setProperty("hibernate.type.preferred_uuid_jdbc_type", "CHAR");

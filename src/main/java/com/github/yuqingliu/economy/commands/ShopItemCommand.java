@@ -12,8 +12,6 @@ import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @RequiredArgsConstructor

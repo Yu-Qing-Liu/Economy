@@ -7,11 +7,11 @@ softdepend: [ Vault ]
 commands:
   deposit:
     description: Deposit currency into user's purse
-    usage: /deposit <currencyName> <amount>
+    usage: /deposit <currencyName> <amount>; /deposit <playerName> <currencyName> <amount>
     permission: economy.admin
   withdraw:
     description: Removes currency from user's purse
-    usage: /withdraw <currencyName> <amount>
+    usage: /withdraw <currencyName> <amount>; /withdraw <playerName> <currencyName> <amount>
     permission: economy.admin
   currency:
     description: Add/Remove a currency
@@ -49,7 +49,7 @@ commands:
     permission-message: You do not have permission to use this command
   vendoritem:
     description: Add/Remove main hand item as an option in a vendor section
-    usage: /vendoritem add <vendorName> <sectionName> <currencyName1> <buyPrice1> <sellPrice1> <currencyName2> <buyPrice2> <sellPrice2> ...; /vendoritem remove <vendorName> <sectionName>
+    usage: /vendoritem add,update <vendorName> <sectionName> <currencyName1> <buyPrice1> <sellPrice1> <currencyName2> <buyPrice2> <sellPrice2> ...; /vendoritem remove <vendorName> <sectionName>;
     permission: economy.admin
     permission-message: You do not have permission to use this command
 

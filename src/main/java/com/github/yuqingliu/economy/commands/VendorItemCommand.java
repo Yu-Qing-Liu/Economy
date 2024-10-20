@@ -42,21 +42,21 @@ public class VendorItemCommand implements CommandExecutor {
             }
             switch (args[0]) {
                 case "add":
+                    if(args.length < 6) {
+                        return false;
+                    }
                     ItemStack icon = player.getInventory().getItemInMainHand().clone();
                     if(icon.getType() == Material.AIR) {
                         logger.sendPlayerErrorMessage(player, "Invalid item icon. Please have a valid item in main hand.");
                         return false;
                     }
                     icon.setAmount(1);
-                    if(args.length < 6) {
-                        return false;
-                    }
                     Map<String, Double> buyPrices = new LinkedHashMap<>();
                     Map<String, Double> sellPrices = new LinkedHashMap<>();
                     try {
                         for (int i = 3; i < args.length; i+=3) {
                             if(currencyService.getCurrencyByName(args[i]) == null) {
-                                logger.sendPlayerErrorMessage(player, "Invalid parameters. Please enter valid parameters.");
+                                logger.sendPlayerErrorMessage(player, "Invalid currency parameters. Please enter valid parameters.");
                                 return false;
                             }
                             buyPrices.put(args[i], Double.parseDouble(args[i+1]));
@@ -72,6 +72,38 @@ public class VendorItemCommand implements CommandExecutor {
                         logger.sendPlayerErrorMessage(player, "Could not add item to vendor.");
                         return false;
                     }
+                case "update":
+                    if(args.length < 6) {
+                        return false;
+                    }
+                    ItemStack option = player.getInventory().getItemInMainHand().clone();
+                    if(option.getType() == Material.AIR) {
+                        logger.sendPlayerErrorMessage(player, "Invalid item icon. Please have a valid item in main hand.");
+                        return false;
+                    }
+                    option.setAmount(1);
+                    Map<String, Double> newBuyPrices = new LinkedHashMap<>();
+                    Map<String, Double> newSellPrices = new LinkedHashMap<>();
+                    try {
+                        for (int i = 3; i < args.length; i+=3) {
+                            if(currencyService.getCurrencyByName(args[i]) == null) {
+                                logger.sendPlayerErrorMessage(player, "Invalid currency parameters. Please enter valid parameters.");
+                                return false;
+                            }
+                            newBuyPrices.put(args[i], Double.parseDouble(args[i+1]));
+                            newSellPrices.put(args[i], Double.parseDouble(args[i+2]));
+                        }
+                    } catch (Exception e) {
+                        return false;
+                    }
+                    if(vendorService.updateVendorItem(args[1], args[2], option, newBuyPrices, newSellPrices)) {
+                        logger.sendPlayerAcknowledgementMessage(player, "Successfully updated item");
+                        return true;
+                    } else {
+                        logger.sendPlayerErrorMessage(player, "Could not update item.");
+                        return false;
+                    }
+
                 case "remove":
                     ItemStack item = player.getInventory().getItemInMainHand().clone();
                     if(item.getType() == Material.AIR) {
