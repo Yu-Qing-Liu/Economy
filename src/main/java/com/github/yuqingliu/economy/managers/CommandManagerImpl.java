@@ -70,6 +70,7 @@ public class CommandManagerImpl implements CommandManager {
         commands.put("shopitem", new ShopItemCommand(shopService, logger));
         // Bank commands
         commands.put("bank", new BankCommand(nameSpacedKeyManager, bankService, logger));
+        commands.put("account", new AccountCommand(bankService, logger));
     }
 
     private void registerCommands() {

@@ -172,7 +172,8 @@ public class PluginModule extends AbstractModule {
         Logger logger,
         CurrencyService currencyService,
         VendorService vendorService,
-        ShopService shopService
+        ShopService shopService,
+        BankService bankService
     ) {
         return new InventoryManagerImpl(
             eventManager,
@@ -180,7 +181,8 @@ public class PluginModule extends AbstractModule {
             logger,
             currencyService,
             vendorService,
-            shopService
+            shopService,
+            bankService
         );
     }
 

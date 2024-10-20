@@ -33,13 +33,11 @@ public class BankCommand implements CommandExecutor {
                 logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
-            if (args.length != 2) {
-                return false;
-            }
-            switch (args[0]) {
-                case "create":
-                    if(bankService.addBank(args[1])) {
-                        logger.sendPlayerAcknowledgementMessage(player, String.format("Successfully created bank with name %s.", args[1]));
+            if (args.length == 3) {
+                if(args[0].equals("create")) {
+                    long cooldown = Long.parseLong(args[2]);
+                    if(bankService.addBank(args[1], cooldown)) {
+                        logger.sendPlayerAcknowledgementMessage(player, String.format("Successfully created bank with name %s with an interest deposit every %s hours", args[1], args[2]));
                     } else {
                         logger.sendPlayerWarningMessage(player, "Bank already exists. Providing another entrypoint.");
                     } 
@@ -48,7 +46,10 @@ public class BankCommand implements CommandExecutor {
                     container.set(nameSpacedKeyManager.getBankKey(), PersistentDataType.STRING, args[1]);
                     villager.setPersistent(true);
                     return true;
-                case "delete":
+                }
+            }
+            if (args.length == 2) {
+                if(args[0].equals("delete")) {
                     if(bankService.deleteBank(args[1])) {
                         logger.sendPlayerAcknowledgementMessage(player, String.format("Bank with name %s has been deleted", args[1]));
                         return true;
@@ -56,8 +57,7 @@ public class BankCommand implements CommandExecutor {
                         logger.sendPlayerErrorMessage(player, "Bank could not be deleted.");
                         return false;
                     }
-                default:
-                    return false;
+                }
             }
         }
         return false;
