@@ -41,6 +41,19 @@ public class AccountMenu implements Listener {
 
         if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.AccountMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
+            if(slot == controller.getPrev()) {
+                bankMenu.getMainMenu().getController().openMainMenu(player, clickedInventory);
+            }
+            if(slot == controller.getExit()) {
+                clickedInventory.close();
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (event.getView().title().equals(bankMenu.getDisplayName())) {
+            controller.onClose((Player) event.getPlayer());
         }
     }
 }

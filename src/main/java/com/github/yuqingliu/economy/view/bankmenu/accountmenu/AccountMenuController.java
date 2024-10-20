@@ -2,7 +2,6 @@ package com.github.yuqingliu.economy.view.bankmenu.accountmenu;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +45,10 @@ public class AccountMenuController {
         frame(inv);
         accountDetails(inv, player);
         buttons(inv);
+    }
+
+    public void onClose(Player player) {
+        accounts.remove(player);
     }
 
     private void accountDetails(Inventory inv, Player player) {
