@@ -192,6 +192,7 @@ public class PluginModule extends AbstractModule {
         CurrencyService currencyService,
         VendorService vendorService,
         ShopService shopService,
+        BankService bankService,
         NameSpacedKeyManager nameSpacedKeyManager
     ) {
         return new CommandManagerImpl(
@@ -201,6 +202,7 @@ public class PluginModule extends AbstractModule {
             currencyService,
             vendorService,
             shopService,
+            bankService,
             nameSpacedKeyManager
         );
     }

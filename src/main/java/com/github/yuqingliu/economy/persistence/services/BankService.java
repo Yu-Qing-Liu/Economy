@@ -30,6 +30,16 @@ public class BankService {
     @Inject
     private final BankRepository bankRepository;
 
+    public boolean addBank(String bankName) {
+        BankEntity newBank = new BankEntity();
+        newBank.setBankName(bankName);
+        return bankRepository.save(newBank);
+    }
+
+    public boolean deleteBank(String bankName) {
+        return bankRepository.delete(bankName);
+    }
+
     public boolean addBankAccountToAll(String accountName, String bankName, ItemStack icon, double interestRate, String unlockCurrencyName, double unlockCost) {
         BankEntity bank = bankRepository.get(bankName);
         Set<PlayerEntity> players = playerRepository.findAll();
@@ -60,7 +70,9 @@ public class BankService {
         return true;
     }
 
-    public boolean deleteCurrencyFromAll(String currencyName) {
-        return currencyRepository.deleteAllByCurrencyName(currencyName);
+    public boolean deleteBankAccountFromAll(String accountName, String bankName) {
+        BankEntity bank = bankRepository.get(bankName);
+        bank.getAccounts().removeIf(account -> account.getAccountName().equals(accountName));
+        return bankRepository.update(bank);
     }
 }
