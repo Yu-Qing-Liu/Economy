@@ -52,6 +52,16 @@ commands:
     usage: /vendoritem add,update <vendorName> <sectionName> <currencyName1> <buyPrice1> <sellPrice1> <currencyName2> <buyPrice2> <sellPrice2> ...; /vendoritem remove <vendorName> <sectionName>;
     permission: economy.admin
     permission-message: You do not have permission to use this command
+  bank:
+    description: Create/Delete a bank. Spawns a villager acting as the banker.
+    usage: /bank create <bankName>; bank delete <bankName>
+    permission: economy.admin
+    permission-message: You do not have permission to use this command
+  account:
+    description: Create/Delete a bank account option. Interest rate':' 10.25 -> 10.25%. Main hand item is used as icon
+    usage: /account create <accountName> <bankName> <interestRate(%)> <unlockCurrencyName> <unlockCost> 
+    permission: economy.admin
+    permission-message: You do not have permission to use this command
 
 permissions:
   economy.admin:

@@ -126,8 +126,14 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository, CurrencyService currencyService) {
-        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository, currencyService);
+    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository) {
+        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository);
+    }
+
+    @Provides
+    @Singleton
+    public BankService provideBankService(PlayerRepository playerRepository, CurrencyRepository currencyRepository, AccountRepository accountRepository, BankRepository bankRepository) {
+        return new BankService(playerRepository, currencyRepository, accountRepository, bankRepository);
     }
 
     // Managers

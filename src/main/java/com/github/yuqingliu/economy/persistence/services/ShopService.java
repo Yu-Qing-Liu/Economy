@@ -34,8 +34,6 @@ public class ShopService {
     private final ShopItemRepository shopItemRepository;
     @Inject
     private final ShopOrderRepository shopOrderRepository;
-    @Inject 
-    private final CurrencyService currencyService;
 
     public boolean addShop(String shopName) {
         ShopEntity shop = new ShopEntity();

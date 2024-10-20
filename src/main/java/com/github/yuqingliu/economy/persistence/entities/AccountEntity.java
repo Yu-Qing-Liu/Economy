@@ -17,6 +17,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.bukkit.inventory.ItemStack;
+
 @Entity
 @Table(name = "accounts")
 @Getter
@@ -26,6 +28,15 @@ public class AccountEntity {
     @Id
     @Column(name = "accountId", columnDefinition = "VARCHAR(36)")
     private UUID accountId;
+
+    @Column(name = "accountName", columnDefinition = "VARCHAR(16)")
+    private String accountName;
+
+    @Column(name = "interestRate")
+    private double interestRate;
+
+    @Column(name = "icon", columnDefinition = "BLOB")
+    private byte[] icon;
 
     @ManyToOne
     @JoinColumn(name = "bankName", nullable = false)
@@ -37,5 +48,13 @@ public class AccountEntity {
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<CurrencyEntity> currencies = new LinkedHashSet<>();
+
+    public ItemStack getIcon() {
+        return ItemStack.deserializeBytes(this.icon);
+    }
+
+    public void setIcon(ItemStack itemStack) {
+        this.icon = itemStack.serializeAsBytes();
+    }
 }
 
