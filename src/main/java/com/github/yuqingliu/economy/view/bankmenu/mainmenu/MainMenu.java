@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 
@@ -38,10 +39,13 @@ public class MainMenu implements Listener {
 
         if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
-            if(controller.getOptions().contains(slot)) {
+            if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
                 int index = slot - controller.getOptions().get(0);
-                if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumbers().get(player)[0])) {
-                    bankMenu.getAccountMenu().getController().openAccountMenu(player, clickedInventory, controller.getPageData().get(controller.getPageNumbers().get(player)[0])[index]);
+                AccountEntity account = controller.getPageData().get(controller.getPageNumbers().get(player)[0])[index];
+                if(controller.unlockAccount(account, player)) {
+                    if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumbers().get(player)[0])) {
+                        bankMenu.getAccountMenu().getController().openAccountMenu(player, clickedInventory, account);
+                    }
                 }
             }
             if(slot == controller.getNextPagePtr()) {

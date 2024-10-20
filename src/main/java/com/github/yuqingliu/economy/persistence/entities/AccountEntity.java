@@ -35,6 +35,15 @@ public class AccountEntity {
     @Column(name = "interestRate")
     private double interestRate;
 
+    @Column(name = "unlockCurrencyType")
+    private String unlockCurrencyType;
+
+    @Column(name = "unlockCost")
+    private double unlockCost;
+
+    @Column(name = "isUnlocked")
+    private boolean isUnlocked = false;
+
     @Column(name = "icon", columnDefinition = "BLOB")
     private byte[] icon;
 

@@ -2,6 +2,7 @@ package com.github.yuqingliu.economy.view.bankmenu.mainmenu;
 
 import java.time.Duration;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,6 @@ import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Getter
 public class MainMenuController {
@@ -76,6 +76,28 @@ public class MainMenuController {
         pageNumbers.remove(player);
     }
 
+    public boolean unlockAccount(AccountEntity account, Player player) {
+        if(account.isUnlocked()) {
+            return true;
+        } else {
+            boolean successfulWithdrawal = bankMenu.getCurrencyService().withdrawPlayerPurse(player, account.getUnlockCurrencyType(), account.getUnlockCost());
+            if(!successfulWithdrawal) {
+                bankMenu.getLogger().sendPlayerErrorMessage(player, "Not enough currency to unlock this account.");
+                return false;
+            }
+            account.setUnlocked(true);
+            boolean successfulUnlock = bankMenu.getBankService().updateAccount(account);
+            if(!successfulUnlock) {
+                bankMenu.getLogger().sendPlayerErrorMessage(player, "Could not unlock the account.");
+                bankMenu.getCurrencyService().depositPlayerPurse(player, account.getUnlockCurrencyType(), account.getUnlockCost());
+                return false;
+            }
+            bankMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sucessfully unlocked account for %.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType()));
+            bankMenu.getSoundManager().playTransactionSound(player);
+            return true;
+        }
+    }
+
     private void fetchAccounts(Player player) {
         pageData.clear();
         List<AccountEntity> accounts = bankMenu.getBankService().getPlayerAccountsByBank(bankMenu.getBankName(), player);
@@ -109,13 +131,20 @@ public class MainMenuController {
         AccountEntity[] options = pageData.getOrDefault(pageNumbers.get(player)[0], new AccountEntity[length]);
         int currentIndex = 0;
         for (int i : this.options) {
-            if(options[currentIndex] == null) {
+            AccountEntity account = options[currentIndex];
+            if(account == null) {
                 inv.setItem(i, Placeholder);
             } else {
-                ItemStack item = options[currentIndex].getIcon().clone();
+                ItemStack item = account.getIcon().clone();
                 ItemMeta meta = item.getItemMeta();
                 if(meta != null) {
-                    meta.lore(Arrays.asList(Component.text("BANK ACCOUNT", NamedTextColor.GOLD)));
+                    List<Component> lore = new ArrayList<>();
+                    lore.add(Component.text("BANK ACCOUNT", NamedTextColor.GOLD));
+                    lore.add(Component.text("Interest Rate: ", NamedTextColor.BLUE).append(Component.text(account.getInterestRate() + "%", NamedTextColor.DARK_GREEN).append(Component.text(String.format(" every %s hour(s)", account.getBank().getInterestCooldown().toHours()), NamedTextColor.YELLOW))));
+                    if(!account.isUnlocked()) {
+                        lore.add(Component.text("Unlock cost: ", NamedTextColor.BLUE).append(Component.text(String.format("%.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType(), NamedTextColor.DARK_GREEN))));
+                    }
+                    meta.lore(lore);
                 }
                 item.setItemMeta(meta);
                 inv.setItem(i, item);

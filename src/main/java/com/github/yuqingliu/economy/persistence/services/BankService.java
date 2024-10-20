@@ -14,7 +14,6 @@ import com.google.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -57,6 +56,8 @@ public class BankService {
             newAccount.setAccountId(player.getPlayerId());
             newAccount.setAccountName(accountName);
             newAccount.setInterestRate(interestRate);
+            newAccount.setUnlockCurrencyType(unlockCurrencyName);
+            newAccount.setUnlockCost(unlockCost);
             Set<CurrencyEntity> currencies = player.getPurse().getCurrencies();
             for(CurrencyEntity entity : currencies) {
                 CurrencyEntity currency = new CurrencyEntity();
@@ -82,5 +83,9 @@ public class BankService {
 
     public List<AccountEntity> getPlayerAccountsByBank(String bankName, OfflinePlayer player) {
         return accountRepository.getPlayerAccountsByBank(bankName, player.getUniqueId());
+    }
+
+    public boolean updateAccount(AccountEntity account) {
+        return accountRepository.update(account);
     }
 }
