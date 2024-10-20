@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.commands;
 
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -26,15 +28,24 @@ public class WithdrawCommand implements CommandExecutor {
                 logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
-            if (args.length != 2) {
-                return false;
+            if (args.length == 2) {
+                if(currencyService.withdrawPlayerPurse(player, args[0], Double.parseDouble(args[1]))) {
+                    logger.sendPlayerAcknowledgementMessage(player, String.format("Sucessful withdrawal of %s %s", args[1], args[0]));
+                    return true;
+                } else {
+                    logger.sendPlayerErrorMessage(player, "Could not withdraw that amount.");
+                    return false;
+                }
             }
-            if(currencyService.withdrawPlayerPurse(player, args[0], Double.parseDouble(args[1]))) {
-                logger.sendPlayerAcknowledgementMessage(player, String.format("Sucessful withdrawal of %s %s", args[1], args[0]));
-                return true;
-            } else {
-                logger.sendPlayerErrorMessage(player, "Could not withdraw that amount.");
-                return false;
+            if (args.length == 3) {
+                OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+                if(currencyService.withdrawPlayerPurse(target, args[1], Double.parseDouble(args[2]))) {
+                    logger.sendPlayerAcknowledgementMessage(player, String.format("Sucessful withdrawal of %s %s from %s", args[2], args[1], args[0]));
+                    return true;
+                } else {
+                    logger.sendPlayerErrorMessage(player, "Could not withdraw that amount.");
+                    return false;
+                }
             }
         }
         return false;
