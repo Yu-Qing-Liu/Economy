@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 import com.google.inject.Inject;
 
@@ -66,13 +67,13 @@ public class BankMenu extends AbstractPlayerInventory {
 
     @Override
     public void load(Player player) {
-        inventory = Bukkit.createInventory(null, inventorySize, displayName);
+        Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
     } 
 
     @Override
     public void open(Player player) {
-        inventory = Bukkit.createInventory(null, inventorySize, displayName);
+        Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
         mainMenu.getController().openMainMenu(player, inventory);
     }
