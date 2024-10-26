@@ -24,7 +24,6 @@ import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
 
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
