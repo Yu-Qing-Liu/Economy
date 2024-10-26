@@ -69,7 +69,7 @@ public class OrderMenu implements Listener {
                 shopMenu.getSellOrderMenu().getController().openSellOrderMenu(clickedInventory, controller.getItem(), player);
             }
             if(slot == controller.getPrev()) {
-                shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
+                //shopMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getShopSection(), player);
             }
             if(slot == controller.getRefresh()) {
                 controller.reload(clickedInventory, player);

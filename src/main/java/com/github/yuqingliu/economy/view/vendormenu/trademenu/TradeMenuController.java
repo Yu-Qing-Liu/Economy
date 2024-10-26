@@ -98,8 +98,10 @@ public class TradeMenuController {
     }
 
     public void onClose(Player player) {
-        tasks.get(player).cancel();
-        tasks.remove(player);
+        if(tasks.containsKey(player)) {
+            tasks.get(player).cancel();
+            tasks.remove(player);
+        }
     }
 
     private void displayItem(Inventory inv) {
