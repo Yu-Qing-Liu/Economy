@@ -47,7 +47,7 @@ public class TextMenu extends AbstractPlayerInventory implements Listener {
     }
 
     @Override
-    public void load(Player player) {
+    public Inventory load(Player player) {
         ItemStack item = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta meta = item.getItemMeta();
         meta.displayName(displayName);
@@ -59,6 +59,7 @@ public class TextMenu extends AbstractPlayerInventory implements Listener {
         Inventory inventory = view.getTopInventory();
         inventory.setItem(0, item);
         inventory.setItem(1, item);
+        return inventory;
     }
 
     @Override

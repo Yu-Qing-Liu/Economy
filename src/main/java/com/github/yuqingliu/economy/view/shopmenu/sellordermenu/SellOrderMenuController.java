@@ -77,8 +77,8 @@ public class SellOrderMenuController {
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
-            shop.load(player);
-            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(shop.getInventory(), item, player);
+            Inventory inventory = shop.load(player);
+            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(inventory, item, player);
             Scheduler.runAsync((task) -> {
                 CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(userInput);
                 if (curr != null) {
@@ -92,7 +92,7 @@ public class SellOrderMenuController {
                         data.setCurrencyTypeInput(userInput);
                         playersData.put(player, data);
                     }
-                    shop.getInventory().setItem(currency, icon);
+                    inventory.setItem(currency, icon);
                 }
             });
         };        
@@ -109,8 +109,8 @@ public class SellOrderMenuController {
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
-            shop.load(player);
-            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(shop.getInventory(), item, player);
+            Inventory inventory = shop.load(player);
+            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(inventory, item, player);
             try {
                 int quantityInput = Integer.parseInt(userInput);
                 ItemStack quantityIcon = new ItemStack(Material.PAPER);
@@ -119,7 +119,7 @@ public class SellOrderMenuController {
                     meta.displayName(Component.text(String.format("%sx", userInput), NamedTextColor.DARK_GREEN));
                 }
                 quantityIcon.setItemMeta(meta);
-                shop.getInventory().setItem(quantity, quantityIcon);
+                inventory.setItem(quantity, quantityIcon);
                 if(playersData.containsKey(player)) {
                     playersData.get(player).setQuantityIcon(quantityIcon);
                     playersData.get(player).setQuantityInput(quantityInput);
@@ -144,8 +144,8 @@ public class SellOrderMenuController {
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
-            shop.load(player);
-            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(shop.getInventory(), item, player);
+            Inventory inventory = shop.load(player);
+            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(inventory, item, player);
             try {
                 double unitPriceInput = Double.parseDouble(userInput);
                 ItemStack unitPriceIcon = new ItemStack(Material.PAPER);
@@ -154,7 +154,7 @@ public class SellOrderMenuController {
                     meta.displayName(Component.text(String.format("%s $/unit", userInput), NamedTextColor.DARK_GREEN));
                 }
                 unitPriceIcon.setItemMeta(meta);
-                shop.getInventory().setItem(unitPrice, unitPriceIcon);
+                inventory.setItem(unitPrice, unitPriceIcon);
                 if(playersData.containsKey(player)) {
                     playersData.get(player).setUnitPriceIcon(unitPriceIcon);
                     playersData.get(player).setUnitPriceInput(unitPriceInput);
@@ -176,7 +176,7 @@ public class SellOrderMenuController {
     public void confirmOrder(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
         Scheduler.runAsync((task) -> {
-            boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), data.getQuantityInput());
+            boolean sucessfulItemRemoval = shopMenu.removeItemFromPlayer(player, item.getIcon().clone(), data.getQuantityInput());
             if(!sucessfulItemRemoval) {
                 shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
                 return;

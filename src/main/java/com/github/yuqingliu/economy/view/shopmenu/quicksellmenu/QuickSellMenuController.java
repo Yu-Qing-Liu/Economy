@@ -67,7 +67,7 @@ public class QuickSellMenuController {
                 int qty = order.getQuantity() - order.getFilledQuantity();
                 if(qty > required) {
                     order.setFilledQuantity(order.getFilledQuantity() + required);
-                    boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
+                    boolean sucessfulItemRemoval = shopMenu.removeItemFromPlayer(player, item.getIcon().clone(), required);
                     if(!sucessfulItemRemoval) {
                         shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
                         return;
@@ -89,7 +89,7 @@ public class QuickSellMenuController {
                     break;
                 } else if(qty == required) {
                     order.setFilledQuantity(order.getFilledQuantity() + required);
-                    boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), required);
+                    boolean sucessfulItemRemoval = shopMenu.removeItemFromPlayer(player, item.getIcon().clone(), required);
                     if(!sucessfulItemRemoval) {
                         shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
                         return;
@@ -115,7 +115,7 @@ public class QuickSellMenuController {
                     break;
                 } else {
                     order.setFilledQuantity(order.getFilledQuantity() + qty);
-                    boolean sucessfulItemRemoval = shopMenu.removeItemToPlayer(player, item.getIcon().clone(), qty);
+                    boolean sucessfulItemRemoval = shopMenu.removeItemFromPlayer(player, item.getIcon().clone(), qty);
                     if(!sucessfulItemRemoval) {
                         shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
                         return;

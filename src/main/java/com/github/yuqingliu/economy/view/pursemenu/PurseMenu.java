@@ -45,9 +45,10 @@ public class PurseMenu extends AbstractPlayerInventory {
     }
 
     @Override
-    public void load(Player player) {
+    public Inventory load(Player player) {
         Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
+        return inventory;
     }
 
     @Override

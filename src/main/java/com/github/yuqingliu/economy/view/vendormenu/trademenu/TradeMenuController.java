@@ -74,9 +74,9 @@ public class TradeMenuController {
 
     public void sell(Player player, int slotAmount) {
         Scheduler.runAsync((task) -> {
-            int amount = Math.min(vendorMenu.countItemToPlayer(player, item.getIcon().clone()), slotAmount);
+            int amount = Math.min(vendorMenu.countItemFromPlayer(player, item.getIcon().clone()), slotAmount);
             double profit = amount * currencyOption.getSellPrice();
-            boolean sucessfulItemRemoval = vendorMenu.removeItemToPlayer(player, item.getIcon().clone(), amount);
+            boolean sucessfulItemRemoval = vendorMenu.removeItemFromPlayer(player, item.getIcon().clone(), amount);
             if(!sucessfulItemRemoval) {
                 vendorMenu.getLogger().sendPlayerErrorMessage(player, "Not enough items to sell.");
                 return;

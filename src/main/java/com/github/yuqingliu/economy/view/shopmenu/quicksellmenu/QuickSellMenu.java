@@ -39,7 +39,7 @@ public class QuickSellMenu implements Listener {
             int slot = event.getSlot();
             if(controller.getSellOptions().contains(slot)) {
                 int slotAmount = controller.getQuantities()[slot - controller.getSell1()];
-                int amount = Math.min(slotAmount, shopMenu.countItemToPlayer(player, controller.getItem().getIcon().clone()));
+                int amount = Math.min(slotAmount, shopMenu.countItemFromPlayer(player, controller.getItem().getIcon().clone()));
                 controller.quickSell(amount, player);
             }
             if(slot == controller.getPrev()) {

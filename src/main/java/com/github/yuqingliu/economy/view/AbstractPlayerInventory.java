@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
     protected final Logger logger;
     @Setter protected Component displayName;
     protected final int inventorySize;
-    protected ItemStack[][] grid;
+    protected final Component unavailableComponent = Component.text("Unavailable", NamedTextColor.DARK_PURPLE);
     protected Map<Material, ItemStack> backgroundItems = new HashMap<>();   
     protected ItemStack nextPage;
     protected ItemStack prevPage;
@@ -50,17 +51,29 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         this.logger = logger;
         this.displayName = displayName;
         this.inventorySize = inventorySize;
-        this.grid = new ItemStack[inventoryLength][inventorySize/inventoryLength];
         initializeBackgroundItems();
+        initializeCommonItems();
     }
 
     private void initializeBackgroundItems() {
-        Component backgroundText = Component.text("UNAVAILABLE", NamedTextColor.DARK_PURPLE);
         for(Material material : Material.values()) {
             if(material.name().contains("STAINED_GLASS_PANE")) {
-                backgroundItems.put(material, createSlotItem(material, backgroundText));
+                backgroundItems.put(material, createSlotItem(material, unavailableComponent));
             }
         }
+    }
+
+    private void initializeCommonItems() {
+        this.nextPage = createSlotItem(Material.ARROW, Component.text("Next Page", NamedTextColor.AQUA));
+        this.prevPage = createSlotItem(Material.ARROW, Component.text("Previous Page", NamedTextColor.AQUA));
+        this.prevMenu = createSlotItem(Material.GREEN_WOOL, Component.text("Previous Menu", NamedTextColor.GREEN));
+        this.exitMenu = createSlotItem(Material.RED_WOOL, Component.text("Exit", NamedTextColor.RED));
+        this.unavailable = createSlotItem(Material.GLASS_PANE, unavailableComponent);
+        this.loading = createSlotItem(Material.BARRIER, Component.text("Loading...", NamedTextColor.RED));
+    }
+
+    public boolean isUnavailable(ItemStack item) {
+        return item.displayName().equals(unavailableComponent);
     }
 
     public ItemStack createSlotItem(Material material, Component displayName, List<Component> lore) {
@@ -99,25 +112,59 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         return item;
     }
 
-    public void initializeGrid(ItemStack backGroundItem) {
-        for(int i = 0; i < inventoryLength; i++) {
-            for (int j = 0; j < inventorySize/inventoryLength; j++) {
-                grid[i][j] = backGroundItem;
-            }
-        }
+    public int[] toCoords(int slot) {
+        int x = slot % inventoryLength;
+        int y = slot / inventoryLength;
+        return new int[] { x, y };
     }
 
-    public void renderGrid(Inventory inv) {
-        for(int i = 0; i < inventoryLength; i++) {
-            for (int j = 0; j < inventorySize/inventoryLength; j++) {
-                inv.setItem(i + (j * inventoryLength), grid[i][j]);
-            }
-        }
+    public void setItem(Inventory inv, int[] coords, ItemStack item) {
+        inv.setItem(coords[0] + (coords[1] * inventoryLength), item);
+    }
+
+    public void setItem(Inventory inv, List<Integer> coords, ItemStack item) {
+        inv.setItem(coords.get(0) + (coords.get(1) * inventoryLength), item);
     }
 
     public void clear(Inventory inv) {
         for (int i = 0; i < inventorySize; i++) {
             inv.setItem(i, new ItemStack(Material.AIR));
+        }
+    }
+
+    public void fill(Inventory inv, ItemStack background) {
+        for (int i = 0; i < inventorySize; i++) {
+            inv.setItem(i, background);
+        }
+    }
+
+    public boolean rectangleContains(int[] coords, List<int[]> rectangle) {
+        return rectangle.stream().anyMatch(coord -> Arrays.equals(coord, coords));
+    }
+
+    public List<int[]> rectangleArea(int[] start, int width, int length) {
+        List<int[]> results = new ArrayList<>();
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < length; j++) {
+                int[] current = new int[]{start[0] + j, start[1] + i};
+                results.add(current);
+            }
+        }
+        return results;
+    }
+
+    public void fillRectangleArea(Inventory inv, int[] start, int width, int length, ItemStack item) {
+        List<int[]> rectangleCoords = rectangleArea(start, width, length);
+        for(int[] coords : rectangleCoords) {
+            setItem(inv, coords, item);
+        }
+    }
+
+    public void rectangleAreaLoading(Inventory inv, int[] start, int width, int length) {
+        List<int[]> rectangleCoords = rectangleArea(start, width, length);
+        setItem(inv, rectangleCoords.get(0), loading);
+        for (int i = 1; i < rectangleCoords.size(); i++) {
+            setItem(inv, rectangleCoords.get(i), unavailable);
         }
     }
 
@@ -129,8 +176,8 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         }
     }
 
-    public boolean removeItemToPlayer(Player player, ItemStack item, int quantity) {
-        int totalItemCount = countItemToPlayer(player, item);
+    public boolean removeItemFromPlayer(Player player, ItemStack item, int quantity) {
+        int totalItemCount = countItemFromPlayer(player, item);
         if (totalItemCount < quantity) {
             return false;
         }
@@ -150,7 +197,7 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         return false;
     }
 
-    public int countItemToPlayer(Player player, ItemStack item) {
+    public int countItemFromPlayer(Player player, ItemStack item) {
         int count = 0;
         for (ItemStack inventoryItem : player.getInventory().getContents()) {
             if (inventoryItem != null && inventoryItem.isSimilar(item)) {
@@ -161,9 +208,8 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
     }
 
     @Override
-    public abstract void load(Player player);
+    public abstract Inventory load(Player player);
 
     @Override
     public abstract void open(Player player);
-
 }

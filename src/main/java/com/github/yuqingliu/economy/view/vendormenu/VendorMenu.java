@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import com.github.yuqingliu.economy.view.vendormenu.itemmenu.ItemMenu;
 import com.github.yuqingliu.economy.view.vendormenu.mainmenu.MainMenu;
 import com.github.yuqingliu.economy.view.vendormenu.trademenu.TradeMenu;
 import com.github.yuqingliu.economy.view.vendormenu.transactionmenu.TransactionMenu;
@@ -32,11 +31,10 @@ public class VendorMenu extends AbstractPlayerInventory {
     private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
-        MainMenu, ItemMenu, TransactionMenu, TradeMenu;
+        MainMenu, TransactionMenu, TradeMenu;
     }
 
     private final MainMenu mainMenu;
-    private final ItemMenu itemMenu;
     private final TransactionMenu transactionMenu;
     private final TradeMenu tradeMenu;
 
@@ -52,7 +50,6 @@ public class VendorMenu extends AbstractPlayerInventory {
         this.vendorService = vendorService;
         this.currencyService = currencyService;
         this.mainMenu = new MainMenu(this);
-        this.itemMenu = new ItemMenu(this);
         this.transactionMenu = new TransactionMenu(this);
         this.tradeMenu = new TradeMenu(this);
     }
@@ -69,9 +66,10 @@ public class VendorMenu extends AbstractPlayerInventory {
     }
 
     @Override
-    public void load(Player player) {
+    public Inventory load(Player player) {
         Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
+        return inventory;
     } 
 
     @Override

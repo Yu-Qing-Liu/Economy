@@ -76,8 +76,8 @@ public class BuyOrderMenuController {
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
-            shop.load(player);
-            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
+            Inventory inventory = shop.load(player);
+            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(inventory, item, player);
             Scheduler.runAsync((task) -> {
                 CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(userInput);
                 if (curr != null) {
@@ -91,7 +91,7 @@ public class BuyOrderMenuController {
                         data.setCurrencyTypeInput(userInput);
                         playersData.put(player, data);
                     }
-                    shop.getInventory().setItem(currency, icon);
+                    inventory.setItem(currency, icon);
                 }
             });
         };        
@@ -108,8 +108,8 @@ public class BuyOrderMenuController {
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
-            shop.load(player);
-            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
+            Inventory inventory = shop.load(player);
+            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(inventory, item, player);
             try {
                 int quantityInput = Integer.parseInt(userInput);
                 ItemStack quantityIcon = new ItemStack(Material.PAPER);
@@ -118,7 +118,7 @@ public class BuyOrderMenuController {
                     meta.displayName(Component.text(String.format("%sx", userInput), NamedTextColor.DARK_GREEN));
                 }
                 quantityIcon.setItemMeta(meta);
-                shop.getInventory().setItem(quantity, quantityIcon);
+                inventory.setItem(quantity, quantityIcon);
                 if(playersData.containsKey(player)) {
                     playersData.get(player).setQuantityIcon(quantityIcon);
                     playersData.get(player).setQuantityInput(quantityInput);
@@ -143,8 +143,8 @@ public class BuyOrderMenuController {
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
-            shop.load(player);
-            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(shop.getInventory(), item, player);
+            Inventory inventory = shop.load(player);
+            shopMenu.getBuyOrderMenu().getController().openBuyOrderMenu(inventory, item, player);
             try {
                 double unitPriceInput = Double.parseDouble(userInput);
                 ItemStack unitPriceIcon = new ItemStack(Material.PAPER);
@@ -153,7 +153,7 @@ public class BuyOrderMenuController {
                     meta.displayName(Component.text(String.format("%s $/unit", userInput), NamedTextColor.DARK_GREEN));
                 }
                 unitPriceIcon.setItemMeta(meta);
-                shop.getInventory().setItem(unitPrice, unitPriceIcon);
+                inventory.setItem(unitPrice, unitPriceIcon);
                 if(playersData.containsKey(player)) {
                     playersData.get(player).setUnitPriceIcon(unitPriceIcon);
                     playersData.get(player).setUnitPriceInput(unitPriceInput);
