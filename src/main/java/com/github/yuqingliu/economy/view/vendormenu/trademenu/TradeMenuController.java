@@ -3,12 +3,14 @@ package com.github.yuqingliu.economy.view.vendormenu.trademenu;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
@@ -23,24 +25,28 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class TradeMenuController {
     private final VendorMenu vendorMenu;
-    private final int itemSlot = 13;
-    private final int buy1 = 29;
-    private final int buyInventory = 33;
-    private final int sell1 = 38;
-    private final int sellInventory = 42;
-    private final int prev = 20;
-    private final int exit = 24;
-    private final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
-    private final List<Integer> border = Arrays.asList(3,4,5,12,14,21,22,23);
-    private final List<Integer> buyOptions = Arrays.asList(29,30,31,32,33);
-    private final List<Integer> sellOptions = Arrays.asList(38,39,40,41,42);
-    private final List<Integer> buttons = Arrays.asList(20,24);
-    private final int[] quantities = new int[] {1, 16, 32, 64};
+    private final int[] quantities = new int[] {1, 4, 8, 16, 32, 64};
+    private final int[] buyOptionsStart = new int[]{1,3};
+    private final int buyOptionsWidth = 1;
+    private final int buyOptionsLength = quantities.length;
+    private final int[] sellOptionsStart = new int[]{1,4};
+    private final int sellOptionsWidth = 1;
+    private final int sellOptionsLength = quantities.length;
+    private final int[] itemSlot = new int[]{4,1};
+    private final int[] buyInventoryButton = new int[]{7,3};
+    private final int[] sellInventoryButton = new int[]{7,4};
+    private final int[] prevMenuButton = new int[]{2,2};
+    private final int[] exitMenuButton = new int[]{6,2};
+    private final List<int[]> buyOptions;
+    private final List<int[]> sellOptions;
     private VendorItemEntity item;
     private CurrencyOption currencyOption;
+    private Map<Player, BukkitTask> tasks = new ConcurrentHashMap<>();
     
     public TradeMenuController(VendorMenu vendorMenu) {
         this.vendorMenu = vendorMenu;
+        this.buyOptions = vendorMenu.rectangleArea(buyOptionsStart, buyOptionsWidth, buyOptionsLength);
+        this.sellOptions = vendorMenu.rectangleArea(sellOptionsStart, sellOptionsWidth, sellOptionsLength);
     }   
 
     public void openTradeMenu(Inventory inv, VendorItemEntity item, CurrencyOption currencyOption, Player player) {
@@ -50,9 +56,9 @@ public class TradeMenuController {
             vendorMenu.getPlayerMenuTypes().put(player, MenuType.TradeMenu);
         }, Duration.ofMillis(50));
         vendorMenu.clear(inv);
-        frame(inv);
+        vendorMenu.fill(inv, vendorMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
         border(inv);
-        pagePtrs(inv);
+        buttons(inv, player);
         displayItem(inv);
         displayBuyOptions(inv);
         displaySellOptions(inv);
@@ -91,81 +97,63 @@ public class TradeMenuController {
         });
     }
 
+    public void onClose(Player player) {
+        tasks.get(player).cancel();
+        tasks.remove(player);
+    }
+
     private void displayItem(Inventory inv) {
-        inv.setItem(itemSlot, item.getIcon().clone());
+        vendorMenu.setItem(inv, itemSlot, item.getIcon().clone());
     }
 
-    private void displayBuyOptions(Inventory inv) {
-        for (int i = buy1; i < buyInventory; i++) {
-            int index = i - buy1;
-            ItemStack icon = new ItemStack(Material.LIME_STAINED_GLASS);
-            icon.setAmount(quantities[index]);
-            ItemMeta iconMeta = icon.getItemMeta();
-            iconMeta.displayName(Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED)));
-            Component cost = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(quantities[index]) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()));
-            iconMeta.lore(Arrays.asList(cost));
-            icon.setItemMeta(iconMeta);
-            inv.setItem(i, icon);
-        }
-        ItemStack inventoryOption = new ItemStack(Material.CHEST);
-        inv.setItem(buyInventory, inventoryOption);
-    }
-
-    private void displaySellOptions(Inventory inv) {
-        for (int i = sell1; i < sellInventory; i++) {
-            int index = i - sell1;
-            ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS);
-            icon.setAmount(quantities[index]);
-            ItemMeta iconMeta = icon.getItemMeta();
-            iconMeta.displayName(Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED)));
-            Component profit = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(quantities[index]) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()));
-            iconMeta.lore(Arrays.asList(profit));
-            icon.setItemMeta(iconMeta);
-            inv.setItem(i, icon);
-        }
-        ItemStack inventoryOption = new ItemStack(Material.CHEST);
-        inv.setItem(sellInventory, inventoryOption);
-    }
-
-    private void frame(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i = 0; i < vendorMenu.getInventorySize(); i++) {
-            inv.setItem(i, Placeholder);
-        }
+    private void buttons(Inventory inv, Player player) {
+        BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
+            int freeSpace = vendorMenu.countAvailableInventorySpace(player, item.getIcon().getType());
+            int amount = vendorMenu.countItemFromPlayer(player, item.getIcon());
+            List<Component> fillLore = Arrays.asList(
+                Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(freeSpace + "x", NamedTextColor.RED)),
+                Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(freeSpace) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))
+            );
+            List<Component> sellLore = Arrays.asList(
+                Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(amount + "x", NamedTextColor.RED)),
+                Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(amount) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))
+            );
+            ItemStack fillButton = vendorMenu.createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
+            ItemStack sellButton = vendorMenu.createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), sellLore);
+            vendorMenu.setItem(inv, buyInventoryButton, fillButton);
+            vendorMenu.setItem(inv, sellInventoryButton, sellButton);
+        }, Duration.ofSeconds(2),Duration.ofSeconds(0));
+        tasks.put(player, refreshTask);
+        vendorMenu.setItem(inv, prevMenuButton, vendorMenu.getPrevMenu());
+        vendorMenu.setItem(inv, exitMenuButton, vendorMenu.getExitMenu());
     }
 
     private void border(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i : border) {
-            inv.setItem(i, Placeholder);
+        ItemStack borderItem = vendorMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, vendorMenu.getUnavailableComponent());
+        vendorMenu.fillRectangleArea(inv, new int[]{3,0}, 3, 3, borderItem);
+    }
+
+    private void displayBuyOptions(Inventory inv) {
+        int index = 0;
+        for(int[] coords : buyOptions) {
+            Component buy = Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED));
+            Component cost = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(quantities[index]) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()));
+            ItemStack option = vendorMenu.createSlotItem(Material.LIME_STAINED_GLASS, buy, cost);
+            option.setAmount(quantities[index]);
+            vendorMenu.setItem(inv, coords, option);
+            index++;
         }
     }
 
-    private void pagePtrs(Inventory inv) {
-        ItemStack prev = new ItemStack(Material.GREEN_WOOL);
-        ItemMeta prevmeta = prev.getItemMeta();
-        if(prevmeta != null) {
-            prevmeta.displayName(Component.text("Items", NamedTextColor.GRAY));
+    private void displaySellOptions(Inventory inv) {
+        int index = 0;
+        for(int[] coords : sellOptions) {
+            Component sell = Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED));
+            Component profit = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(quantities[index]) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()));
+            ItemStack option = vendorMenu.createSlotItem(Material.RED_STAINED_GLASS, sell, profit);
+            option.setAmount(quantities[index]);
+            vendorMenu.setItem(inv, coords, option);
+            index++;
         }
-        prev.setItemMeta(prevmeta);
-        inv.setItem(this.prev, prev);
-
-        ItemStack exit = new ItemStack(Material.RED_WOOL);
-        ItemMeta emeta = exit.getItemMeta();
-        if(emeta != null) {
-            emeta.displayName(Component.text("Exit", NamedTextColor.RED));
-        }
-        exit.setItemMeta(emeta);
-        inv.setItem(this.exit, exit);
     }
 }

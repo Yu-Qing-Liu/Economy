@@ -1,5 +1,6 @@
 package com.github.yuqingliu.economy.view;
 
+import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.SoundManager;
@@ -9,6 +10,7 @@ import com.google.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -153,6 +155,17 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         return results;
     }
 
+    public int rectangleIndex(int[] coords, List<int[]> rectangle) {
+        int index = 0;
+        for(int[] coord : rectangle) {
+            if(Arrays.equals(coord, coords)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
     public void fillRectangleArea(Inventory inv, int[] start, int width, int length, ItemStack item) {
         List<int[]> rectangleCoords = rectangleArea(start, width, length);
         for(int[] coords : rectangleCoords) {
@@ -169,10 +182,18 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
     }
 
     public void addItemToPlayer(Player player, ItemStack item, int quantity) {
-        item.setAmount(quantity);
-        if (!player.getInventory().addItem(item).isEmpty()) {
-            Location location = player.getLocation();
-            player.getWorld().dropItemNaturally(location, item);
+        int required = quantity;
+        int maxStackSize = item.getType().getMaxStackSize();
+        while(required > 0) {
+            int substractedAmount = Math.min(required, maxStackSize);
+            item.setAmount(substractedAmount);
+            if (!player.getInventory().addItem(item).isEmpty()) {
+                Scheduler.runLater((task) -> {
+                    Location location = player.getLocation();
+                    player.getWorld().dropItemNaturally(location, item);
+                }, Duration.ofSeconds(0));
+            }
+            required -= substractedAmount;
         }
     }
 
@@ -205,6 +226,21 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
             }
         }
         return count;
+    }
+
+    public int countAvailableInventorySpace(Player player, Material material) {
+        Inventory inventory = player.getInventory();
+        int maxStackSize = material.getMaxStackSize();
+        int availableSpace = 0;
+        for (int i = 0; i < 36; i++) {
+            ItemStack item = inventory.getItem(i);
+            if (item == null || item.getType() == Material.AIR) {
+                availableSpace += maxStackSize;
+            } else if (item.getType() == material) {
+                availableSpace += maxStackSize - item.getAmount();
+            }
+        }
+        return availableSpace;  
     }
 
     @Override
