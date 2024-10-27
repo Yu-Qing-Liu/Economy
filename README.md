@@ -49,8 +49,18 @@ The Economy plugin is a Minecraft server plugin designed to manage currencies, s
 - **Permission:** `economy.admin`
 
 #### `/vendoritem`
-- **Usage:** `/vendoritem add <vendorName> <sectionName> <currencyName1> <buyPrice1> <sellPrice1> <currencyName2> <buyPrice2> <sellPrice2> ...`; `/vendoritem remove <vendorName> <sectionName>`
+- **Usage:** `/vendoritem add,update <vendorName> <sectionName> <currencyName1> <buyPrice1> <sellPrice1> <currencyName2> <buyPrice2> <sellPrice2> ...`; `/vendoritem remove <vendorName> <sectionName>`
 - **Description:** Add or remove the item in the player's main hand as an option in a vendor section, specifying multiple currencies and prices.
+- **Permission:** `economy.admin`
+
+#### `/bank`
+- **Usage:** `/bank create <bankName> <interestCooldown (hrs); /bank delete <bankName`
+- **Description:** Create or delete a bank. Spawns a villager acting as the banker.
+- **Permission:** `economy.admin`
+
+#### `/account`
+- **Usage:** `/account create <accountName> <bankName> <interestRate(%)> <unlockCurrencyName> <unlockCost>; /account delete <accountName> <bankName>`
+- **Description:** Create or Delete a bank account option. Interest rate':' 10.25 -> 10.25%. Main hand item is used as icon
 - **Permission:** `economy.admin`
 
 ### User Commands
