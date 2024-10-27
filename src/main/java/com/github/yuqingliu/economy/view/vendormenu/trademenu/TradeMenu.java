@@ -56,10 +56,12 @@ public class TradeMenu implements Listener {
             if(Arrays.equals(slot, controller.getBuyInventoryButton())) {
                 int amount = vendorMenu.countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
                 controller.buy(player, amount);
+                return;
             }
             if(Arrays.equals(slot, controller.getSellInventoryButton())) {
                 int amount = vendorMenu.countItemFromPlayer(player, controller.getItem().getIcon());
                 controller.sell(player, amount);
+                return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
                 controller.onClose(player);

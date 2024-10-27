@@ -54,6 +54,10 @@ public class MainMenu implements Listener {
                 shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, item, player);
                 return;
             }
+            if(Arrays.equals(slot, controller.getOrdersMenuButton())) {
+                shopMenu.getOrdersMenu().getController().openOrdersMenu(clickedInventory, player);
+                return;
+            }
             if(Arrays.equals(slot, controller.getNextSectionsButton())) {
                 controller.nextSectionPage(clickedInventory, player);
                 return;

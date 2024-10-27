@@ -52,10 +52,12 @@ public class QuickSellMenu implements Listener {
             if(Arrays.equals(slot, controller.getSellInventoryButton())) {
                 int amount = shopMenu.countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
                 controller.quickSell(amount, player);
+                return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
                 controller.onClose(player);
                 shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
                 clickedInventory.close();

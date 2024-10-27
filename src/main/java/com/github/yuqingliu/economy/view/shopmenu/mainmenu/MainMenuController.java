@@ -37,6 +37,8 @@ public class MainMenuController {
     private final int[] nextItemsButton = new int[]{2,5};
     private final int[] prevMenuButton = new int[]{1,0};
     private final int[] exitMenuButton = new int[]{1,5};
+    private final int[] buyOrdersMenuButton = new int[]{4,5};
+    private final int[] sellOrdersMenuButton = new int[]{6,5};
     private final int sectionsLength = 1;
     private final int sectionsWidth = 4;
     private final int itemsLength = 5;
@@ -131,6 +133,8 @@ public class MainMenuController {
         shopMenu.setItem(inv, nextItemsButton, shopMenu.getNextPage());
         shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
         shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
+        shopMenu.setItem(inv, buyOrdersMenuButton, shopMenu.createSlotItem(Material.ENDER_CHEST, Component.text("Buy Orders", NamedTextColor.LIGHT_PURPLE)));
+        shopMenu.setItem(inv, sellOrdersMenuButton, shopMenu.createSlotItem(Material.ENDER_CHEST, Component.text("Sell Orders", NamedTextColor.LIGHT_PURPLE)));
     }
 
     private void fetchSections() {
