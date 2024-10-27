@@ -38,6 +38,7 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
     @Setter protected Component displayName;
     protected final int inventorySize;
     protected final Component unavailableComponent = Component.text("Unavailable", NamedTextColor.DARK_PURPLE);
+    protected final Component loadingComponent = Component.text("Loading...", NamedTextColor.RED);
     protected Map<Material, ItemStack> backgroundItems = new HashMap<>();   
     protected ItemStack nextPage;
     protected ItemStack prevPage;
@@ -71,11 +72,11 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         this.prevMenu = createSlotItem(Material.GREEN_WOOL, Component.text("Previous Menu", NamedTextColor.GREEN));
         this.exitMenu = createSlotItem(Material.RED_WOOL, Component.text("Exit", NamedTextColor.RED));
         this.unavailable = createSlotItem(Material.GLASS_PANE, unavailableComponent);
-        this.loading = createSlotItem(Material.BARRIER, Component.text("Loading...", NamedTextColor.RED));
+        this.loading = createSlotItem(Material.BARRIER, loadingComponent);
     }
 
     public boolean isUnavailable(ItemStack item) {
-        return item.displayName().equals(unavailableComponent);
+        return item.isSimilar(loading) || item.isSimilar(unavailable);
     }
 
     public ItemStack createSlotItem(Material material, Component displayName, List<Component> lore) {
