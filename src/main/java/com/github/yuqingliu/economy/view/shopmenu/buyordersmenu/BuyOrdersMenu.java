@@ -62,6 +62,10 @@ public class BuyOrdersMenu implements Listener {
                 shopMenu.getMainMenu().getController().openMainMenu(clickedInventory, player);
                 return;
             }
+            if(Arrays.equals(slot, controller.getReloadButton())) {
+                controller.reload(clickedInventory, player);
+                return;
+            }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
                 clickedInventory.close();
             }

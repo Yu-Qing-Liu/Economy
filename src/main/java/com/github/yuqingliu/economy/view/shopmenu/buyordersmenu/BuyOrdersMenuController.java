@@ -31,6 +31,7 @@ public class BuyOrdersMenuController {
     private final ShopMenu shopMenu;
     private final int[] prevMenuButton = new int[]{1,2};
     private final int[] exitMenuButton = new int[]{1,3};
+    private final int[] reloadButton = new int[]{1,4};
     private final int[] nextBuyOrdersButton = new int[]{7,2};
     private final int[] prevBuyOrdersButton = new int[]{7,3};
     private final int[] buyOrdersStart = new int[]{2,1};
@@ -55,6 +56,10 @@ public class BuyOrdersMenuController {
         shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
         border(inv);
         buttons(inv);
+        reload(inv, player);
+    }
+
+    public void reload(Inventory inv, Player player) {
         shopMenu.rectangleAreaLoading(inv, buyOrdersStart, buyOrdersWidth, buyOrdersLength);
         Scheduler.runAsync((task) -> {
             fetchBuyOrders(player);
@@ -134,11 +139,9 @@ public class BuyOrdersMenuController {
     private void border(Inventory inv) {
         ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
         int[] b1 = new int[]{1,1};
-        int[] b2 = new int[]{1,4};
         int[] b3 = new int[]{7,1};
         int[] b4 = new int[]{7,4};
         shopMenu.setItem(inv, b1, borderItem);
-        shopMenu.setItem(inv, b2, borderItem);
         shopMenu.setItem(inv, b3, borderItem);
         shopMenu.setItem(inv, b4, borderItem);
     }
@@ -148,5 +151,6 @@ public class BuyOrdersMenuController {
         shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
         shopMenu.setItem(inv, nextBuyOrdersButton, shopMenu.getNextPage());
         shopMenu.setItem(inv, prevBuyOrdersButton, shopMenu.getPrevPage());
+        shopMenu.setItem(inv, reloadButton, shopMenu.createSlotItem(Material.YELLOW_WOOL, Component.text("Reload", NamedTextColor.YELLOW)));
     }
 }

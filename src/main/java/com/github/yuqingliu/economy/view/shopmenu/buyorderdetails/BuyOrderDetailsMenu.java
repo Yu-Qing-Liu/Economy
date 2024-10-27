@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.shopmenu.buyorderdetails;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,18 +38,25 @@ public class BuyOrderDetailsMenu implements Listener {
         event.setCancelled(true);
 
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.BuyOrderDetailsMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int slot = event.getSlot();
-            if(slot == controller.getPrev()) {
+            int[] slot = shopMenu.toCoords(event.getSlot());
+            if(Arrays.equals(slot, controller.getPrevMenuButton())) {
                 shopMenu.getBuyOrdersMenu().getController().openBuyOrdersMenu(clickedInventory, player);
+                return;
             }
-            if(slot == controller.getExit()) {
-                clickedInventory.close();
-            }
-            if(slot == controller.getCancelOrder()) {
+            if(Arrays.equals(slot, controller.getCancelOrderButton())) {
                 controller.cancelOrder(clickedInventory, player);
+                return;
             }
-            if(slot == controller.getClaimOrder()) {
+            if(Arrays.equals(slot, controller.getClaimOrderButton())) {
                 controller.claimOrder(clickedInventory, player);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getRefreshButton())) {
+                controller.reload(clickedInventory, player);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getExitMenuButton())) {
+                clickedInventory.close();
             }
         }
     }
