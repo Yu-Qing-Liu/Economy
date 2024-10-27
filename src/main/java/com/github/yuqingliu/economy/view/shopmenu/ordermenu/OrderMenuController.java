@@ -245,7 +245,7 @@ public class OrderMenuController {
                 if(valid > 0) {
                     shopMenu.setItem(inv, coords, item);
                 } else {
-                    shopMenu.setItem(inv, coords, shopMenu.getUnavailable());
+                    shopMenu.setItem(inv, coords, shopMenu.getLoading());
                 }
             }
         }
@@ -289,7 +289,7 @@ public class OrderMenuController {
                 if(valid > 0) {
                     shopMenu.setItem(inv, coords, item);
                 } else {
-                    shopMenu.setItem(inv, coords, shopMenu.getUnavailable());
+                    shopMenu.setItem(inv, coords, shopMenu.getLoading());
                 }
             }
         }

@@ -87,7 +87,12 @@ public class ShopService {
         order.setUnitPrice(unitPrice);
         order.setCurrencyType(currencyType);
         item.getOrders().add(order);
-        return shopItemRepository.update(item);
+        if(shopItemRepository.update(item)) {
+            return true;
+        } else {
+            item.getOrders().remove(order);
+            return false;
+        }
     }
 
     public boolean createSellOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
@@ -101,7 +106,12 @@ public class ShopService {
         order.setUnitPrice(unitPrice);
         order.setCurrencyType(currencyType);
         item.getOrders().add(order);
-        return shopItemRepository.update(item);
+        if(shopItemRepository.update(item)) {
+            return true;
+        } else {
+            item.getOrders().remove(order);
+            return false;
+        }
     }
 
     public boolean updateOrder(ShopOrderEntity newOrder) {

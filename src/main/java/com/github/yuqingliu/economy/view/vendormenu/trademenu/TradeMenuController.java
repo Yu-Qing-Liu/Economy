@@ -55,7 +55,6 @@ public class TradeMenuController {
         Scheduler.runLaterAsync((task) -> {
             vendorMenu.getPlayerMenuTypes().put(player, MenuType.TradeMenu);
         }, Duration.ofMillis(50));
-        vendorMenu.clear(inv);
         vendorMenu.fill(inv, vendorMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
         border(inv);
         buttons(inv, player);
