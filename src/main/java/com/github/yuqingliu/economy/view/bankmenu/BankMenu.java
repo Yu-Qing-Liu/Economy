@@ -1,5 +1,6 @@
 package com.github.yuqingliu.economy.view.bankmenu;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,6 +12,7 @@ import com.google.inject.Inject;
 
 import lombok.Getter;
 
+import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
@@ -32,6 +34,7 @@ public class BankMenu extends AbstractPlayerInventory {
     private final CurrencyService currencyService;
     private final InventoryManager inventoryManager;
     private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
+    private final Object lock = new Object();
 
     public enum MenuType {
         MainMenu, AccountMenu, DepositMenu, WithdrawMenu;
@@ -58,6 +61,7 @@ public class BankMenu extends AbstractPlayerInventory {
         this.accountMenu = new AccountMenu(this);
         this.depositMenu = new DepositMenu(this);
         this.WithdrawMenu = new WithdrawMenu(this);
+        interestTask();
     }
     
     public String getBankName() {
@@ -69,6 +73,18 @@ public class BankMenu extends AbstractPlayerInventory {
             return "";
         }
         return PlainTextComponentSerializer.plainText().serialize(component);
+    }
+
+    private void interestTask() {
+        Scheduler.runTimerAsync((task) -> {
+            synchronized (lock) {
+                try {
+                    bankService.depositAllInterest();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, Duration.ofSeconds(1) , Duration.ofSeconds(0));
     }
 
     @Override
