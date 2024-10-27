@@ -106,4 +106,24 @@ public class BankService {
         }
         return true;
     }
+
+    public boolean withdrawPlayerAccount(OfflinePlayer player, double amount, CurrencyEntity currency) {
+        if(currency.getAmount() < amount) {
+            return false;
+        }
+        double initial = currency.getAmount();
+        currency.setAmount(initial - amount);
+        boolean sucessfulWithdrawal = currencyRepository.update(currency);
+        if(!sucessfulWithdrawal) {
+            currency.setAmount(initial);
+            return false;
+        }
+        boolean sucessfulDeposit = currencyService.depositPlayerPurse(player, currency.getCurrencyName(), amount);
+        if(!sucessfulDeposit) {
+            currency.setAmount(initial);
+            currencyRepository.update(currency);
+            return false;
+        }
+        return true;
+    }
 }

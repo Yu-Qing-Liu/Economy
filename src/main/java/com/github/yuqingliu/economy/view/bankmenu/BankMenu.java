@@ -21,6 +21,7 @@ import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 import com.github.yuqingliu.economy.view.bankmenu.accountmenu.AccountMenu;
 import com.github.yuqingliu.economy.view.bankmenu.depositmenu.DepositMenu;
 import com.github.yuqingliu.economy.view.bankmenu.mainmenu.MainMenu;
+import com.github.yuqingliu.economy.view.bankmenu.withdrawmenu.WithdrawMenu;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -39,6 +40,7 @@ public class BankMenu extends AbstractPlayerInventory {
     private final MainMenu mainMenu;
     private final AccountMenu accountMenu;
     private final DepositMenu depositMenu;
+    private final WithdrawMenu WithdrawMenu;
 
     @Inject
     public BankMenu(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName, BankService bankService, CurrencyService currencyService, InventoryManager inventoryManager) {
@@ -55,6 +57,7 @@ public class BankMenu extends AbstractPlayerInventory {
         this.mainMenu = new MainMenu(this);
         this.accountMenu = new AccountMenu(this);
         this.depositMenu = new DepositMenu(this);
+        this.WithdrawMenu = new WithdrawMenu(this);
     }
     
     public String getBankName() {
