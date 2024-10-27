@@ -13,6 +13,7 @@ import com.google.inject.Singleton;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,8 @@ public class BankService {
     private final AccountRepository accountRepository;
     @Inject
     private final BankRepository bankRepository;
+    @Inject
+    private final CurrencyService currencyService;
 
     public boolean addBank(String bankName, long cooldown) {
         BankEntity newBank = new BankEntity();
@@ -87,5 +90,71 @@ public class BankService {
 
     public boolean updateAccount(AccountEntity account) {
         return accountRepository.update(account);
+    }
+
+    public boolean depositPlayerAccount(OfflinePlayer player, double amount, CurrencyEntity currency) {
+        boolean sucessfulWithdrawal = currencyService.withdrawPlayerPurse(player, currency.getCurrencyName(), amount);
+        if(!sucessfulWithdrawal) {
+            return false;
+        }
+        double initial = currency.getAmount();
+        currency.setAmount(initial + amount);
+        boolean sucessfulDeposit = currencyRepository.update(currency);
+        if(!sucessfulDeposit) {
+            currency.setAmount(initial);
+            currencyService.depositPlayerPurse(player, currency.getCurrencyName(), amount);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean withdrawPlayerAccount(OfflinePlayer player, double amount, CurrencyEntity currency) {
+        if(currency.getAmount() < amount) {
+            return false;
+        }
+        double initial = currency.getAmount();
+        currency.setAmount(initial - amount);
+        boolean sucessfulWithdrawal = currencyRepository.update(currency);
+        if(!sucessfulWithdrawal) {
+            currency.setAmount(initial);
+            return false;
+        }
+        boolean sucessfulDeposit = currencyService.depositPlayerPurse(player, currency.getCurrencyName(), amount);
+        if(!sucessfulDeposit) {
+            currency.setAmount(initial);
+            currencyRepository.update(currency);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean depositInterest(BankEntity bank) {
+        Instant now = Instant.now();
+        Instant lastInterestTimestamp = bank.getLastInterestTimestamp();
+        Duration interestCooldown = bank.getInterestCooldown();
+        Instant nextInterestTimestamp = lastInterestTimestamp.plus(interestCooldown);
+        if(now.isAfter(nextInterestTimestamp)) {
+            Set<AccountEntity> bankAccounts = bank.getAccounts();
+            for(AccountEntity account : bankAccounts) {
+                Set<CurrencyEntity> currencies = account.getCurrencies();
+                for(CurrencyEntity currency : currencies) {
+                    double initial = currency.getAmount();
+                    double profit = initial * account.getInterestRate();
+                    currency.setAmount(initial + profit);
+                    currencyRepository.update(currency);
+                }
+            }
+            bank.setLastInterestTimestamp(now);
+            bankRepository.update(bank);
+        }
+        return true;
+    }
+
+    public boolean depositAllInterest() {
+        Set<BankEntity> banks = bankRepository.findAll();
+        banks.forEach(bank -> {
+            depositInterest(bank);
+        });
+        return true;
     }
 }

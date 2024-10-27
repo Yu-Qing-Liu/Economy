@@ -21,6 +21,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Getter;
@@ -58,6 +59,7 @@ public class ShopItemEntity {
     private ShopSectionEntity shopSection;
 
     @OneToMany(mappedBy = "shopItem", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderBy("itemName ASC")
     private Set<ShopOrderEntity> orders = new HashSet<>();
     
     @Transient

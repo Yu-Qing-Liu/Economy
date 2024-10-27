@@ -108,32 +108,37 @@ public class PluginModule extends AbstractModule {
     // Services
     @Provides
     @Singleton
-    public PlayerService providePlayerService(PlayerRepository playerRepository, CurrencyRepository currencyRepository) {
+    public PlayerService providePlayerService(PlayerRepository playerRepository,
+            CurrencyRepository currencyRepository) {
         return new PlayerService(playerRepository, currencyRepository);
     }
 
     @Provides
     @Singleton
-    public CurrencyService provideCurrencyService(CurrencyRepository currencyRepository, BankRepository bankRepository, PurseRepository purseRepository) {
+    public CurrencyService provideCurrencyService(CurrencyRepository currencyRepository, BankRepository bankRepository,
+            PurseRepository purseRepository) {
         return new CurrencyService(currencyRepository, bankRepository, purseRepository);
     }
 
     @Provides
     @Singleton
-    public VendorService provideVendorService(VendorRepository vendorRepository, VendorSectionRepository vendorSectionRepository, VendorItemRepository vendorItemRepository) {
+    public VendorService provideVendorService(VendorRepository vendorRepository,
+            VendorSectionRepository vendorSectionRepository, VendorItemRepository vendorItemRepository) {
         return new VendorService(vendorRepository, vendorSectionRepository, vendorItemRepository);
     }
 
     @Provides
     @Singleton
-    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository) {
+    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository,
+            ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository) {
         return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository);
     }
 
     @Provides
     @Singleton
-    public BankService provideBankService(PlayerRepository playerRepository, CurrencyRepository currencyRepository, AccountRepository accountRepository, BankRepository bankRepository) {
-        return new BankService(playerRepository, currencyRepository, accountRepository, bankRepository);
+    public BankService provideBankService(PlayerRepository playerRepository, CurrencyRepository currencyRepository,
+            AccountRepository accountRepository, BankRepository bankRepository, CurrencyService currencyService) {
+        return new BankService(playerRepository, currencyRepository, accountRepository, bankRepository, currencyService);
     }
 
     // Managers
@@ -152,62 +157,55 @@ public class PluginModule extends AbstractModule {
     @Provides
     @Singleton
     public EventManager provideEventManager(
-        PlayerService playerService,
-        NameSpacedKeyManager nameSpacedKeyManager,
-        InventoryManager inventoryManager
-    ) {
+            PlayerService playerService,
+            NameSpacedKeyManager nameSpacedKeyManager,
+            InventoryManager inventoryManager) {
         return new EventManagerImpl(
-            plugin,
-            playerService,
-            nameSpacedKeyManager,
-            inventoryManager
-        );
+                plugin,
+                playerService,
+                nameSpacedKeyManager,
+                inventoryManager);
     }
 
     @Provides
     @Singleton
     public InventoryManager provideInventoryManager(
-        EventManager eventManager,
-        SoundManager soundManager,
-        Logger logger,
-        CurrencyService currencyService,
-        VendorService vendorService,
-        ShopService shopService,
-        BankService bankService
-    ) {
+            EventManager eventManager,
+            SoundManager soundManager,
+            Logger logger,
+            CurrencyService currencyService,
+            VendorService vendorService,
+            ShopService shopService,
+            BankService bankService) {
         return new InventoryManagerImpl(
-            eventManager,
-            soundManager,
-            logger,
-            currencyService,
-            vendorService,
-            shopService,
-            bankService
-        );
+                eventManager,
+                soundManager,
+                logger,
+                currencyService,
+                vendorService,
+                shopService,
+                bankService);
     }
 
     @Provides
     @Singleton
     public CommandManager provideCommandManager(
-        Logger logger,
-        InventoryManager inventoryManager,
-        CurrencyService currencyService,
-        VendorService vendorService,
-        ShopService shopService,
-        BankService bankService,
-        NameSpacedKeyManager nameSpacedKeyManager
-    ) {
+            Logger logger,
+            InventoryManager inventoryManager,
+            CurrencyService currencyService,
+            VendorService vendorService,
+            ShopService shopService,
+            BankService bankService,
+            NameSpacedKeyManager nameSpacedKeyManager) {
         return new CommandManagerImpl(
-            plugin,
-            logger,
-            inventoryManager,
-            currencyService,
-            vendorService,
-            shopService,
-            bankService,
-            nameSpacedKeyManager
-        );
+                plugin,
+                logger,
+                inventoryManager,
+                currencyService,
+                vendorService,
+                shopService,
+                bankService,
+                nameSpacedKeyManager);
     }
 
 }
-

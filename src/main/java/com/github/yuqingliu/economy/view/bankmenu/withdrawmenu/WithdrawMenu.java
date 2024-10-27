@@ -1,4 +1,4 @@
-package com.github.yuqingliu.economy.view.bankmenu.accountmenu;
+package com.github.yuqingliu.economy.view.bankmenu.withdrawmenu;
 
 import java.util.Arrays;
 
@@ -10,19 +10,20 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 
 import lombok.Getter;
 
 @Getter
-public class AccountMenu implements Listener {
+public class WithdrawMenu implements Listener {
     private final BankMenu bankMenu;
-    private final AccountMenuController controller;
+    private final WithdrawMenuController controller;
     
-    public AccountMenu(BankMenu bankMenu) {
+    public WithdrawMenu(BankMenu bankMenu) {
         this.bankMenu = bankMenu;
-        this.controller = new AccountMenuController(bankMenu);
+        this.controller = new WithdrawMenuController(bankMenu);
         bankMenu.getEventManager().registerEvent(this);
     }
 
@@ -38,21 +39,27 @@ public class AccountMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.AccountMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.WithdrawMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int[] slot = bankMenu.toCoords(event.getSlot());
             if(bankMenu.isUnavailable(currentItem)) {
                 return;
             }
+            if(bankMenu.rectangleContains(slot, controller.getCurrencies())) {
+                int pageNumber = controller.getPageNumbers().get(player)[0];
+                CurrencyEntity currency = controller.getPageData().get(pageNumber).get(Arrays.asList(slot[0], slot[1]));
+                controller.withdraw(clickedInventory, player, currency);
+                return;
+            }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                bankMenu.getMainMenu().getController().openMainMenu(player, clickedInventory);
+                bankMenu.getAccountMenu().getController().openAccountMenu(player, clickedInventory, controller.getAccounts().get(player));
                 return;
             }
-            if(Arrays.equals(slot, controller.getDepositButton())) {
-                bankMenu.getDepositMenu().getController().openDepositMenu(player, clickedInventory, controller.getAccounts().get(player));
+            if(Arrays.equals(slot, controller.getNextPage())) {
+                controller.nextPage(player, clickedInventory);
                 return;
             }
-            if(Arrays.equals(slot, controller.getWithdrawButton())) {
-                bankMenu.getWithdrawMenu().getController().openWithdrawMenu(player, clickedInventory, controller.getAccounts().get(player));
+            if(Arrays.equals(slot, controller.getPrevPage())) {
+                controller.prevPage(player, clickedInventory);
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {

@@ -16,6 +16,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,6 +45,7 @@ public class VendorSectionEntity {
     private VendorEntity vendor;
 
     @OneToMany(mappedBy = "vendorSection", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderBy("itemName ASC")
     private Set<VendorItemEntity> items = new LinkedHashSet<>();
 
     public ItemStack getIcon() {
