@@ -173,10 +173,15 @@ public class QuickSellMenuController {
                     profit += amount * order.getUnitPrice();
                 }
             }
-            int leftover = Math.max(quantities[index], quantities[index] - qty);
+            int leftover;
+            if(quantities[index] - qty > 0) {
+                leftover = quantities[index] - qty;
+            } else {
+                leftover = quantities[index];
+            }
             Component sell = Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
             Component profitComponent = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
-            ItemStack option = shopMenu.createSlotItem(Material.LIME_STAINED_GLASS, sell, profitComponent);
+            ItemStack option = shopMenu.createSlotItem(Material.RED_STAINED_GLASS, sell, profitComponent);
             option.setAmount(leftover);
             shopMenu.setItem(inv, coords, option);
             index++;
@@ -203,8 +208,14 @@ public class QuickSellMenuController {
                     profit += amount * order.getUnitPrice();
                 }
             }
+            int leftover;
+            if(total - qty > 0) {
+                leftover = total - qty;
+            } else {
+                leftover = 0;
+            }
             List<Component> fillLore = Arrays.asList(
-                Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(total - qty + "x", NamedTextColor.RED)),
+                Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
                 Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
             );
             ItemStack sellButton = shopMenu.createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), fillLore);

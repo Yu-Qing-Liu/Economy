@@ -28,11 +28,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class QuickBuyMenuController {
     private final ShopMenu shopMenu;
     private final int[] quantities = new int[] {1, 4, 8, 16, 32, 64};
-    private final int[] buyOptionsStart = new int[]{1,3};
+    private final int[] buyOptionsStart = new int[]{1,4};
     private final int buyOptionsWidth = 1;
     private final int buyOptionsLength = quantities.length;
     private final int[] itemSlot = new int[]{4,1};
-    private final int[] buyInventoryButton = new int[]{7,3};
+    private final int[] buyInventoryButton = new int[]{7,4};
     private final int[] prevMenuButton = new int[]{2,2};
     private final int[] exitMenuButton = new int[]{6,2};
     private final List<int[]> buyOptions;
@@ -158,7 +158,12 @@ public class QuickBuyMenuController {
                     cost += amount * order.getUnitPrice();
                 }
             }
-            int leftover = Math.max(quantities[index], quantities[index] - qty);
+            int leftover;
+            if(quantities[index] - qty > 0) {
+                leftover = quantities[index] - qty;
+            } else {
+                leftover = quantities[index];
+            }
             Component buy = Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
             Component costComponent = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
             ItemStack option = shopMenu.createSlotItem(Material.LIME_STAINED_GLASS, buy, costComponent);
@@ -188,8 +193,14 @@ public class QuickBuyMenuController {
                     cost += amount * order.getUnitPrice();
                 }
             }
+            int leftover;
+            if(freeSpace - qty > 0) {
+                leftover = freeSpace - qty;
+            } else {
+                leftover = 0;
+            }
             List<Component> fillLore = Arrays.asList(
-                Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(freeSpace - qty + "x", NamedTextColor.RED)),
+                Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
                 Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
             );
             ItemStack fillButton = shopMenu.createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
