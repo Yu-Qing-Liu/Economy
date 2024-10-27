@@ -84,7 +84,7 @@ public class BankMenu extends AbstractPlayerInventory {
                     e.printStackTrace();
                 }
             }
-        }, Duration.ofSeconds(1) , Duration.ofSeconds(0));
+        }, Duration.ofSeconds(10) , Duration.ofSeconds(0));
     }
 
     @Override
