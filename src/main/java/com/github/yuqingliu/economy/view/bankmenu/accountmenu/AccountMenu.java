@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.bankmenu.accountmenu;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,8 +18,6 @@ import lombok.Getter;
 @Getter
 public class AccountMenu implements Listener {
     private final BankMenu bankMenu;
-    private final int prevPagePtr = 10;
-    private final int nextPagePtr = 16;
     private final AccountMenuController controller;
     
     public AccountMenu(BankMenu bankMenu) {
@@ -40,11 +40,21 @@ public class AccountMenu implements Listener {
         event.setCancelled(true);
 
         if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.AccountMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int slot = event.getSlot();
-            if(slot == controller.getPrev()) {
-                bankMenu.getMainMenu().getController().openMainMenu(player, clickedInventory);
+            int[] slot = bankMenu.toCoords(event.getSlot());
+            if(bankMenu.isUnavailable(currentItem)) {
+                return;
             }
-            if(slot == controller.getExit()) {
+            if(Arrays.equals(slot, controller.getPrevMenuButton())) {
+                bankMenu.getMainMenu().getController().openMainMenu(player, clickedInventory);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getDepositButton())) {
+                return;
+            }
+            if(Arrays.equals(slot, controller.getWithdrawButton())) {
+                return;
+            }
+            if(Arrays.equals(slot, controller.getExitMenuButton())) {
                 clickedInventory.close();
             }
         }

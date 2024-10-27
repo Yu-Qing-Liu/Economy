@@ -25,11 +25,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class AccountMenuController {
     private final BankMenu bankMenu;
-    private final int prev = 10;
-    private final int exit = 11;
-    private final int accountDetail = 12;
-    private final int deposit = 14;
-    private final int withdraw = 16;
+    private final int[] prevMenuButton = new int[]{1,1};
+    private final int[] exitMenuButton = new int[]{2,1};
+    private final int[] accountInfo = new int[]{3,1};
+    private final int[] depositButton = new int[]{5,1};
+    private final int[] withdrawButton = new int[]{7,1};
     private Map<Player, AccountEntity> accounts = new ConcurrentHashMap<>();
 
     public AccountMenuController(BankMenu bankMenu) {
@@ -41,8 +41,7 @@ public class AccountMenuController {
         Scheduler.runLaterAsync((task) -> {
             bankMenu.getPlayerMenuTypes().put(player, MenuType.AccountMenu);
         }, Duration.ofMillis(50));
-        bankMenu.clear(inv);
-        frame(inv);
+        bankMenu.fill(inv, bankMenu.getBackgroundItems().get(Material.ORANGE_STAINED_GLASS_PANE));
         accountDetails(inv, player);
         buttons(inv);
     }
@@ -65,52 +64,13 @@ public class AccountMenuController {
             meta.lore(lore);
         }
         icon.setItemMeta(meta);
-        inv.setItem(accountDetail, icon);
-    }
-
-    private void frame(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.ORANGE_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i = 0; i < bankMenu.getInventorySize(); i++) {
-            inv.setItem(i, Placeholder);
-        }
+        bankMenu.setItem(inv, accountInfo, icon);
     }
 
     private void buttons(Inventory inv) {
-        ItemStack prev = new ItemStack(Material.GREEN_WOOL);
-        ItemMeta pmeta = prev.getItemMeta();
-        if(pmeta != null) {
-            pmeta.displayName(Component.text("Previous", NamedTextColor.GREEN));
-        }
-        prev.setItemMeta(pmeta);
-        inv.setItem(this.prev, prev);
-
-        ItemStack exit = new ItemStack(Material.RED_WOOL);
-        ItemMeta emeta = exit.getItemMeta();
-        if(emeta != null) {
-            emeta.displayName(Component.text("Exit", NamedTextColor.RED));
-        }
-        exit.setItemMeta(emeta);
-        inv.setItem(this.exit, exit);
-
-        ItemStack deposit = new ItemStack(Material.ENDER_CHEST);
-        ItemMeta dmeta = deposit.getItemMeta();
-        if(dmeta != null) {
-            dmeta.displayName(Component.text("Deposit", NamedTextColor.GOLD));
-        }
-        deposit.setItemMeta(dmeta);
-        inv.setItem(this.deposit, deposit);
-
-        ItemStack withdraw = new ItemStack(Material.CHEST);
-        ItemMeta wmeta = withdraw.getItemMeta();
-        if(wmeta != null) {
-            wmeta.displayName(Component.text("Withdraw", NamedTextColor.RED));
-        }
-        withdraw.setItemMeta(wmeta);
-        inv.setItem(this.withdraw, withdraw);
+        bankMenu.setItem(inv, prevMenuButton, bankMenu.getPrevMenu());       
+        bankMenu.setItem(inv, exitMenuButton, bankMenu.getExitMenu());       
+        bankMenu.setItem(inv, depositButton, bankMenu.createSlotItem(Material.ENDER_CHEST, Component.text("Deposit", NamedTextColor.GOLD)));
+        bankMenu.setItem(inv, withdrawButton, bankMenu.createSlotItem(Material.CHEST, Component.text("Withdraw", NamedTextColor.RED)));
     }
 }
