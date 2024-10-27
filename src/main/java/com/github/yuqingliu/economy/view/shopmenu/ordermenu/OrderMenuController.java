@@ -5,8 +5,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -149,7 +149,7 @@ public class OrderMenuController {
         shopMenu.setItem(inv, nextSellOrdersButton, shopMenu.getNextPage());
         shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
         shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
-        shopMenu.setItem(inv, refreshButton, shopMenu.createSlotItem(Material.YELLOW_WOOL, Component.text("Refresh", NamedTextColor.YELLOW)));
+        shopMenu.setItem(inv, refreshButton, shopMenu.getReload());
         shopMenu.setItem(inv, createBuyOrderButton, shopMenu.createSlotItem(Material.WRITABLE_BOOK, Component.text("Create Buy Order", NamedTextColor.LIGHT_PURPLE)));
         shopMenu.setItem(inv, createSellOrderButton, shopMenu.createSlotItem(Material.WRITABLE_BOOK, Component.text("Create Sell Order", NamedTextColor.LIGHT_PURPLE)));
     }
@@ -168,7 +168,7 @@ public class OrderMenuController {
         int maxPages = (int) Math.ceil((double) temp.size() / (double) buyOrdersSize);
         for (int i = 0; i < maxPages; i++) {
             int pageNum = i + 1;
-            Map<List<Integer>, OrderOption> options = new HashMap<>();
+            Map<List<Integer>, OrderOption> options = new LinkedHashMap<>();
             for (int[] coords : this.buyOrders) {
                 if(temp.isEmpty()) {
                     options.put(Arrays.asList(coords[0], coords[1]), null);
@@ -194,7 +194,7 @@ public class OrderMenuController {
         int maxPages = (int) Math.ceil((double) temp.size() / (double) sellOrdersSize);
         for (int i = 0; i < maxPages; i++) {
             int pageNum = i + 1;
-            Map<List<Integer>, OrderOption> options = new HashMap<>();
+            Map<List<Integer>, OrderOption> options = new LinkedHashMap<>();
             for (int[] coords : this.sellOrders) {
                 if(temp.isEmpty()) {
                     options.put(Arrays.asList(coords[0], coords[1]), null);

@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -148,7 +148,7 @@ public class MainMenuController {
         int maxPages = (int) Math.ceil((double) sections.size() / (double) sectionsSize);
         for (int i = 0; i < maxPages; i++) {
             int pageNum = i + 1;
-            Map<List<Integer>, VendorSectionEntity> options = new HashMap<>();
+            Map<List<Integer>, VendorSectionEntity> options = new LinkedHashMap<>();
             for (int[] coords : sectionsOptions) {
                 if(temp.isEmpty()) {
                     options.put(Arrays.asList(coords[0], coords[1]), null);
@@ -175,7 +175,7 @@ public class MainMenuController {
         int maxPages = (int) Math.ceil((double) items.size() / (double) itemsSize);
         for (int i = 0; i < maxPages; i++) {
             int pageNum = i + 1;
-            Map<List<Integer>, VendorItemEntity> options = new HashMap<>();
+            Map<List<Integer>, VendorItemEntity> options = new LinkedHashMap<>();
             for (int[] coords : itemsOptions) {
                 if(temp.isEmpty()) {
                     options.put(Arrays.asList(coords[0], coords[1]), null);

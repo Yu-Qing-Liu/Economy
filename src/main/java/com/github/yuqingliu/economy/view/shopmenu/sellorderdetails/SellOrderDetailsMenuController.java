@@ -129,7 +129,7 @@ public class SellOrderDetailsMenuController {
         ShopOrderEntity order = playersData.get(player);
         shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
         shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
-        shopMenu.setItem(inv, refreshButton, shopMenu.createSlotItem(Material.YELLOW_WOOL, Component.text("Refresh", NamedTextColor.YELLOW)));
+        shopMenu.setItem(inv, refreshButton, shopMenu.getReload());
         double refund = (order.getQuantity() - order.getFilledQuantity()) * order.getUnitPrice(); 
         double profit = order.getFilledQuantity() * order.getUnitPrice(); 
         List<Component> cancelLore = Arrays.asList(

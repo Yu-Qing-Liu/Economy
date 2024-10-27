@@ -44,6 +44,7 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
     protected ItemStack prevPage;
     protected ItemStack prevMenu;
     protected ItemStack exitMenu;
+    protected ItemStack reload;
     protected ItemStack unavailable;
     protected ItemStack loading;
         
@@ -71,6 +72,7 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         this.prevPage = createSlotItem(Material.ARROW, Component.text("Previous Page", NamedTextColor.AQUA));
         this.prevMenu = createSlotItem(Material.GREEN_WOOL, Component.text("Previous Menu", NamedTextColor.GREEN));
         this.exitMenu = createSlotItem(Material.RED_WOOL, Component.text("Exit", NamedTextColor.RED));
+        this.reload = createSlotItem(Material.YELLOW_WOOL, Component.text("Refresh", NamedTextColor.YELLOW));
         this.unavailable = createSlotItem(Material.GLASS_PANE, unavailableComponent);
         this.loading = createSlotItem(Material.BARRIER, loadingComponent);
     }

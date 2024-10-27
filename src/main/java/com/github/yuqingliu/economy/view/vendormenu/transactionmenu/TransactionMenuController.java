@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -123,7 +123,7 @@ public class TransactionMenuController {
         int maxPages = (int) Math.ceil((double) temp.size() / (double) optionsSize);
         for (int i = 0; i < maxPages; i++) {
             int pageNum = i + 1;
-            Map<List<Integer>, CurrencyOption> options = new HashMap<>();
+            Map<List<Integer>, CurrencyOption> options = new LinkedHashMap<>();
             for (int[] coords : currencyOptions) {
                 if(temp.isEmpty()) {
                     options.put(Arrays.asList(coords[0], coords[1]), null);

@@ -151,6 +151,6 @@ public class SellOrdersMenuController {
         shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
         shopMenu.setItem(inv, nextSellOrdersButton, shopMenu.getNextPage());
         shopMenu.setItem(inv, prevSellOrdersButton, shopMenu.getPrevPage());
-        shopMenu.setItem(inv, reloadButton, shopMenu.createSlotItem(Material.YELLOW_WOOL, Component.text("Reload", NamedTextColor.YELLOW)));
+        shopMenu.setItem(inv, reloadButton, shopMenu.getReload());
     }
 }
