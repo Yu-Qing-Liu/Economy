@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,5 +37,6 @@ public class PurseEntity {
     private PlayerEntity player;
 
     @OneToMany(mappedBy = "purse", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderBy("currencyName ASC")
     private Set<CurrencyEntity> currencies = new LinkedHashSet<>();
 }

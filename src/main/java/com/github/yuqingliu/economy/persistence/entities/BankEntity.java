@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,6 +34,7 @@ public class BankEntity {
     private Instant lastInterestTimestamp;
 
     @OneToMany(mappedBy = "bank", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderBy("accountName ASC")
     private Set<AccountEntity> accounts = new LinkedHashSet<>();
 
     public Duration getInterestCooldown() {
