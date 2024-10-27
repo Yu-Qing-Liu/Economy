@@ -72,7 +72,7 @@ public class SellOrderDetailsMenuController {
                 if(shopMenu.getShopService().deleteOrder(order)) {
                     shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
                     playersData.remove(player);
-                    shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                    shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(inv, player);
                     return;
                 } 
             }
@@ -92,7 +92,7 @@ public class SellOrderDetailsMenuController {
                 if(order.getQuantity() == 0) {
                     if(shopMenu.getShopService().deleteOrder(order)) {
                         playersData.remove(player);
-                        shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                        shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(inv, player);
                         return;
                     }
                 } 

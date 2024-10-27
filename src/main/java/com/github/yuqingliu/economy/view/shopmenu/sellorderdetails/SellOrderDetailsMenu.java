@@ -38,7 +38,7 @@ public class SellOrderDetailsMenu implements Listener {
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.SellOrderDetailsMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int slot = event.getSlot();
             if(slot == controller.getPrev()) {
-                shopMenu.getOrdersMenu().getController().openOrdersMenu(clickedInventory, player);
+                shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(clickedInventory, player);
             }
             if(slot == controller.getExit()) {
                 clickedInventory.close();

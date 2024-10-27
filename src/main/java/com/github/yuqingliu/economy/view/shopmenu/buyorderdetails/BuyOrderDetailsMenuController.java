@@ -72,7 +72,7 @@ public class BuyOrderDetailsMenuController {
                 if(shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), refund)) {
                     if(shopMenu.getShopService().deleteOrder(order)) {
                         playersData.remove(player);
-                        shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                        shopMenu.getBuyOrdersMenu().getController().openBuyOrdersMenu(inv, player);
                         return;
                     }
                     shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), refund);
@@ -94,7 +94,7 @@ public class BuyOrderDetailsMenuController {
                 if(order.getQuantity() == 0) {
                     if(shopMenu.getShopService().deleteOrder(order)) {
                         playersData.remove(player);
-                        shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                        shopMenu.getBuyOrdersMenu().getController().openBuyOrdersMenu(inv, player);
                         return;
                     }
                 } 
