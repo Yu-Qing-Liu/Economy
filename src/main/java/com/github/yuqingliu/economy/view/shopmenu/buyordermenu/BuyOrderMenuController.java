@@ -31,24 +31,20 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class BuyOrderMenuController {
     private final ShopMenu shopMenu;
-    private final int prev = 11;
-    private final int exit = 15;
-    private final int itemSlot = 13;
-    private final int setCurrencyType = 28;
-    private final int setQuantity = 30;
-    private final int setUnitPrice = 32;
-    private final int orderButton = 34;
-    private final int currency = 37;
-    private final int quantity = 39;
-    private final int unitPrice = 41;
-    private final int confirm = 43;
-    private Material voidOption = Material.GLASS_PANE;
-    private final List<Integer> buttons = Arrays.asList(11,13,15,28,30,32,34);
-    private final List<Integer> results = Arrays.asList(37,39,41,43);
-    private final List<Integer> border = Arrays.asList(3,4,5,12,14,19,20,21,22,23,24,25);
-    private ShopItemEntity item;
+    private final int[] prevMenuButton = new int[]{2,1};
+    private final int[] itemSlot = new int[]{4,1};
+    private final int[] exitMenuButton = new int[]{6,1};
+    private final int[] setCurrencyTypeButton = new int[]{1,3};
+    private final int[] setQuantityButton = new int[]{3,3};
+    private final int[] setPriceButton = new int[]{5,3};
+    private final int[] orderInfo = new int[]{7,3};
+    private final int[] currencySlot = new int[]{1,4};
+    private final int[] quantitySlot = new int[]{3,4};
+    private final int[] priceSlot = new int[]{5,4};
+    private final int[] confirmOrderButton = new int[]{7,4};
     private Map<Player, PlayerData> playersData = new ConcurrentHashMap<>();
-    private BukkitTask refreshTask;
+    private ShopItemEntity item;
+    private Map<Player, BukkitTask> tasks = new ConcurrentHashMap<>();
     
     public BuyOrderMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
@@ -59,15 +55,15 @@ public class BuyOrderMenuController {
         Scheduler.runLaterAsync((task) -> {
             shopMenu.getPlayerMenuTypes().put(player, MenuType.BuyOrderMenu);
         }, Duration.ofMillis(50));
-        shopMenu.clear(inv);
-        frame(inv);
+        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
+        border(inv);
         buttons(inv);
-        refreshTask = Scheduler.runTimerAsync((task) -> {
-            orderButton(inv, player);
+        displayItem(inv);
+        BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
+            orderInfo(inv, player);
             results(inv, player);
         }, Duration.ofSeconds(1), Duration.ofSeconds(0));
-        border(inv);
-        displayItem(inv);
+        tasks.put(player, refreshTask);
     }
 
     public void setCurrencyType(Inventory inv, Player player) {
@@ -91,7 +87,7 @@ public class BuyOrderMenuController {
                         data.setCurrencyTypeInput(userInput);
                         playersData.put(player, data);
                     }
-                    inventory.setItem(currency, icon);
+                    shopMenu.setItem(inventory, currencySlot, icon);
                 }
             });
         };        
@@ -118,7 +114,7 @@ public class BuyOrderMenuController {
                     meta.displayName(Component.text(String.format("%sx", userInput), NamedTextColor.DARK_GREEN));
                 }
                 quantityIcon.setItemMeta(meta);
-                inventory.setItem(quantity, quantityIcon);
+                shopMenu.setItem(inventory, quantitySlot, quantityIcon);
                 if(playersData.containsKey(player)) {
                     playersData.get(player).setQuantityIcon(quantityIcon);
                     playersData.get(player).setQuantityInput(quantityInput);
@@ -153,7 +149,7 @@ public class BuyOrderMenuController {
                     meta.displayName(Component.text(String.format("%s $/unit", userInput), NamedTextColor.DARK_GREEN));
                 }
                 unitPriceIcon.setItemMeta(meta);
-                inventory.setItem(unitPrice, unitPriceIcon);
+                shopMenu.setItem(inventory, priceSlot, unitPriceIcon);
                 if(playersData.containsKey(player)) {
                     playersData.get(player).setUnitPriceIcon(unitPriceIcon);
                     playersData.get(player).setUnitPriceInput(unitPriceInput);
@@ -187,91 +183,61 @@ public class BuyOrderMenuController {
             }
             shopMenu.getLogger().sendPlayerAcknowledgementMessage(player, String.format("Buy order created for %s", item.getItemName()));
             shopMenu.getSoundManager().playConfirmOrderSound(player);
+            onClose(player);
             shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
         });
     }
 
-    private void displayItem(Inventory inv) {
-        inv.setItem(itemSlot, item.getIcon().clone());
+    public void onClose(Player player) {
+        if(tasks.containsKey(player)) {
+            tasks.get(player).cancel();
+            tasks.remove(player);
+        }
     }
 
-    private void frame(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i = 0; i < shopMenu.getInventorySize(); i++) {
-            inv.setItem(i, Placeholder);
-        }
+    private void displayItem(Inventory inv) {
+        shopMenu.setItem(inv, itemSlot, item.getIcon().clone());
     }
 
     private void border(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i : border) {
-            inv.setItem(i, Placeholder);
-        }
+        ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
+        shopMenu.fillRectangleArea(inv, new int[]{3,0}, 2, 3, borderItem);
+        shopMenu.fillRectangleArea(inv, new int[]{1,2}, 1, 7, borderItem);
     }
 
     private void results(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
-        ItemStack placeholder = new ItemStack(voidOption);
-        ItemMeta meta = placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
+        if(data != null && data.getCurrencyTypeIcon() != null) {
+            shopMenu.setItem(inv, currencySlot, data.getCurrencyTypeIcon());
+        } else {
+            shopMenu.setItem(inv, currencySlot, shopMenu.getUnavailable());
         }
-        placeholder.setItemMeta(meta);
-        for(int i : results) {
-            switch (i) {
-                case currency:
-                    if(data != null && data.getCurrencyTypeIcon() != null) {
-                        inv.setItem(i, data.getCurrencyTypeIcon());
-                    } else {
-                        inv.setItem(i, placeholder);
-                    }
-                    break;
-                case quantity:
-                    if(data != null && data.getQuantityIcon() != null) {
-                        inv.setItem(i, data.getQuantityIcon());
-                    } else {
-                        inv.setItem(i, placeholder);
-                    }
-                    break;
-                case unitPrice: 
-                    if(data != null && data.getUnitPriceIcon() != null) {
-                        inv.setItem(i, data.getUnitPriceIcon());
-                    } else {
-                        inv.setItem(i, placeholder);
-                    }
-                    break;
-                case confirm:
-                    if(data != null && data.getUnitPriceIcon() != null && data.getQuantityIcon() != null && data.getCurrencyTypeIcon() != null) {
-                        double totalProfit = data.getQuantityInput() * data.getUnitPriceInput();
-                        ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
-                        ItemMeta m = confirmButton.getItemMeta();
-                        if(m != null) {
-                            m.displayName(Component.text("CONFIRM", NamedTextColor.GREEN));
-                            m.lore(Arrays.asList(Component.text("TOTAL COST: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(data.getCurrencyTypeIcon().displayName()))));
-                        }
-                        confirmButton.setItemMeta(m);
-                        inv.setItem(i, confirmButton);
-                    } else {
-                        inv.setItem(i, placeholder);
-                    }
-                    break;
-                default:
-                    break;
+        if(data != null && data.getQuantityIcon() != null) {
+            shopMenu.setItem(inv, quantitySlot, data.getQuantityIcon());
+        } else {
+            shopMenu.setItem(inv, quantitySlot, shopMenu.getUnavailable());
+        }
+        if(data != null && data.getUnitPriceIcon() != null) {
+            shopMenu.setItem(inv, priceSlot, data.getUnitPriceIcon());
+        } else {
+            shopMenu.setItem(inv, priceSlot, shopMenu.getUnavailable());
+        }
+        if(data != null && data.getUnitPriceIcon() != null && data.getQuantityIcon() != null && data.getCurrencyTypeIcon() != null) {
+            double totalProfit = data.getQuantityInput() * data.getUnitPriceInput();
+            ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
+            ItemMeta m = confirmButton.getItemMeta();
+            if(m != null) {
+                m.displayName(Component.text("CONFIRM", NamedTextColor.GREEN));
+                m.lore(Arrays.asList(Component.text("TOTAL COST: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(data.getCurrencyTypeIcon().displayName()))));
             }
+            confirmButton.setItemMeta(m);
+            shopMenu.setItem(inv, confirmOrderButton, confirmButton);
+        } else {
+            shopMenu.setItem(inv, confirmOrderButton, shopMenu.getUnavailable());
         }
     }
 
-    private void orderButton(Inventory inv, Player player) {
+    private void orderInfo(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
         ItemStack order = new ItemStack(Material.CREEPER_BANNER_PATTERN);
         ItemMeta orderMeta = order.getItemMeta();
@@ -294,48 +260,14 @@ public class BuyOrderMenuController {
             orderMeta.lore(components);
         }
         order.setItemMeta(orderMeta);
-        inv.setItem(this.orderButton, order);
+        shopMenu.setItem(inv, orderInfo, order);
     }
 
     private void buttons(Inventory inv) {
-        ItemStack prev = new ItemStack(Material.GREEN_WOOL);
-        ItemMeta prevmeta = prev.getItemMeta();
-        if(prevmeta != null) {
-            prevmeta.displayName(Component.text("Items", NamedTextColor.GRAY));
-        }
-        prev.setItemMeta(prevmeta);
-        inv.setItem(this.prev, prev);
-
-        ItemStack exit = new ItemStack(Material.RED_WOOL);
-        ItemMeta emeta = exit.getItemMeta();
-        if(emeta != null) {
-            emeta.displayName(Component.text("Exit", NamedTextColor.RED));
-        }
-        exit.setItemMeta(emeta);
-        inv.setItem(this.exit, exit);
-
-        ItemStack currencyType = new ItemStack(Material.OAK_HANGING_SIGN);
-        ItemMeta currencyTypeMeta = currencyType.getItemMeta();
-        if(currencyTypeMeta != null) {
-            currencyTypeMeta.displayName(Component.text("Set Currency Type", NamedTextColor.DARK_PURPLE));
-        }
-        currencyType.setItemMeta(currencyTypeMeta);
-        inv.setItem(this.setCurrencyType, currencyType);
-
-        ItemStack quantity = new ItemStack(Material.OAK_HANGING_SIGN);
-        ItemMeta quantityMeta = quantity.getItemMeta();
-        if(quantityMeta != null) {
-            quantityMeta.displayName(Component.text("Set Quantity", NamedTextColor.DARK_PURPLE));
-        }
-        quantity.setItemMeta(quantityMeta);
-        inv.setItem(this.setQuantity, quantity);
-
-        ItemStack unitPrice = new ItemStack(Material.OAK_HANGING_SIGN);
-        ItemMeta unitPriceMeta = unitPrice.getItemMeta();
-        if(unitPriceMeta != null) {
-            unitPriceMeta.displayName(Component.text("Set Price Per Unit", NamedTextColor.DARK_PURPLE));
-        }
-        unitPrice.setItemMeta(unitPriceMeta);
-        inv.setItem(this.setUnitPrice, unitPrice);
+        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
+        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
+        shopMenu.setItem(inv, setCurrencyTypeButton, shopMenu.createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Currency Type", NamedTextColor.WHITE)));
+        shopMenu.setItem(inv, setQuantityButton, shopMenu.createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Quantity", NamedTextColor.WHITE)));
+        shopMenu.setItem(inv, setPriceButton, shopMenu.createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Unit Price", NamedTextColor.WHITE)));
     }
 }

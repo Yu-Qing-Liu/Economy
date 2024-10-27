@@ -72,7 +72,6 @@ public class OrderMenuController {
         Scheduler.runLaterAsync((task) -> {
             shopMenu.getPlayerMenuTypes().put(player, MenuType.OrderMenu);
         }, Duration.ofMillis(50));
-        shopMenu.clear(inv);
         shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
         border(inv);
         buttons(inv);

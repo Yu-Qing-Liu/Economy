@@ -62,8 +62,8 @@ public class TradeMenu implements Listener {
                 controller.sell(player, amount);
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                vendorMenu.getTransactionMenu().getController().openTransactionMenu(clickedInventory, controller.getItem(), player);
                 controller.onClose(player);
+                vendorMenu.getTransactionMenu().getController().openTransactionMenu(clickedInventory, controller.getItem(), player);
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
