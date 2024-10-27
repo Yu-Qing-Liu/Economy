@@ -3,13 +3,15 @@ package com.github.yuqingliu.economy.view.shopmenu.quickbuymenu;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
@@ -25,21 +27,22 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class QuickBuyMenuController {
     private final ShopMenu shopMenu;
-    private final int itemSlot = 13;
-    private final int buy1 = 29;
-    private final int buyInventory = 33;
-    private final int prev = 20;
-    private final int exit = 24;
-    private final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
-    private final List<Integer> border = Arrays.asList(3,4,5,12,14,21,22,23,38,39,40,41,42);
-    private final List<Integer> buyOptions = Arrays.asList(29,30,31,32);
-    private final List<Integer> buttons = Arrays.asList(20,24);
-    private final int[] quantities = new int[] {1, 16, 32, 64};
+    private final int[] quantities = new int[] {1, 4, 8, 16, 32, 64};
+    private final int[] buyOptionsStart = new int[]{1,4};
+    private final int buyOptionsWidth = 1;
+    private final int buyOptionsLength = quantities.length;
+    private final int[] itemSlot = new int[]{4,1};
+    private final int[] buyInventoryButton = new int[]{7,4};
+    private final int[] prevMenuButton = new int[]{2,2};
+    private final int[] exitMenuButton = new int[]{6,2};
+    private final List<int[]> buyOptions;
     private ShopItemEntity item;
     private OrderOption orderOption;
+    private Map<Player, BukkitTask> tasks = new ConcurrentHashMap<>();
     
     public QuickBuyMenuController(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
+        this.buyOptions = shopMenu.rectangleArea(buyOptionsStart, buyOptionsWidth, buyOptionsLength);
     }   
 
     public void openQuickBuyMenu(Inventory inv, ShopItemEntity item, OrderOption orderOption, Player player) {
@@ -48,12 +51,18 @@ public class QuickBuyMenuController {
         Scheduler.runLaterAsync((task) -> {
             shopMenu.getPlayerMenuTypes().put(player, MenuType.QuickBuyMenu);
         }, Duration.ofMillis(50));
-        shopMenu.clear(inv);
-        frame(inv);
+        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
         border(inv);
-        pagePtrs(inv);
+        buttons(inv, player);
         displayItem(inv);
         displayBuyOptions(inv);
+    }
+
+    public void onClose(Player player) {
+        if(tasks.containsKey(player)) {
+            tasks.get(player).cancel();
+            tasks.remove(player);
+        }
     }
 
     public void quickBuy(int amount, Player player) {
@@ -131,16 +140,12 @@ public class QuickBuyMenuController {
     }
 
     private void displayItem(Inventory inv) {
-        inv.setItem(itemSlot, item.getIcon().clone());
+        shopMenu.setItem(inv, itemSlot, item.getIcon().clone());
     }
 
     private void displayBuyOptions(Inventory inv) {
-        for (int i = buy1; i < buyInventory; i++) {
-            int index = i - buy1;
-            ItemStack icon = new ItemStack(Material.LIME_STAINED_GLASS);
-            icon.setAmount(quantities[index]);
-            ItemMeta iconMeta = icon.getItemMeta();
-            iconMeta.displayName(Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED)));
+        int index = 0;
+        for(int[] coords : buyOptions) {
             double cost = 0;
             int qty = quantities[index];
             for(ShopOrderEntity order : orderOption.getOrders()) {
@@ -153,54 +158,56 @@ public class QuickBuyMenuController {
                     cost += amount * order.getUnitPrice();
                 }
             }
+            int leftover;
+            if(quantities[index] - qty > 0) {
+                leftover = quantities[index] - qty;
+            } else {
+                leftover = quantities[index];
+            }
+            Component buy = Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
             Component costComponent = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
-            iconMeta.lore(Arrays.asList(costComponent));
-            icon.setItemMeta(iconMeta);
-            inv.setItem(i, icon);
-        }
-        ItemStack inventoryOption = new ItemStack(Material.CHEST);
-        inv.setItem(buyInventory, inventoryOption);
-    }
-
-    private void frame(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i = 0; i < shopMenu.getInventorySize(); i++) {
-            inv.setItem(i, Placeholder);
+            ItemStack option = shopMenu.createSlotItem(Material.LIME_STAINED_GLASS, buy, costComponent);
+            option.setAmount(leftover);
+            shopMenu.setItem(inv, coords, option);
+            index++;
         }
     }
 
     private void border(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i : border) {
-            inv.setItem(i, Placeholder);
-        }
+        ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
+        shopMenu.fillRectangleArea(inv, new int[]{3,0}, 3, 3, borderItem);
     }
 
-    private void pagePtrs(Inventory inv) {
-        ItemStack prev = new ItemStack(Material.GREEN_WOOL);
-        ItemMeta prevmeta = prev.getItemMeta();
-        if(prevmeta != null) {
-            prevmeta.displayName(Component.text("Items", NamedTextColor.GRAY));
-        }
-        prev.setItemMeta(prevmeta);
-        inv.setItem(this.prev, prev);
-
-        ItemStack exit = new ItemStack(Material.RED_WOOL);
-        ItemMeta emeta = exit.getItemMeta();
-        if(emeta != null) {
-            emeta.displayName(Component.text("Exit", NamedTextColor.RED));
-        }
-        exit.setItemMeta(emeta);
-        inv.setItem(this.exit, exit);
+    private void buttons(Inventory inv, Player player) {
+        BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
+            int freeSpace = shopMenu.countAvailableInventorySpace(player, item.getIcon().getType());
+            double cost = 0;
+            int qty = freeSpace;
+            for(ShopOrderEntity order : orderOption.getOrders()) {
+                int amount = order.getQuantity() - order.getFilledQuantity();
+                if(amount > qty) {
+                    cost = qty * order.getUnitPrice();
+                    break;
+                } else {
+                    qty -= amount;
+                    cost += amount * order.getUnitPrice();
+                }
+            }
+            int leftover;
+            if(freeSpace - qty > 0) {
+                leftover = freeSpace - qty;
+            } else {
+                leftover = 0;
+            }
+            List<Component> fillLore = Arrays.asList(
+                Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
+                Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
+            );
+            ItemStack fillButton = shopMenu.createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
+            shopMenu.setItem(inv, buyInventoryButton, fillButton);
+        }, Duration.ofSeconds(2),Duration.ofSeconds(0));
+        tasks.put(player, refreshTask);
+        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
+        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
     }
 }

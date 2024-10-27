@@ -25,16 +25,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public class SellOrderDetailsMenuController {
     private final ShopMenu shopMenu;
-    private final int itemSlot = 13;
-    private final int prev = 11;
-    private final int exit = 15;
-    private final int cancelOrder = 29;
-    private final int orderDetail = 31;
-    private final int claimOrder = 33;
-    private final List<Integer> options = Arrays.asList(13,29,30,31,32,33,38,39,40,41,42);
-    private final List<Integer> border = Arrays.asList(3,4,5,11,12,14,15,19,20,21,22,23,24,25,28,30,32,34,37,38,39,40,41,42,43);
-    private final List<Integer> sellOptions = Arrays.asList(29,30,31,32,33);
-    private final List<Integer> buttons = Arrays.asList(20,24,29,31,33);
+    private final int[] itemSlot = new int[]{4,1};
+    private final int[] orderInfo = new int[]{4,3};
+    private final int[] prevMenuButton = new int[]{2,1};
+    private final int[] exitMenuButton = new int[]{6,1};
+    private final int[] cancelOrderButton = new int[]{2,3};
+    private final int[] claimOrderButton = new int[]{6,3};
+    private final int[] refreshButton = new int[]{4,4};
     private Map<Player, ShopOrderEntity> playersData = new ConcurrentHashMap<>();
     
     public SellOrderDetailsMenuController(ShopMenu shopMenu) {
@@ -49,11 +46,9 @@ public class SellOrderDetailsMenuController {
         reload(inv, player);
     }
 
-    private void reload(Inventory inv, Player player) {
-        shopMenu.clear(inv);
-        frame(inv);
+    public void reload(Inventory inv, Player player) {
+        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
         border(inv);
-        pagePtrs(inv);
         displayItem(inv, player);
         displayOrder(inv, player);
         buttons(inv, player);
@@ -72,7 +67,7 @@ public class SellOrderDetailsMenuController {
                 if(shopMenu.getShopService().deleteOrder(order)) {
                     shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
                     playersData.remove(player);
-                    shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                    shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(inv, player);
                     return;
                 } 
             }
@@ -92,7 +87,7 @@ public class SellOrderDetailsMenuController {
                 if(order.getQuantity() == 0) {
                     if(shopMenu.getShopService().deleteOrder(order)) {
                         playersData.remove(player);
-                        shopMenu.getOrdersMenu().getController().openOrdersMenu(inv, player);
+                        shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(inv, player);
                         return;
                     }
                 } 
@@ -103,7 +98,7 @@ public class SellOrderDetailsMenuController {
 
     private void displayItem(Inventory inv, Player player) {
         ItemStack item = playersData.get(player).getShopItem().getIcon().clone();
-        inv.setItem(itemSlot, item);
+        shopMenu.setItem(inv, itemSlot, item);
     }
 
     private void displayOrder(Inventory inv, Player player) {
@@ -121,76 +116,29 @@ public class SellOrderDetailsMenuController {
             meta.lore(Arrays.asList(nameComponent, currencyComponent, priceComponent, quantityComponent, quantityBoughtComponent));
         }
         orderIcon.setItemMeta(meta);
-        inv.setItem(orderDetail, orderIcon);
-    }
-
-    private void frame(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i = 0; i < shopMenu.getInventorySize(); i++) {
-            inv.setItem(i, Placeholder);
-        }
+        shopMenu.setItem(inv, orderInfo, orderIcon);
     }
 
     private void border(Inventory inv) {
-        ItemStack Placeholder = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-        ItemMeta meta = Placeholder.getItemMeta();
-        if(meta != null) {
-            meta.displayName(Component.text("Unavailable", NamedTextColor.DARK_PURPLE));
-        }
-        Placeholder.setItemMeta(meta);
-        for (int i : border) {
-            inv.setItem(i, Placeholder);
-        }
+        ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
+        shopMenu.fillRectangleArea(inv, new int[]{1,2}, 3, 7, borderItem);
+        shopMenu.fillRectangleArea(inv, new int[]{3,0}, 2, 3, borderItem);
     }
 
     private void buttons(Inventory inv, Player player) {
         ShopOrderEntity order = playersData.get(player);
-        ItemStack cancelButton = new ItemStack(Material.RED_WOOL);
-        ItemMeta cancelMeta = cancelButton.getItemMeta();
-        if(cancelMeta != null) {
-            double refund = order.getFilledQuantity() * order.getUnitPrice();
-            cancelMeta.displayName(Component.text("Cancel Order", NamedTextColor.RED));
-            cancelMeta.lore(Arrays.asList(
-                Component.text("Refund: ", NamedTextColor.BLUE).append(Component.text(refund + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD))),
-                Component.text("Return: ", NamedTextColor.BLUE).append(Component.text(order.getQuantity() - order.getFilledQuantity() + "x ", NamedTextColor.DARK_GREEN).append(Component.text("items", NamedTextColor.GOLD)))
-            ));
-        }
-        cancelButton.setItemMeta(cancelMeta);
-        inv.setItem(cancelOrder, cancelButton);
-
-        ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
-        ItemMeta confirmMeta = confirmButton.getItemMeta();
-        if(confirmMeta != null) {
-            double profit = order.getFilledQuantity() * order.getUnitPrice(); 
-            confirmMeta.displayName(Component.text("Claim Order", NamedTextColor.GREEN));
-            confirmMeta.lore(Arrays.asList(
-                Component.text("Collect: ", NamedTextColor.BLUE).append(Component.text(profit + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD)))
-            ));
-        }
-        confirmButton.setItemMeta(confirmMeta);
-        inv.setItem(claimOrder, confirmButton);
-    }
-
-    private void pagePtrs(Inventory inv) {
-        ItemStack prev = new ItemStack(Material.WRITABLE_BOOK);
-        ItemMeta prevmeta = prev.getItemMeta();
-        if(prevmeta != null) {
-            prevmeta.displayName(Component.text("Orders", NamedTextColor.GRAY));
-        }
-        prev.setItemMeta(prevmeta);
-        inv.setItem(this.prev, prev);
-
-        ItemStack exit = new ItemStack(Material.RED_WOOL);
-        ItemMeta emeta = exit.getItemMeta();
-        if(emeta != null) {
-            emeta.displayName(Component.text("Exit", NamedTextColor.RED));
-        }
-        exit.setItemMeta(emeta);
-        inv.setItem(this.exit, exit);
+        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
+        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
+        shopMenu.setItem(inv, refreshButton, shopMenu.getReload());
+        double refund = (order.getQuantity() - order.getFilledQuantity()) * order.getUnitPrice(); 
+        double profit = order.getFilledQuantity() * order.getUnitPrice(); 
+        List<Component> cancelLore = Arrays.asList(
+            Component.text("Refund: ", NamedTextColor.BLUE).append(Component.text(refund + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD))),
+            Component.text("Return: ", NamedTextColor.BLUE).append(Component.text(order.getQuantity() - order.getFilledQuantity() + "x ", NamedTextColor.DARK_GREEN).append(Component.text("items", NamedTextColor.GOLD)))
+        );
+        ItemStack cancelButton = shopMenu.createSlotItem(Material.RED_CONCRETE, Component.text("Cancel Order", NamedTextColor.RED), cancelLore);
+        shopMenu.setItem(inv, cancelOrderButton, cancelButton);
+        ItemStack confirmButton = shopMenu.createSlotItem(Material.LIME_CONCRETE, Component.text("Claim Order"), Component.text("Collect: ", NamedTextColor.BLUE).append(Component.text(profit + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD))));
+        shopMenu.setItem(inv, claimOrderButton, confirmButton);
     }
 }

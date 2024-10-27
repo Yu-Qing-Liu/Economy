@@ -1,4 +1,4 @@
-package com.github.yuqingliu.economy.view.shopmenu.buyordermenu;
+package com.github.yuqingliu.economy.view.shopmenu.sellordersmenu;
 
 import java.util.Arrays;
 
@@ -10,19 +10,20 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 
 import lombok.Getter;
 
 @Getter
-public class BuyOrderMenu implements Listener {
+public class SellOrdersMenu implements Listener {
     private final ShopMenu shopMenu;
-    private final BuyOrderMenuController controller;
+    private final SellOrdersMenuController controller;
 
-    public BuyOrderMenu(ShopMenu shopMenu) {
+    public SellOrdersMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
-        this.controller = new BuyOrderMenuController(shopMenu);
+        this.controller = new SellOrdersMenuController(shopMenu);
         shopMenu.getEventManager().registerEvent(this);
     }
 
@@ -38,30 +39,31 @@ public class BuyOrderMenu implements Listener {
 
         event.setCancelled(true);
 
-        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.BuyOrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.SellOrdersMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int[] slot = shopMenu.toCoords(event.getSlot());
             if(shopMenu.isUnavailable(currentItem)) {
                 return;
             }
+            if(shopMenu.rectangleContains(slot, controller.getSellOrders())) {
+                int pageNumber = controller.getPageNumbers().get(player)[0];
+                ShopOrderEntity order = controller.getPageData().get(player).get(pageNumber).get(Arrays.asList(slot[0], slot[1]));
+                shopMenu.getSellOrderDetailsMenu().getController().openSellOrderDetailsMenu(clickedInventory, order, player);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getNextSellOrdersButton())) {
+                controller.nextSellOrdersPage(clickedInventory, player);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getPrevSellOrdersButton())) {
+                controller.prevSellOrdersPage(clickedInventory, player);
+                return;
+            }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                controller.onClose(player);
-                shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                shopMenu.getMainMenu().getController().openMainMenu(clickedInventory, player);
                 return;
             }
-            if(Arrays.equals(slot, controller.getSetCurrencyTypeButton())) {
-                controller.setCurrencyType(clickedInventory, player);
-                return;
-            }
-            if(Arrays.equals(slot, controller.getSetQuantityButton())) {
-                controller.setQuantity(clickedInventory, player);
-                return;
-            }
-            if(Arrays.equals(slot, controller.getSetPriceButton())) {
-                controller.setUnitPrice(clickedInventory, player);
-                return;
-            }
-            if(Arrays.equals(slot, controller.getConfirmOrderButton())) {
-                controller.confirmOrder(clickedInventory, player);
+            if(Arrays.equals(slot, controller.getReloadButton())) {
+                controller.reload(clickedInventory, player);
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {

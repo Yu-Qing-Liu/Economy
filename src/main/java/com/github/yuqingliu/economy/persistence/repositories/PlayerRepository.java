@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Singleton
@@ -62,6 +63,15 @@ public class PlayerRepository {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public Set<PlayerEntity> findAll() {
+        try (Session session = sessionFactory.openSession()) {
+            return Set.copyOf(session.createQuery("from PlayerEntity", PlayerEntity.class).list());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Set.of();
         }
     }
 }

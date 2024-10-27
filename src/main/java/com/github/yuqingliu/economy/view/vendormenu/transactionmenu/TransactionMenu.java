@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.vendormenu.transactionmenu;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -37,23 +39,29 @@ public class TransactionMenu implements Listener {
         event.setCancelled(true);
 
         if(vendorMenu.getPlayerMenuTypes().get(player) == MenuType.TransactionMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int slot = event.getSlot();
-            if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
-                int index = slot - controller.getOptions().get(0);
-                if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumbers().get(player)[0])) {
-                    vendorMenu.getTradeMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), controller.getPageData().get(controller.getPageNumbers().get(player)[0])[index], player);
-                }
+            int[] slot = vendorMenu.toCoords(event.getSlot());
+            if(vendorMenu.isUnavailable(currentItem)) {
+                return;
             }
-            if(slot == controller.getNextPagePtr()) {
+            if(vendorMenu.rectangleContains(slot, controller.getCurrencyOptions())) {
+                int pageNumber = controller.getPageNumbers().get(player)[0];
+                CurrencyOption currencyOption = controller.getPageData().get(pageNumber).get(Arrays.asList(slot[0], slot[1]));
+                vendorMenu.getTradeMenu().getController().openTradeMenu(clickedInventory, controller.getItem(), currencyOption, player);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getNextOptionsButton())) {
                 controller.nextPage(clickedInventory, player);
+                return;
             }
-            if(slot == controller.getPrevPagePtr()) {
+            if(Arrays.equals(slot, controller.getPrevOptionsButton())) {
                 controller.prevPage(clickedInventory, player);
+                return;
             }
-            if(slot == controller.getPrev()) {
-                vendorMenu.getItemMenu().getController().openItemMenu(clickedInventory, controller.getItem().getVendorSection(), player);
+            if(Arrays.equals(slot, controller.getPrevMenuButton())) {
+                vendorMenu.getMainMenu().getController().openMainMenu(clickedInventory, player);
+                return;
             }
-            if(slot == controller.getExit()) {
+            if(Arrays.equals(slot, controller.getExitMenuButton())) {
                 clickedInventory.close();
             }
         }

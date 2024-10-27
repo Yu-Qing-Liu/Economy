@@ -11,6 +11,7 @@ import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
 import com.github.yuqingliu.economy.commands.*;
+import com.github.yuqingliu.economy.persistence.services.BankService;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
@@ -25,6 +26,7 @@ public class CommandManagerImpl implements CommandManager {
     private final CurrencyService currencyService;
     private final VendorService vendorService;
     private final ShopService shopService;
+    private final BankService bankService;
     private final NameSpacedKeyManager nameSpacedKeyManager;
     private Map<String, CommandExecutor> commands = new HashMap<>();
         
@@ -36,6 +38,7 @@ public class CommandManagerImpl implements CommandManager {
         CurrencyService currencyService,
         VendorService vendorService,
         ShopService shopService,
+        BankService bankService,
         NameSpacedKeyManager nameSpacedKeyManager
     ) {
         this.plugin = plugin;
@@ -44,6 +47,7 @@ public class CommandManagerImpl implements CommandManager {
         this.currencyService = currencyService;
         this.vendorService = vendorService;
         this.shopService = shopService;
+        this.bankService = bankService;
         this.nameSpacedKeyManager = nameSpacedKeyManager;
         initializeCommands();
         registerCommands();
@@ -64,6 +68,9 @@ public class CommandManagerImpl implements CommandManager {
         commands.put("shop", new ShopCommand(nameSpacedKeyManager, shopService, logger));
         commands.put("shopsection", new ShopSectionCommand(shopService, logger));
         commands.put("shopitem", new ShopItemCommand(shopService, logger));
+        // Bank commands
+        commands.put("bank", new BankCommand(nameSpacedKeyManager, bankService, logger));
+        commands.put("account", new AccountCommand(bankService, logger));
     }
 
     private void registerCommands() {

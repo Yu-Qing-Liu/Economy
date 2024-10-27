@@ -1,9 +1,12 @@
 package com.github.yuqingliu.economy.view.shopmenu.quicksellmenu;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -36,18 +39,36 @@ public class QuickSellMenu implements Listener {
         event.setCancelled(true);
 
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.QuickSellMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int slot = event.getSlot();
-            if(controller.getSellOptions().contains(slot)) {
-                int slotAmount = controller.getQuantities()[slot - controller.getSell1()];
-                int amount = Math.min(slotAmount, shopMenu.countItemToPlayer(player, controller.getItem().getIcon().clone()));
+            int[] slot = shopMenu.toCoords(event.getSlot());
+            if(shopMenu.isUnavailable(currentItem)) {
+                return;
+            }
+            if(shopMenu.rectangleContains(slot, controller.getSellOptions())) {
+                int index = shopMenu.rectangleIndex(slot, controller.getSellOptions());
+                int amount = controller.getQuantities()[index];
                 controller.quickSell(amount, player);
+                return;
             }
-            if(slot == controller.getPrev()) {
+            if(Arrays.equals(slot, controller.getSellInventoryButton())) {
+                int amount = shopMenu.countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
+                controller.quickSell(amount, player);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getPrevMenuButton())) {
+                controller.onClose(player);
                 shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                return;
             }
-            if(slot == controller.getExit()) {
+            if(Arrays.equals(slot, controller.getExitMenuButton())) {
                 clickedInventory.close();
             }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (event.getView().title().equals(shopMenu.getDisplayName())) {
+            controller.onClose((Player) event.getPlayer());
         }
     }
 }

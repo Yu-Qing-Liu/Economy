@@ -13,9 +13,11 @@ import lombok.Getter;
 public class NameSpacedKeyManagerImpl implements NameSpacedKeyManager {
     private final NamespacedKey shopKey;
     private final NamespacedKey vendorKey;
+    private final NamespacedKey bankKey;
 
     public NameSpacedKeyManagerImpl(JavaPlugin plugin) {
         shopKey = new NamespacedKey(plugin, "shopKey");
         vendorKey = new NamespacedKey(plugin, "vendorKey");
+        bankKey = new NamespacedKey(plugin, "bankKey");
     }
 }

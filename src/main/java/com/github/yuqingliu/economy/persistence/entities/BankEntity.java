@@ -1,14 +1,18 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -16,12 +20,22 @@ import java.util.Set;
 @Table(name = "banks")
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class BankEntity {
     @Id
     @Column(name = "bankName", columnDefinition = "VARCHAR(16)")
-    private final String bankName;
+    private String bankName;
 
-    @OneToMany(mappedBy = "bank")
+    @Column(name = "interestCooldown")
+    private long interestCooldown;
+
+    @Column(name = "lastInterestTimestamp")
+    private Instant lastInterestTimestamp;
+
+    @OneToMany(mappedBy = "bank", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<AccountEntity> accounts = new LinkedHashSet<>();
+
+    public Duration getInterestCooldown() {
+        return Duration.ofHours(interestCooldown);
+    }
 }

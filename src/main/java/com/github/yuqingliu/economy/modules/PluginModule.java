@@ -126,8 +126,14 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository, CurrencyService currencyService) {
-        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository, currencyService);
+    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository, ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository) {
+        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository);
+    }
+
+    @Provides
+    @Singleton
+    public BankService provideBankService(PlayerRepository playerRepository, CurrencyRepository currencyRepository, AccountRepository accountRepository, BankRepository bankRepository) {
+        return new BankService(playerRepository, currencyRepository, accountRepository, bankRepository);
     }
 
     // Managers
@@ -166,7 +172,8 @@ public class PluginModule extends AbstractModule {
         Logger logger,
         CurrencyService currencyService,
         VendorService vendorService,
-        ShopService shopService
+        ShopService shopService,
+        BankService bankService
     ) {
         return new InventoryManagerImpl(
             eventManager,
@@ -174,7 +181,8 @@ public class PluginModule extends AbstractModule {
             logger,
             currencyService,
             vendorService,
-            shopService
+            shopService,
+            bankService
         );
     }
 
@@ -186,6 +194,7 @@ public class PluginModule extends AbstractModule {
         CurrencyService currencyService,
         VendorService vendorService,
         ShopService shopService,
+        BankService bankService,
         NameSpacedKeyManager nameSpacedKeyManager
     ) {
         return new CommandManagerImpl(
@@ -195,6 +204,7 @@ public class PluginModule extends AbstractModule {
             currencyService,
             vendorService,
             shopService,
+            bankService,
             nameSpacedKeyManager
         );
     }

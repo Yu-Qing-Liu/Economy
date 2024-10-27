@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.shopmenu.sellordermenu;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,28 +38,33 @@ public class SellOrderMenu implements Listener {
         event.setCancelled(true);
 
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.SellOrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int slot = event.getSlot();
-            if(slot == controller.getPrev()) {
-                controller.getRefreshTask().cancel();
+            int[] slot = shopMenu.toCoords(event.getSlot());
+            if(shopMenu.isUnavailable(currentItem)) {
+                return;
+            }
+            if(Arrays.equals(slot, controller.getPrevMenuButton())) {
+                controller.onClose(player);
                 shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                return;
             }
-            if(slot == controller.getExit()) {
-                clickedInventory.close();
-            }
-            if(slot == controller.getSetCurrencyType()) {
+            if(Arrays.equals(slot, controller.getSetCurrencyTypeButton())) {
                 controller.setCurrencyType(clickedInventory, player);
+                return;
             }
-            if(slot == controller.getSetQuantity()) {
+            if(Arrays.equals(slot, controller.getSetQuantityButton())) {
                 controller.setQuantity(clickedInventory, player);
+                return;
             }
-            if(slot == controller.getSetUnitPrice()) {
+            if(Arrays.equals(slot, controller.getSetPriceButton())) {
                 controller.setUnitPrice(clickedInventory, player);
+                return;
             }
-            if(slot == controller.getConfirm()) {
-                if(currentItem.getType() != controller.getVoidOption()) {
-                    controller.confirmOrder(clickedInventory, player);
-                    controller.getRefreshTask().cancel();
-                }
+            if(Arrays.equals(slot, controller.getConfirmOrderButton())) {
+                controller.confirmOrder(clickedInventory, player);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getExitMenuButton())) {
+                clickedInventory.close();
             }
         }
     }
