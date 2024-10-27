@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.pursemenu.mainmenu;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -37,15 +39,17 @@ public class MainMenu implements Listener {
         event.setCancelled(true);
 
         if(purseMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int slot = event.getSlot();
-            if(controller.getOptions().contains(slot)) {
-                // Open currency details
+            int[] slot = purseMenu.toCoords(event.getSlot());
+            if(purseMenu.isUnavailable(currentItem)) {
+                return;
             }
-            if(slot == controller.getNextPagePtr()) {
+            if(Arrays.equals(slot, controller.getNextPageButton())) {
                 controller.nextPage(player, clickedInventory);
+                return;
             } 
-            if(slot == controller.getPrevPagePtr()) {
+            if(Arrays.equals(slot, controller.getPrevPageButton())) {
                 controller.prevPage(player, clickedInventory);
+                return;
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.bankmenu.mainmenu;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,21 +40,23 @@ public class MainMenu implements Listener {
         event.setCancelled(true);
 
         if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int slot = event.getSlot();
-            if(controller.getOptions().contains(slot) && currentItem.getType() != controller.getVoidOption()) {
-                int index = slot - controller.getOptions().get(0);
-                AccountEntity account = controller.getPageData().get(controller.getPageNumbers().get(player)[0])[index];
-                if(controller.unlockAccount(account, player)) {
-                    if(controller.getPageData() != null && controller.getPageData().containsKey(controller.getPageNumbers().get(player)[0])) {
-                        bankMenu.getAccountMenu().getController().openAccountMenu(player, clickedInventory, account);
-                    }
-                }
+            int[] slot = bankMenu.toCoords(event.getSlot());
+            if(bankMenu.isUnavailable(currentItem)) {
+                return;
             }
-            if(slot == controller.getNextPagePtr()) {
+            if(bankMenu.rectangleContains(slot, controller.getAccounts())) {
+                int pageNumber = controller.getPageNumbers().get(player)[0];
+                AccountEntity account = controller.getPageData().get(pageNumber).get(Arrays.asList(slot[0], slot[1]));
+                bankMenu.getAccountMenu().getController().openAccountMenu(player, clickedInventory, account);
+                return;
+            }
+            if(Arrays.equals(slot, controller.getNextPageButton())) {
                 controller.nextPage(player, clickedInventory);
+                return;
             } 
-            if(slot == controller.getPrevPagePtr()) {
+            if(Arrays.equals(slot, controller.getPrevPageButton())) {
                 controller.prevPage(player, clickedInventory);
+                return;
             }
         }
     }
