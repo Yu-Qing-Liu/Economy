@@ -19,6 +19,7 @@ import com.github.yuqingliu.economy.persistence.services.BankService;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 import com.github.yuqingliu.economy.view.bankmenu.accountmenu.AccountMenu;
+import com.github.yuqingliu.economy.view.bankmenu.depositmenu.DepositMenu;
 import com.github.yuqingliu.economy.view.bankmenu.mainmenu.MainMenu;
 
 import net.kyori.adventure.text.Component;
@@ -32,11 +33,12 @@ public class BankMenu extends AbstractPlayerInventory {
     private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
-        MainMenu, AccountMenu;
+        MainMenu, AccountMenu, DepositMenu, WithdrawMenu;
     }
 
     private final MainMenu mainMenu;
     private final AccountMenu accountMenu;
+    private final DepositMenu depositMenu;
 
     @Inject
     public BankMenu(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName, BankService bankService, CurrencyService currencyService, InventoryManager inventoryManager) {
@@ -52,6 +54,7 @@ public class BankMenu extends AbstractPlayerInventory {
         this.inventoryManager = inventoryManager;
         this.mainMenu = new MainMenu(this);
         this.accountMenu = new AccountMenu(this);
+        this.depositMenu = new DepositMenu(this);
     }
     
     public String getBankName() {

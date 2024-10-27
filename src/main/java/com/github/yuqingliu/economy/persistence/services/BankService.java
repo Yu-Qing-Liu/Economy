@@ -32,6 +32,8 @@ public class BankService {
     private final AccountRepository accountRepository;
     @Inject
     private final BankRepository bankRepository;
+    @Inject
+    private final CurrencyService currencyService;
 
     public boolean addBank(String bankName, long cooldown) {
         BankEntity newBank = new BankEntity();
@@ -87,5 +89,21 @@ public class BankService {
 
     public boolean updateAccount(AccountEntity account) {
         return accountRepository.update(account);
+    }
+
+    public boolean depositPlayerAccount(OfflinePlayer player, double amount, CurrencyEntity currency) {
+        boolean sucessfulWithdrawal = currencyService.withdrawPlayerPurse(player, currency.getCurrencyName(), amount);
+        if(!sucessfulWithdrawal) {
+            return false;
+        }
+        double initial = currency.getAmount();
+        currency.setAmount(initial + amount);
+        boolean sucessfulDeposit = currencyRepository.update(currency);
+        if(!sucessfulDeposit) {
+            currency.setAmount(initial);
+            currencyService.depositPlayerPurse(player, currency.getCurrencyName(), amount);
+            return false;
+        }
+        return true;
     }
 }
