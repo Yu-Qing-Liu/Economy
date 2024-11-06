@@ -17,7 +17,7 @@ public abstract class Economy extends JavaPlugin {
 
     /**
      * Gets a main instance of Economy.
-     * @return ExtraEnchants
+     * @return Economy
      */
     public static Economy getInstance() {
         return Objects.requireNonNull(instance);
