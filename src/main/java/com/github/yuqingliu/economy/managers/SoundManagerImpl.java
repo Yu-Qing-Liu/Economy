@@ -4,7 +4,9 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.google.inject.Singleton;
 
+@Singleton
 public class SoundManagerImpl implements SoundManager {
     @Override
     public void playTransactionSound(Player player) {
