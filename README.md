@@ -84,7 +84,3 @@ The Economy plugin is a Minecraft server plugin designed to manage currencies, s
 1. Ensure you have a Minecraft server running Spigot or Paper 1.21.1 or later.
 3. Place the Economy plugin JAR file into the server's `plugins` directory.
 4. Start the server to load the plugin.
-
-## Support
-
-For support, please open an issue in the [GitHub repository](https://github.com/Yu-Qing-Liu/Economy).
