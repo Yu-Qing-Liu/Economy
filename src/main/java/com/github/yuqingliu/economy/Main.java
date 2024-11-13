@@ -18,10 +18,5 @@ public class Main extends Economy {
         // Inject dependencies
         injector.injectMembers(this);
     }
-
-    @Override
-    public void onDisable() {
-
-    }
 }
 

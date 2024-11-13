@@ -1,6 +1,5 @@
 package com.github.yuqingliu.economy.view;
 
-import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.PluginManager;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
@@ -9,7 +8,6 @@ import com.google.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;

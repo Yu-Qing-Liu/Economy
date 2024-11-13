@@ -2,11 +2,17 @@ package com.github.yuqingliu.economy.persistence.repositories;
 
 import java.util.Map;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
+import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.keys.VendorItemKey;
@@ -21,7 +27,9 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class VendorItemRepository {
     private final SessionFactory sessionFactory;
-    private final VendorItemRepository vendorItemRepository;
+    private final Logger logger;
+    private InventoryManager inventoryManager;
+    private SoundManager soundManager;
     
     // Transactions
     public boolean save(VendorItemEntity item) {
@@ -42,7 +50,7 @@ public class VendorItemRepository {
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             String itemName = PlainTextComponentSerializer.plainText().serialize(icon.displayName());
-            VendorItemEntity item = vendorItemRepository.get(new VendorItemKey(itemName, sectionName, vendorName));
+            VendorItemEntity item = this.get(new VendorItemKey(itemName, sectionName, vendorName));
             if(item == null) {
                 throw new IllegalArgumentException();
             }
@@ -69,6 +77,63 @@ public class VendorItemRepository {
                 session.persist(section);
             }
             transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+
+    public boolean buy(VendorItemEntity item, int amount, String currencyType, Player player) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            double cost = amount * item.getBuyPrices().get(currencyType);
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", player.getUniqueId());
+            query.setParameter("currencyName", currencyType);
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            if(purseCurrency.getAmount() < cost) {
+                logger.sendPlayerErrorMessage(player, "Not enough currency.");
+                throw new RuntimeException();
+            }
+            purseCurrency.setAmount(purseCurrency.getAmount() - cost);
+            session.merge(purseCurrency);
+            inventoryManager.addItemToPlayer(player, item.getIcon().clone(), amount);
+            transaction.commit();
+            logger.sendPlayerNotificationMessage(player, String.format("Bought %d item(s) for %.2f %s", amount, cost, currencyType));
+            soundManager.playTransactionSound(player);
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+
+    public boolean sell(VendorItemEntity item, int amount, String currencyType, Player player) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            double profit = amount * item.getBuyPrices().get(currencyType);
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", player.getUniqueId());
+            query.setParameter("currencyName", currencyType);
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+            session.merge(purseCurrency);
+            if(!inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), amount)) {
+                logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
+                throw new RuntimeException();
+            }
+            transaction.commit();
+            logger.sendPlayerNotificationMessage(player, String.format("Sold %d item(s) for %.2f %s", amount, profit, currencyType));
+            soundManager.playTransactionSound(player);
             return true;
         } catch (Exception e) {
             transaction.rollback();

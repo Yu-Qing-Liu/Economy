@@ -11,6 +11,7 @@ import org.hibernate.query.Query;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class ShopOrderRepository {
     private final SessionFactory sessionFactory;
     private final InventoryManager inventoryManager;
+    private final SoundManager soundManager;
     private final Logger logger;
     
     // Transactions
@@ -93,6 +95,7 @@ public class ShopOrderRepository {
             order.setShopItem(item);
             session.persist(order);
             transaction.commit();
+            soundManager.playConfirmOrderSound(player);
             return true;
         } catch (Exception e) {
             transaction.rollback();
@@ -121,6 +124,7 @@ public class ShopOrderRepository {
             order.setShopItem(item);
             session.persist(order);
             transaction.commit();
+            soundManager.playConfirmOrderSound(player);
             return true;
         } catch (Exception e) {
             transaction.rollback();

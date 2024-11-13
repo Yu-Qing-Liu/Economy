@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -67,7 +66,7 @@ public class QuickBuyMenuController {
 
     public void quickBuy(int amount, Player player) {
         Scheduler.runAsync((task) -> {
-            shopMenu.getShopService().quickBuy();
+            shopMenu.getShopService().quickBuy(item, amount, orderOption.getCurrencyName(), player);
         });
     }
 
@@ -112,7 +111,7 @@ public class QuickBuyMenuController {
 
     private void buttons(Inventory inv, Player player) {
         BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
-            int freeSpace = shopMenu.countAvailableInventorySpace(player, item.getIcon().getType());
+            int freeSpace = shopMenu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
             double cost = 0;
             int qty = freeSpace;
             for(ShopOrderEntity order : orderOption.getOrders()) {

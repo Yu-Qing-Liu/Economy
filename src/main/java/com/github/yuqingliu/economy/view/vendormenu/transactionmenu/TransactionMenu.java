@@ -23,7 +23,7 @@ public class TransactionMenu implements Listener {
     public TransactionMenu(VendorMenu vendorMenu) {
         this.vendorMenu = vendorMenu;
         this.controller = new TransactionMenuController(vendorMenu);
-        vendorMenu.getEventManager().registerEvent(this);
+        vendorMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler

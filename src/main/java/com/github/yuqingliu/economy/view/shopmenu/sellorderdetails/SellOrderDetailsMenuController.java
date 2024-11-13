@@ -57,20 +57,11 @@ public class SellOrderDetailsMenuController {
     public void cancelOrder(Inventory inv, Player player) {
         Scheduler.runAsync((task) -> {
             ShopOrderEntity order = playersData.get(player);
-            double profit = order.getFilledQuantity() * order.getUnitPrice();
-            order.setQuantity(order.getQuantity() - order.getFilledQuantity());
-            order.setFilledQuantity(0);
-            if(shopMenu.getShopService().updateOrder(order)) {
-                shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), profit);
-                playersData.put(player, order);
-                int amount = order.getQuantity() - order.getFilledQuantity();
-                if(shopMenu.getShopService().deleteOrder(order)) {
-                    shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
-                    playersData.remove(player);
-                    shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(inv, player);
-                    return;
-                } 
-            }
+            if(shopMenu.getShopService().cancelSellOrder(order, player)) {
+                playersData.remove(player);
+                shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(inv, player);
+                return;
+            } 
             reload(inv, player);
         });
     }
@@ -78,19 +69,10 @@ public class SellOrderDetailsMenuController {
     public void claimOrder(Inventory inv, Player player) {
         Scheduler.runAsync((task) -> {
             ShopOrderEntity order = playersData.get(player);
-            double profit = order.getFilledQuantity() * order.getUnitPrice();
-            order.setQuantity(order.getQuantity() - order.getFilledQuantity());
-            order.setFilledQuantity(0);
-            if(shopMenu.getShopService().updateOrder(order)) {
-                shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), profit);
-                playersData.put(player, order);
-                if(order.getQuantity() == 0) {
-                    if(shopMenu.getShopService().deleteOrder(order)) {
-                        playersData.remove(player);
-                        shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(inv, player);
-                        return;
-                    }
-                } 
+            if(shopMenu.getShopService().claimSellOrder(order, player)) {
+                playersData.remove(player);
+                shopMenu.getSellOrdersMenu().getController().openSellOrdersMenu(inv, player);
+                return;
             }
             reload(inv, player);
         });

@@ -2,6 +2,7 @@ package com.github.yuqingliu.economy.persistence.services;
 
 import java.util.Map;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.persistence.entities.VendorEntity;
@@ -73,6 +74,14 @@ public class VendorService {
     public boolean deleteVendorItem(String vendorName, String sectionName, String itemName) {
         VendorItemKey key = new VendorItemKey(itemName, sectionName, vendorName);
         return vendorItemRepository.delete(key);
+    }
+
+    public boolean buy(VendorItemEntity item, int amount, String currencyType, Player player) {
+        return vendorItemRepository.buy(item, amount, currencyType, player);
+    }
+
+    public boolean sell(VendorItemEntity item, int amount, String currencyType, Player player) {
+        return vendorItemRepository.buy(item, amount, currencyType, player);
     }
 }
 

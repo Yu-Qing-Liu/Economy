@@ -24,7 +24,7 @@ public class WithdrawMenu implements Listener {
     public WithdrawMenu(BankMenu bankMenu) {
         this.bankMenu = bankMenu;
         this.controller = new WithdrawMenuController(bankMenu);
-        bankMenu.getEventManager().registerEvent(this);
+        bankMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler
