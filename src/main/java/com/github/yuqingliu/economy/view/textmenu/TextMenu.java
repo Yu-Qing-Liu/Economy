@@ -22,8 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
-import com.github.yuqingliu.economy.api.managers.EventManager;
-import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.github.yuqingliu.economy.api.managers.PluginManager;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 
 import net.kyori.adventure.text.Component;
@@ -35,15 +34,14 @@ public class TextMenu extends AbstractPlayerInventory implements Listener {
     private String input;
     @Setter private Consumer<String> onCloseCallback;
 
-    public TextMenu(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName) {
+    public TextMenu(PluginManager pluginManager, Logger logger, Component displayName) {
         super(
-            eventManager,
-            soundManager,
+            pluginManager,
             logger,
             displayName,
             0
         );
-        eventManager.registerEvent(this);
+        pluginManager.getEventManager().registerEvent(this);
     }
 
     @Override

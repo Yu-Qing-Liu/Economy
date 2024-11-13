@@ -16,6 +16,7 @@ import lombok.Getter;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
+import com.github.yuqingliu.economy.api.managers.PluginManager;
 import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
@@ -39,10 +40,9 @@ public class VendorMenu extends AbstractPlayerInventory {
     private final TradeMenu tradeMenu;
 
     @Inject
-    public VendorMenu(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName, VendorService vendorService, CurrencyService currencyService) {
+    public VendorMenu(PluginManager pluginManager, Logger logger, Component displayName, VendorService vendorService, CurrencyService currencyService) {
         super(
-            eventManager,
-            soundManager,
+            pluginManager,
             logger,
             displayName,
             54

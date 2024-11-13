@@ -14,6 +14,7 @@ import lombok.Getter;
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.PluginManager;
 import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
@@ -36,7 +37,6 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 public class ShopMenu extends AbstractPlayerInventory {
     private final ShopService shopService;
     private final CurrencyService currencyService;
-    private final InventoryManager inventoryManager;
     private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
@@ -56,17 +56,15 @@ public class ShopMenu extends AbstractPlayerInventory {
     private final SellOrderDetailsMenu sellOrderDetailsMenu;
 
     @Inject
-    public ShopMenu(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName,
-            ShopService shopService, CurrencyService currencyService, InventoryManager inventoryManager) {
+    public ShopMenu(PluginManager pluginManager, Logger logger, Component displayName, ShopService shopService, CurrencyService currencyService) {
         super(
-                eventManager,
-                soundManager,
-                logger,
-                displayName,
-                54);
+            pluginManager,
+            logger,
+            displayName,
+            54
+        );
         this.shopService = shopService;
         this.currencyService = currencyService;
-        this.inventoryManager = inventoryManager;
         this.mainMenu = new MainMenu(this);
         this.orderMenu = new OrderMenu(this);
         this.buyOrderMenu = new BuyOrderMenu(this);

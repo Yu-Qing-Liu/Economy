@@ -1,11 +1,11 @@
 package com.github.yuqingliu.economy.modules;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
-import com.github.yuqingliu.economy.api.services.*;
 import com.github.yuqingliu.economy.api.managers.*;
 import com.github.yuqingliu.economy.logger.LoggerImpl;
 import com.github.yuqingliu.economy.managers.*;
 import com.github.yuqingliu.economy.persistence.repositories.*;
+import com.github.yuqingliu.economy.persistence.services.*;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
