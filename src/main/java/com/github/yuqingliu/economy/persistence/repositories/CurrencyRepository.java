@@ -24,8 +24,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class CurrencyRepository {
     private final SessionFactory sessionFactory;
-    private final BankRepository bankRepository;
-    private final PurseRepository purseRepository;
     
     // Transactions
     public boolean save(CurrencyEntity currency) {
@@ -45,7 +43,7 @@ public class CurrencyRepository {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            Set<BankEntity> banks = bankRepository.findAll();
+            Set<BankEntity> banks = Set.copyOf(session.createQuery("from BankEntity", BankEntity.class).list());
             banks.forEach(bank -> {
                 bank.getAccounts().forEach(account -> {
                     CurrencyEntity bankCurrency = new CurrencyEntity();
@@ -59,7 +57,7 @@ public class CurrencyRepository {
                     session.persist(bankCurrency);
                 });
             });
-            Set<PurseEntity> purses = purseRepository.findAll();
+            Set<PurseEntity> purses = Set.copyOf(session.createQuery("from PurseEntity", PurseEntity.class).list());
             purses.forEach(purse -> {
                 CurrencyEntity purseCurrency = new CurrencyEntity();
                 purseCurrency.setCurrencyName(currencyName);

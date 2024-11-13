@@ -12,4 +12,5 @@ public interface InventoryManager {
     boolean removeItemFromPlayer(Player player, ItemStack item, int quantity);
     int countItemFromPlayer(Player player, ItemStack item);
     int countAvailableInventorySpace(Player player, Material material);
+    void postConstruct();
 }

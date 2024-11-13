@@ -19,7 +19,6 @@ import java.util.UUID;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class PlayerRepository {
     private final SessionFactory sessionFactory;
-    private final CurrencyRepository currencyRepository;
     
     // Transactions
     public boolean addPlayer(UUID playerId) {
@@ -34,7 +33,13 @@ public class PlayerRepository {
                 playerPurse.setPlayerId(playerId);
                 playerEntity.setPurse(playerPurse);
                 session.persist(playerEntity);
-                Set<CurrencyEntity> currencies = currencyRepository.findAllUniqueCurrencies();
+                Set<CurrencyEntity> currencies = Set.copyOf(
+                    session.createQuery(
+                        "FROM CurrencyEntity c WHERE c.currencyName IN (" +
+                        "SELECT DISTINCT c2.currencyName FROM CurrencyEntity c2)", 
+                        CurrencyEntity.class
+                    ).list()
+                );
                 currencies.forEach(uniqueCurrency -> {
                     CurrencyEntity currency = new CurrencyEntity();
                     currency.setCurrencyName(uniqueCurrency.getCurrencyName());

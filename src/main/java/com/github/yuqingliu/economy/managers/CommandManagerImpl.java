@@ -49,6 +49,10 @@ public class CommandManagerImpl implements CommandManager {
         this.shopService = shopService;
         this.bankService = bankService;
         this.nameSpacedKeyManager = nameSpacedKeyManager;
+    }
+    
+    @Inject
+    public void postConstruct() {
         initializeCommands();
         registerCommands();
     }

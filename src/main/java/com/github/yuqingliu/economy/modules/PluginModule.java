@@ -22,6 +22,12 @@ public class PluginModule extends AbstractModule {
 
     @Provides
     @Singleton
+    public JavaPlugin provideJavaPlugin() {
+        return this.plugin;
+    }
+
+    @Provides
+    @Singleton
     public SessionFactory provideSessionFactory() {
         return HibernateModule.createSessionFactory(plugin.getDataFolder().getAbsolutePath());
     }

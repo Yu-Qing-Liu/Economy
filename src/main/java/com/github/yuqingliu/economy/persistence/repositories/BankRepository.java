@@ -26,7 +26,6 @@ import java.util.UUID;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class BankRepository {
     private final SessionFactory sessionFactory;
-    private final PlayerRepository playerRepository;
     private final Logger logger;
     
     // Transactions
@@ -64,7 +63,7 @@ public class BankRepository {
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             BankEntity bank = this.get(bankName);
-            Set<PlayerEntity> players = playerRepository.findAll();
+            Set<PlayerEntity> players = Set.copyOf(session.createQuery("from PlayerEntity", PlayerEntity.class).list());
             for (PlayerEntity player : players) {
                 AccountEntity newAccount = new AccountEntity();
                 newAccount.setBank(bank);

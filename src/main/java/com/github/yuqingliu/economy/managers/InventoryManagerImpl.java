@@ -12,10 +12,8 @@ import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.logger.Logger;
-import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.PluginManager;
-import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
 import com.github.yuqingliu.economy.persistence.services.BankService;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
@@ -52,10 +50,10 @@ public class InventoryManagerImpl implements InventoryManager {
         this.vendorService = vendorService;
         this.shopService = shopService;
         this.bankService = bankService;
-        initializeInventories();
     }
-
-    private void initializeInventories() {
+    
+    @Override
+    public void postConstruct() {
         inventories.put(
             PurseMenu.class.getSimpleName(),
             new PurseMenu(
