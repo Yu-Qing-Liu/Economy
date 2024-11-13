@@ -57,21 +57,10 @@ public class BuyOrderDetailsMenuController {
     public void cancelOrder(Inventory inv, Player player) {
         Scheduler.runAsync((task) -> {
             ShopOrderEntity order = playersData.get(player);
-            int amount = order.getFilledQuantity();
-            order.setQuantity(order.getQuantity() - order.getFilledQuantity());
-            order.setFilledQuantity(0);
-            if(shopMenu.getShopService().updateOrder(order)) {
-                shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
-                playersData.put(player, order);
-                double refund = order.getQuantity() * order.getUnitPrice();
-                if(shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), refund)) {
-                    if(shopMenu.getShopService().deleteOrder(order)) {
-                        playersData.remove(player);
-                        shopMenu.getBuyOrdersMenu().getController().openBuyOrdersMenu(inv, player);
-                        return;
-                    }
-                    shopMenu.getCurrencyService().withdrawPlayerPurse(player, order.getCurrencyType(), refund);
-                }
+            if(shopMenu.getShopService().cancelBuyOrder(order, player)) {
+                playersData.remove(player);
+                shopMenu.getBuyOrdersMenu().getController().openBuyOrdersMenu(inv, player);
+                return;
             }
             reload(inv, player);
         });
@@ -80,20 +69,11 @@ public class BuyOrderDetailsMenuController {
     public void claimOrder(Inventory inv, Player player) {
         Scheduler.runAsync((task) -> {
             ShopOrderEntity order = playersData.get(player);
-            int amount = order.getFilledQuantity();
-            order.setQuantity(order.getQuantity() - order.getFilledQuantity());
-            order.setFilledQuantity(0);
-            if(shopMenu.getShopService().updateOrder(order)) {
-                shopMenu.addItemToPlayer(player, order.getShopItem().getIcon().clone(), amount);
-                playersData.put(player, order);
-                if(order.getQuantity() == 0) {
-                    if(shopMenu.getShopService().deleteOrder(order)) {
-                        playersData.remove(player);
-                        shopMenu.getBuyOrdersMenu().getController().openBuyOrdersMenu(inv, player);
-                        return;
-                    }
-                } 
-            }
+            if(shopMenu.getShopService().claimBuyOrder(order, player)) {
+                playersData.remove(player);
+                shopMenu.getBuyOrdersMenu().getController().openBuyOrdersMenu(inv, player);
+                return;
+            } 
             reload(inv, player);
         });
     }

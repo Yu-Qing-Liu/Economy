@@ -11,9 +11,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 @Singleton
@@ -46,19 +46,19 @@ public class BankService {
         return accountRepository.getPlayerAccountsByBank(bankName, player.getUniqueId());
     }
     
-    public boolean depositPlayerAccount(AccountEntity account, OfflinePlayer player, double amount, String currencyName) {
-        return accountRepository.depositPlayerAccount(account.getAccountId(), player.getUniqueId(), amount, currencyName);
+    public boolean depositPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {
+        return accountRepository.depositPlayerAccount(account, player, amount, currencyName);
     }
 
-    public boolean withdrawPlayerAccount(AccountEntity account, OfflinePlayer player, double amount, String currencyName) {
-        return accountRepository.withdrawPlayerAccount(account.getAccountId(), player.getUniqueId(), amount, currencyName);
+    public boolean withdrawPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {
+        return accountRepository.withdrawPlayerAccount(account, player, amount, currencyName);
     }
 
     public boolean depositAllInterest() {
         return bankRepository.depositAllInterestForAllBanks();
     }
 
-    public boolean unlockAccount(AccountEntity account, OfflinePlayer player) {
-        return bankRepository.unlockAccount(player.getUniqueId(), account.getAccountId());
+    public boolean unlockAccount(AccountEntity account, Player player) {
+        return bankRepository.unlockAccount(account, player);
     }
 }

@@ -43,7 +43,7 @@ public class BankMenu extends AbstractPlayerInventory {
     private final WithdrawMenu WithdrawMenu;
 
     @Inject
-    public BankMenu(PluginManager pluginManager, BankService bankService, CurrencyService currencyService, Logger logger, Component displayName) {
+    public BankMenu(PluginManager pluginManager, Logger logger, Component displayName, BankService bankService, CurrencyService currencyService) {
         super(
             pluginManager,
             logger,

@@ -1,10 +1,19 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
+import java.util.Set;
+
+import org.bukkit.entity.Player;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
+import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
+import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
@@ -17,6 +26,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopItemRepository {
     private final SessionFactory sessionFactory;
+    private final InventoryManager inventoryManager;
+    private final Logger logger;
+    private final SoundManager soundManager;
 
     // Transactions
     public boolean save(ShopItemEntity item) {
@@ -50,6 +62,146 @@ public class ShopItemRepository {
             return false;
         }
     }
+
+    public boolean quickBuy(ShopItemEntity item, int amount, String currencyType, Player player) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Set<ShopOrderEntity> sellOffers = item.getSellOrders().get(currencyType);
+            int required = amount;
+            double cost = 0;
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", player.getUniqueId());
+            query.setParameter("currencyName", currencyType);
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            for(ShopOrderEntity order : sellOffers) {
+                if(order.getQuantity() == order.getFilledQuantity()) {
+                    continue;
+                }
+                int qty = order.getQuantity() - order.getFilledQuantity();
+                if(qty > required) {
+                    cost += required * order.getUnitPrice();
+                    order.setFilledQuantity(order.getFilledQuantity() + required);
+                    if(purseCurrency.getAmount() < cost) {
+                        logger.sendPlayerErrorMessage(player, "Not enough currency.");
+                        throw new IllegalArgumentException();
+                    }
+                    purseCurrency.setAmount(purseCurrency.getAmount() - cost);
+                    session.merge(purseCurrency);
+                    session.merge(order);
+                    inventoryManager.addItemToPlayer(player, item.getIcon().clone(), required);
+                    break;
+                } else if(qty == required) {
+                    cost += required * order.getUnitPrice();
+                    order.setFilledQuantity(order.getFilledQuantity() + required);
+                    if(purseCurrency.getAmount() < cost) {
+                        logger.sendPlayerErrorMessage(player, "Not enough currency.");
+                        throw new IllegalArgumentException();
+                    }
+                    purseCurrency.setAmount(purseCurrency.getAmount() - cost);
+                    session.merge(purseCurrency);
+                    session.merge(order);
+                    inventoryManager.addItemToPlayer(player, item.getIcon().clone(), required);
+                    break;
+                } else {
+                    cost += qty * order.getUnitPrice();
+                    order.setFilledQuantity(order.getFilledQuantity() + qty);
+                    if(purseCurrency.getAmount() < cost) {
+                        logger.sendPlayerErrorMessage(player, "Not enough currency.");
+                        throw new IllegalArgumentException();
+                    }
+                    purseCurrency.setAmount(purseCurrency.getAmount() - cost);
+                    session.merge(purseCurrency);
+                    session.merge(order);
+                    inventoryManager.addItemToPlayer(player, item.getIcon().clone(), qty);
+                    required -= qty;
+                }
+            };
+            if(required != amount) {
+                logger.sendPlayerNotificationMessage(player, String.format("Bought %d item(s) for %.2f %s", amount - required, cost, currencyType));
+                soundManager.playTransactionSound(player);
+            } else {
+                logger.sendPlayerErrorMessage(player, "No more offers.");
+            }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+
+    public boolean quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Set<ShopOrderEntity> sellOffers = item.getSellOrders().get(currencyType);
+            int required = amount;
+            double profit = 0;
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", player.getUniqueId());
+            query.setParameter("currencyName", currencyType);
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            for(ShopOrderEntity order : sellOffers) {
+                if(order.getQuantity() == order.getFilledQuantity()) {
+                    continue;
+                }
+                int qty = order.getQuantity() - order.getFilledQuantity();
+                if(qty > required) {
+                    profit += required * order.getUnitPrice();
+                    order.setFilledQuantity(order.getFilledQuantity() + required);
+                    purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+                    session.merge(purseCurrency);
+                    session.merge(order);
+                    if(inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), required)) {
+                        logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
+                        throw new RuntimeException();
+                    }
+                    break;
+                } else if(qty == required) {
+                    profit += required * order.getUnitPrice();
+                    order.setFilledQuantity(order.getFilledQuantity() + required);
+                    purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+                    session.merge(purseCurrency);
+                    session.merge(order);
+                    if(inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), required)) {
+                        logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
+                        throw new RuntimeException();
+                    }
+                    break;
+                } else {
+                    profit += qty * order.getUnitPrice();
+                    order.setFilledQuantity(order.getFilledQuantity() + qty);
+                    purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+                    session.merge(purseCurrency);
+                    session.merge(order);
+                    if(inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), qty)) {
+                        logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
+                        throw new RuntimeException();
+                    }
+                    required -= qty;
+                }
+            };
+            if(required != amount) {
+                logger.sendPlayerNotificationMessage(player, String.format("Sold %d item(s) for %.2f %s", amount - required, profit, currencyType));
+                soundManager.playTransactionSound(player);
+            } else {
+                logger.sendPlayerErrorMessage(player, "No more offers.");
+            }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+
     
     // Queries
     public ShopItemEntity get(ShopItemKey key) {

@@ -1,10 +1,7 @@
 package com.github.yuqingliu.economy.persistence.services;
 
-import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
-import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
-import com.github.yuqingliu.economy.persistence.repositories.BankRepository;
 import com.github.yuqingliu.economy.persistence.repositories.CurrencyRepository;
 import com.github.yuqingliu.economy.persistence.repositories.PurseRepository;
 import com.google.inject.Inject;
@@ -13,7 +10,6 @@ import com.google.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Set;
-import java.util.UUID;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;

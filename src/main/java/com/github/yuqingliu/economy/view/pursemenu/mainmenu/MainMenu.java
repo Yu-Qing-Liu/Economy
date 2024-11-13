@@ -23,7 +23,7 @@ public class MainMenu implements Listener {
     public MainMenu(PurseMenu purseMenu) {
         this.purseMenu = purseMenu;
         this.controller = new MainMenuController(purseMenu);
-        purseMenu.getEventManager().registerEvent(this);
+        purseMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler

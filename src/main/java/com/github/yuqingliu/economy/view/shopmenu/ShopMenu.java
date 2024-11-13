@@ -12,10 +12,7 @@ import com.google.inject.Inject;
 import lombok.Getter;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
-import com.github.yuqingliu.economy.api.managers.EventManager;
-import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.PluginManager;
-import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;

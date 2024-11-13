@@ -1,10 +1,12 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
+import org.bukkit.entity.Player;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
@@ -23,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class AccountRepository {
     private final SessionFactory sessionFactory;
+    private final Logger logger;
 
     // Transactions 
     public boolean deleteBankAccountsByAccountName(String accountName, String bankName) {
@@ -56,7 +59,7 @@ public class AccountRepository {
         }
     }
 
-    public boolean depositPlayerAccount(UUID accountId, UUID playerId, double amount, String currencyName) {
+    public boolean depositPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
@@ -64,17 +67,18 @@ public class AccountRepository {
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
                 CurrencyEntity.class
             );
-            query1.setParameter("purseId", playerId);
+            query1.setParameter("purseId", player.getUniqueId());
             query1.setParameter("currencyName", currencyName);
             Query<CurrencyEntity> query2 = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.accountId = :accountId AND c.currencyName = :currencyName",
                 CurrencyEntity.class
             );
-            query2.setParameter("accountId", accountId);
+            query2.setParameter("accountId", account.getAccountId());
             query2.setParameter("currencyName", currencyName);
             CurrencyEntity purseCurrency = query1.uniqueResult();
             CurrencyEntity accountCurrency = query2.uniqueResult();
             if(purseCurrency.getAmount() < amount) {
+                logger.sendPlayerErrorMessage(player, "You cannot deposit that amount.");
                 throw new IllegalArgumentException();
             }
             purseCurrency.setAmount(purseCurrency.getAmount() - amount);
@@ -89,7 +93,7 @@ public class AccountRepository {
         }
     }
 
-    public boolean withdrawPlayerAccount(UUID accountId, UUID playerId, double amount, String currencyName) {
+    public boolean withdrawPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
@@ -97,17 +101,18 @@ public class AccountRepository {
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
                 CurrencyEntity.class
             );
-            query1.setParameter("purseId", playerId);
+            query1.setParameter("purseId", player.getUniqueId());
             query1.setParameter("currencyName", currencyName);
             Query<CurrencyEntity> query2 = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.accountId = :accountId AND c.currencyName = :currencyName",
                 CurrencyEntity.class
             );
-            query2.setParameter("accountId", accountId);
+            query2.setParameter("accountId", account.getAccountId());
             query2.setParameter("currencyName", currencyName);
             CurrencyEntity purseCurrency = query1.uniqueResult();
             CurrencyEntity accountCurrency = query2.uniqueResult();
             if(accountCurrency.getAmount() < amount) {
+                logger.sendPlayerErrorMessage(player, "You withdraw deposit that amount.");
                 throw new IllegalArgumentException();
             }
             accountCurrency.setAmount(accountCurrency.getAmount() - amount);

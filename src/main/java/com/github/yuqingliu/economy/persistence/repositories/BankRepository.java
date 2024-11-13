@@ -1,5 +1,6 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
@@ -9,6 +10,7 @@ import com.google.inject.Singleton;
 
 import lombok.RequiredArgsConstructor;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -25,7 +27,7 @@ import java.util.UUID;
 public class BankRepository {
     private final SessionFactory sessionFactory;
     private final PlayerRepository playerRepository;
-    private final AccountRepository accountRepository;
+    private final Logger logger;
     
     // Transactions
     public boolean save(BankEntity bank) {
@@ -129,21 +131,21 @@ public class BankRepository {
         }
     }
 
-    public boolean unlockAccount(UUID playerId, UUID accountId) {
+    public boolean unlockAccount(AccountEntity account, Player player) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            AccountEntity account = accountRepository.get(accountId);
             double unlockPrice = account.getUnlockCost();
             String currencyType = account.getUnlockCurrencyType();
             Query<CurrencyEntity> query = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
                 CurrencyEntity.class
             );
-            query.setParameter("purseId", playerId);
+            query.setParameter("purseId", player.getUniqueId());
             query.setParameter("currencyName", currencyType);
             CurrencyEntity purseCurrency = query.uniqueResult();
             if(purseCurrency.getAmount() < unlockPrice) {
+                logger.sendPlayerErrorMessage(player, "Not enouch currency to unlock this bank account.");
                 throw new IllegalArgumentException();
             }
             purseCurrency.setAmount(purseCurrency.getAmount() - unlockPrice);

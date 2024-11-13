@@ -55,5 +55,4 @@ public class PurseMenu extends AbstractPlayerInventory {
         player.openInventory(inventory);
         mainMenu.getController().openMainMenu(player, inventory);
     }
-
 }

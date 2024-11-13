@@ -3,6 +3,7 @@ package com.github.yuqingliu.economy.persistence.services;
 import java.util.List;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
@@ -44,6 +45,22 @@ public class ShopService {
         return shopRepository.get(shopName);
     }
 
+    public boolean cancelBuyOrder(ShopOrderEntity order, Player player) {
+        return shopOrderRepository.cancelBuyOrder(order, player);
+    }
+
+    public boolean claimBuyOrder(ShopOrderEntity order, Player player) {
+        return shopOrderRepository.claimBuyOrder(order, player);
+    }
+
+    public boolean cancelSellOrder(ShopOrderEntity order, Player player) {
+        return shopOrderRepository.cancelSellOrder(order, player);
+    }
+
+    public boolean claimSellOrder(ShopOrderEntity order, Player player) {
+        return shopOrderRepository.claimSellOrder(order, player);
+    }
+
     public boolean addShopSection(String shopName, String sectionName, ItemStack icon) {
         ShopSectionEntity section = new ShopSectionEntity();
         section.setShopName(shopName);
@@ -71,12 +88,12 @@ public class ShopService {
         return shopItemRepository.delete(key);
     }
 
-    public boolean createBuyOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
-        return shopOrderRepository.createBuyOrder(player.getUniqueId(), item, quantity, unitPrice, currencyType);
+    public boolean createBuyOrder(Player player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        return shopOrderRepository.createBuyOrder(player, item, quantity, unitPrice, currencyType);
     }
 
-    public boolean createSellOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
-        return shopOrderRepository.createSellOrder(player.getUniqueId(), item, quantity, unitPrice, currencyType);
+    public boolean createSellOrder(Player player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        return shopOrderRepository.createSellOrder(player, item, quantity, unitPrice, currencyType);
     }
 
     public boolean deleteOrder(ShopOrderEntity order) {
@@ -90,6 +107,14 @@ public class ShopService {
 
     public List<ShopOrderEntity> getPlayerSellOrders(OfflinePlayer player) {
         return shopOrderRepository.getSellOrdersByPlayer(player.getUniqueId());
+    }
+
+    public boolean quickBuy(ShopItemEntity item, int amount, String currencyType, Player player) {
+        return shopItemRepository.quickBuy(item, amount, currencyType, player);
+    }
+
+    public boolean quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
+        return shopItemRepository.quickBuy(item, amount, currencyType, player);
     }
 }
 

@@ -68,7 +68,7 @@ public class BuyOrderMenuController {
 
     public void setCurrencyType(Inventory inv, Player player) {
         inv.close();
-        PlayerInventory shop = shopMenu.getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+        PlayerInventory shop = shopMenu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {

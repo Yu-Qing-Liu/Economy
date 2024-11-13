@@ -23,7 +23,7 @@ public class QuickBuyMenu implements Listener {
     public QuickBuyMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
         this.controller = new QuickBuyMenuController(shopMenu);
-        shopMenu.getEventManager().registerEvent(this);
+        shopMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler

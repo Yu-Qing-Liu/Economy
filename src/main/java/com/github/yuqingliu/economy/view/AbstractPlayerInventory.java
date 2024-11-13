@@ -181,68 +181,6 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
         }
     }
 
-    public void addItemToPlayer(Player player, ItemStack item, int quantity) {
-        int required = quantity;
-        int maxStackSize = item.getType().getMaxStackSize();
-        while(required > 0) {
-            int substractedAmount = Math.min(required, maxStackSize);
-            item.setAmount(substractedAmount);
-            if (!player.getInventory().addItem(item).isEmpty()) {
-                Scheduler.runLater((task) -> {
-                    Location location = player.getLocation();
-                    player.getWorld().dropItemNaturally(location, item);
-                }, Duration.ofSeconds(0));
-            }
-            required -= substractedAmount;
-        }
-    }
-
-    public boolean removeItemFromPlayer(Player player, ItemStack item, int quantity) {
-        int totalItemCount = countItemFromPlayer(player, item);
-        if (totalItemCount < quantity) {
-            return false;
-        }
-        int remaining = quantity;
-        for (ItemStack inventoryItem : player.getInventory().getContents()) {
-            if (inventoryItem != null && inventoryItem.isSimilar(item)) {
-                int amount = inventoryItem.getAmount();
-                if (amount >= remaining) {
-                    inventoryItem.setAmount(amount - remaining);
-                    return true;
-                } else {
-                    inventoryItem.setAmount(0);
-                    remaining -= amount;
-                }
-            }
-        }
-        return false;
-    }
-
-    public int countItemFromPlayer(Player player, ItemStack item) {
-        int count = 0;
-        for (ItemStack inventoryItem : player.getInventory().getContents()) {
-            if (inventoryItem != null && inventoryItem.isSimilar(item)) {
-                count += inventoryItem.getAmount();
-            }
-        }
-        return count;
-    }
-
-    public int countAvailableInventorySpace(Player player, Material material) {
-        Inventory inventory = player.getInventory();
-        int maxStackSize = material.getMaxStackSize();
-        int availableSpace = 0;
-        for (int i = 0; i < 36; i++) {
-            ItemStack item = inventory.getItem(i);
-            if (item == null || item.getType() == Material.AIR) {
-                availableSpace += maxStackSize;
-            } else if (item.getType() == material) {
-                availableSpace += maxStackSize - item.getAmount();
-            }
-        }
-        return availableSpace;  
-    }
-
     @Override
     public abstract Inventory load(Player player);
 
