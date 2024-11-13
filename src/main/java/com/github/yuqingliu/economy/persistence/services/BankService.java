@@ -46,15 +46,19 @@ public class BankService {
         return accountRepository.getPlayerAccountsByBank(bankName, player.getUniqueId());
     }
     
-    public boolean depositPlayerAccount(UUID accountId, OfflinePlayer player, double amount, String currencyName) {
-        return accountRepository.depositPlayerAccount(accountId, player.getUniqueId(), amount, currencyName);
+    public boolean depositPlayerAccount(AccountEntity account, OfflinePlayer player, double amount, String currencyName) {
+        return accountRepository.depositPlayerAccount(account.getAccountId(), player.getUniqueId(), amount, currencyName);
     }
 
-    public boolean withdrawPlayerAccount(UUID accountId, OfflinePlayer player, double amount, String currencyName) {
-        return accountRepository.withdrawPlayerAccount(accountId, player.getUniqueId(), amount, currencyName);
+    public boolean withdrawPlayerAccount(AccountEntity account, OfflinePlayer player, double amount, String currencyName) {
+        return accountRepository.withdrawPlayerAccount(account.getAccountId(), player.getUniqueId(), amount, currencyName);
     }
 
     public boolean depositAllInterest() {
         return bankRepository.depositAllInterestForAllBanks();
+    }
+
+    public boolean unlockAccount(AccountEntity account, OfflinePlayer player) {
+        return bankRepository.unlockAccount(player.getUniqueId(), account.getAccountId());
     }
 }

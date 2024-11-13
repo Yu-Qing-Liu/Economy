@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class BankRepository {
     private final SessionFactory sessionFactory;
     private final PlayerRepository playerRepository;
+    private final AccountRepository accountRepository;
     
     // Transactions
     public boolean save(BankEntity bank) {
@@ -119,6 +121,35 @@ public class BankRepository {
                     session.merge(bank);
                 }
             }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+
+    public boolean unlockAccount(UUID playerId, UUID accountId) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            AccountEntity account = accountRepository.get(accountId);
+            double unlockPrice = account.getUnlockCost();
+            String currencyType = account.getUnlockCurrencyType();
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", playerId);
+            query.setParameter("currencyName", currencyType);
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            if(purseCurrency.getAmount() < unlockPrice) {
+                throw new IllegalArgumentException();
+            }
+            purseCurrency.setAmount(purseCurrency.getAmount() - unlockPrice);
+            session.merge(purseCurrency);
+            account.setUnlocked(true);
+            session.merge(account);
             transaction.commit();
             return true;
         } catch (Exception e) {

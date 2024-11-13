@@ -84,20 +84,12 @@ public class MainMenuController {
         if(account.isUnlocked()) {
             return true;
         } else {
-            boolean successfulWithdrawal = bankMenu.getCurrencyService().withdrawPlayerPurse(player, account.getUnlockCurrencyType(), account.getUnlockCost());
-            if(!successfulWithdrawal) {
-                bankMenu.getLogger().sendPlayerErrorMessage(player, "Not enough currency to unlock this account.");
-                return false;
-            }
-            account.setUnlocked(true);
-            boolean successfulUnlock = bankMenu.getBankService().updateAccount(account);
-            if(!successfulUnlock) {
+            if(!bankMenu.getBankService().unlockAccount(account, player)) {
                 bankMenu.getLogger().sendPlayerErrorMessage(player, "Could not unlock the account.");
-                bankMenu.getCurrencyService().depositPlayerPurse(player, account.getUnlockCurrencyType(), account.getUnlockCost());
                 return false;
             }
             bankMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sucessfully unlocked account for %.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType()));
-            bankMenu.getSoundManager().playTransactionSound(player);
+            bankMenu.getPluginManager().getSoundManager().playTransactionSound(player);
             return true;
         }
     }

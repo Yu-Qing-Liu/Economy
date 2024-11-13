@@ -24,7 +24,7 @@ public class DepositMenu implements Listener {
     public DepositMenu(BankMenu bankMenu) {
         this.bankMenu = bankMenu;
         this.controller = new DepositMenuController(bankMenu);
-        bankMenu.getEventManager().registerEvent(this);
+        bankMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler

@@ -129,6 +129,7 @@ public class CurrencyRepository {
             query.setParameter("currencyName", currencyName);
             CurrencyEntity purseCurrency = query.uniqueResult();
             purseCurrency.setAmount(purseCurrency.getAmount() + amount);
+            session.merge(purseCurrency);
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -152,6 +153,7 @@ public class CurrencyRepository {
                 throw new IllegalArgumentException();
             }
             purseCurrency.setAmount(purseCurrency.getAmount() - amount);
+            session.merge(purseCurrency);
             transaction.commit();
             return true;
         } catch (Exception e) {

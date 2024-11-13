@@ -23,7 +23,7 @@ public class AccountMenu implements Listener {
     public AccountMenu(BankMenu bankMenu) {
         this.bankMenu = bankMenu;
         this.controller = new AccountMenuController(bankMenu);
-        bankMenu.getEventManager().registerEvent(this);
+        bankMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler

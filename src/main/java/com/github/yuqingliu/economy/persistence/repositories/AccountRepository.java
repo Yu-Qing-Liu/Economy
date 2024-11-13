@@ -79,6 +79,8 @@ public class AccountRepository {
             }
             purseCurrency.setAmount(purseCurrency.getAmount() - amount);
             accountCurrency.setAmount(accountCurrency.getAmount() + amount);
+            session.merge(purseCurrency);
+            session.merge(accountCurrency);
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -110,6 +112,8 @@ public class AccountRepository {
             }
             accountCurrency.setAmount(accountCurrency.getAmount() - amount);
             purseCurrency.setAmount(purseCurrency.getAmount() + amount);
+            session.merge(purseCurrency);
+            session.merge(accountCurrency);
             transaction.commit();
             return true;
         } catch (Exception e) {
