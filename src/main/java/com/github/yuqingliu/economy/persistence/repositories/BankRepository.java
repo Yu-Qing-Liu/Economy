@@ -13,6 +13,9 @@ import org.bukkit.inventory.ItemStack;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -91,12 +94,44 @@ public class BankRepository {
         }
     }
 
+    public boolean depositAllInterestForAllBanks() {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Set<BankEntity> banks = this.findAll();
+            Instant now = Instant.now();
+            for (BankEntity bank : banks) {
+                Instant lastInterestTimestamp = bank.getLastInterestTimestamp();
+                Duration interestCooldown = bank.getInterestCooldown();
+                Instant nextInterestTimestamp = lastInterestTimestamp.plus(interestCooldown);
+                if (now.isAfter(nextInterestTimestamp)) {
+                    Set<AccountEntity> bankAccounts = bank.getAccounts();
+                    for (AccountEntity account : bankAccounts) {
+                        Set<CurrencyEntity> currencies = account.getCurrencies();
+                        for (CurrencyEntity currency : currencies) {
+                            double initial = currency.getAmount();
+                            double profit = initial * account.getInterestRate();
+                            currency.setAmount(initial + profit);
+                            session.merge(currency);
+                        }
+                    }
+                    bank.setLastInterestTimestamp(now);
+                    session.merge(bank);
+                }
+            }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+
     // Queries
     public BankEntity get(String bankName) {
         try (Session session = sessionFactory.openSession()) {
             return session.get(BankEntity.class, bankName);
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
@@ -105,7 +140,6 @@ public class BankRepository {
         try (Session session = sessionFactory.openSession()) {
             return Set.copyOf(session.createQuery("from BankEntity", BankEntity.class).list());
         } catch (Exception e) {
-            e.printStackTrace();
             return Set.of();
         }
     }

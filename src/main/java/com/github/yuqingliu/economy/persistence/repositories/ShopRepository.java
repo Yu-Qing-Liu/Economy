@@ -11,46 +11,28 @@ import com.google.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 
 @Singleton
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopRepository {
-    @Inject
     private final SessionFactory sessionFactory;
-
+    
+    // Transactions
     public boolean save(ShopEntity shop) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             session.persist(shop);
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
         }
     }
-
-    public boolean update(ShopEntity shop) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.merge(shop);
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public ShopEntity get(String shopName) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(ShopEntity.class, shopName);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
+    
     public boolean delete(String shopName) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             ShopEntity player = session.get(ShopEntity.class, shopName);
             if (player != null) {
                 session.remove(player);
@@ -58,8 +40,17 @@ public class ShopRepository {
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
+        }
+    }
+    
+    // Queries
+    public ShopEntity get(String shopName) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.get(ShopEntity.class, shopName);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

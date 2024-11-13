@@ -14,47 +14,28 @@ import java.util.Set;
 import java.util.UUID;
 
 @Singleton
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class PurseRepository {
-    @Inject
     private final SessionFactory sessionFactory;
-
+    
+    // Transactions
     public boolean save(PurseEntity purse) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             session.persist(purse);
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
-        }
-    }
-
-    public boolean update(PurseEntity purse) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.merge(purse);
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public PurseEntity get(UUID playerId) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(PurseEntity.class, playerId);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
     public boolean delete(UUID playerId) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             PurseEntity purse = session.get(PurseEntity.class, playerId);
             if (purse != null) {
                 session.remove(purse);
@@ -62,8 +43,18 @@ public class PurseRepository {
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
+        }
+    }
+    
+    // Queries
+    public PurseEntity get(UUID playerId) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.get(PurseEntity.class, playerId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

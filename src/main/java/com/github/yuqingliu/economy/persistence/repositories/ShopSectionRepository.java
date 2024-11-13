@@ -13,46 +13,28 @@ import com.google.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 
 @Singleton
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopSectionRepository {
-    @Inject
     private final SessionFactory sessionFactory;
-
+    
+    // Transactions
     public boolean save(ShopSectionEntity section) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             session.persist(section);
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
         }
     }
-
-    public boolean update(ShopSectionEntity section) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.merge(section);
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public ShopSectionEntity get(ShopSectionKey key) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(ShopSectionEntity.class, key);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
+    
     public boolean delete(ShopSectionKey key) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             ShopSectionEntity section = session.get(ShopSectionEntity.class, key);
             ShopEntity vendor = session.get(ShopEntity.class, key.getShopName());
             if (section != null) {
@@ -63,8 +45,19 @@ public class ShopSectionRepository {
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
         }
     }
+    
+    // Queries
+    public ShopSectionEntity get(ShopSectionKey key) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.get(ShopSectionEntity.class, key);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    
 }

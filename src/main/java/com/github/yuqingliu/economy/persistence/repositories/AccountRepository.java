@@ -1,6 +1,5 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
-import org.bukkit.OfflinePlayer;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -75,12 +74,42 @@ public class AccountRepository {
             query2.setParameter("currencyName", currencyName);
             CurrencyEntity purseCurrency = query1.uniqueResult();
             CurrencyEntity accountCurrency = query2.uniqueResult();
-            
             if(purseCurrency.getAmount() < amount) {
                 throw new IllegalArgumentException();
             }
             purseCurrency.setAmount(purseCurrency.getAmount() - amount);
             accountCurrency.setAmount(accountCurrency.getAmount() + amount);
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+
+    public boolean withdrawPlayerAccount(UUID accountId, UUID playerId, double amount, String currencyName) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Query<CurrencyEntity> query1 = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query1.setParameter("purseId", playerId);
+            query1.setParameter("currencyName", currencyName);
+            Query<CurrencyEntity> query2 = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.accountId = :accountId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query2.setParameter("accountId", accountId);
+            query2.setParameter("currencyName", currencyName);
+            CurrencyEntity purseCurrency = query1.uniqueResult();
+            CurrencyEntity accountCurrency = query2.uniqueResult();
+            if(accountCurrency.getAmount() < amount) {
+                throw new IllegalArgumentException();
+            }
+            accountCurrency.setAmount(accountCurrency.getAmount() - amount);
+            purseCurrency.setAmount(purseCurrency.getAmount() + amount);
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -110,7 +139,6 @@ public class AccountRepository {
         try (Session session = sessionFactory.openSession()) {
             return session.get(AccountEntity.class, accountId);
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
@@ -126,7 +154,6 @@ public class AccountRepository {
             query.setParameter("bankName", bankName);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
             return Collections.emptyList();
         }
     }
@@ -135,7 +162,6 @@ public class AccountRepository {
         try (Session session = sessionFactory.openSession()) {
             return Set.copyOf(session.createQuery("from AccountEntity", AccountEntity.class).list());
         } catch (Exception e) {
-            e.printStackTrace();
             return Set.of();
         }
     }

@@ -67,14 +67,7 @@ public class VendorService {
     }
 
     public boolean updateVendorItem(String vendorName, String sectionName, ItemStack icon, Map<String, Double> buyPrices, Map<String, Double> sellPrices) {
-        String itemName = PlainTextComponentSerializer.plainText().serialize(icon.displayName());
-        VendorItemEntity item = vendorItemRepository.get(new VendorItemKey(itemName, sectionName, vendorName));
-        if(item == null) {
-            return false;
-        }
-        item.getBuyPrices().putAll(buyPrices);
-        item.getSellPrices().putAll(sellPrices);
-        return vendorItemRepository.update(item);
+        return vendorItemRepository.updateVendorItem(vendorName, sectionName, icon, buyPrices, sellPrices);
     }
 
     public boolean deleteVendorItem(String vendorName, String sectionName, String itemName) {

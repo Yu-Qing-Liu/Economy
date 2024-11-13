@@ -19,46 +19,29 @@ import com.google.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 
 @Singleton
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopOrderRepository {
-    @Inject
     private final SessionFactory sessionFactory;
-
+    private final CurrencyRepository currencyRepository;
+    
+    // Transactions
     public boolean save(ShopOrderEntity order) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             session.persist(order);
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
         }
     }
-
-    public boolean update(ShopOrderEntity order) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.merge(order);
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public ShopOrderEntity get(ShopOrderKey key) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(ShopOrderEntity.class, key);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
+    
     public boolean delete(ShopOrderKey key) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             ShopOrderEntity order = session.get(ShopOrderEntity.class, key);
             ShopItemEntity item = session.get(ShopItemEntity.class, new ShopItemKey(key.getItemName(), key.getSectionName(), key.getShopName()));
             if (order != null) {
@@ -69,8 +52,67 @@ public class ShopOrderRepository {
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
+        }
+    }
+
+    public boolean createBuyOrder(UUID playerId, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        double cost = unitPrice * quantity;
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            if(!currencyRepository.withdrawPlayerPurse(playerId, currencyType, cost)) {
+                throw new IllegalArgumentException();
+            }
+            ShopOrderEntity order = new ShopOrderEntity();
+            order.setType(OrderType.BUY);
+            order.setPlayerId(playerId);
+            order.setItemName(item.getItemName());
+            order.setSectionName(item.getSectionName());
+            order.setShopName(item.getShopName());
+            order.setQuantity(quantity);
+            order.setUnitPrice(unitPrice);
+            order.setCurrencyType(currencyType);
+            order.setShopItem(item);
+            session.persist(order);
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+
+    public boolean createSellOrder(UUID playerId, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            ShopOrderEntity order = new ShopOrderEntity();
+            order.setType(OrderType.SELL);
+            order.setPlayerId(playerId);
+            order.setItemName(item.getItemName());
+            order.setSectionName(item.getSectionName());
+            order.setShopName(item.getShopName());
+            order.setQuantity(quantity);
+            order.setUnitPrice(unitPrice);
+            order.setCurrencyType(currencyType);
+            order.setShopItem(item);
+            session.persist(order);
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        }
+    }
+    
+    // Queries
+    public ShopOrderEntity get(ShopOrderKey key) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.get(ShopOrderEntity.class, key);
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -82,7 +124,6 @@ public class ShopOrderRepository {
             query.setParameter("orderType", OrderType.BUY);
             return query.getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
@@ -95,7 +136,6 @@ public class ShopOrderRepository {
             query.setParameter("orderType", OrderType.SELL);
             return query.getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }

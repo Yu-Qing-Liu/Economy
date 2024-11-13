@@ -9,7 +9,6 @@ import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
-import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
@@ -73,45 +72,11 @@ public class ShopService {
     }
 
     public boolean createBuyOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
-        ShopOrderEntity order = new ShopOrderEntity();
-        order.setType(OrderType.BUY);
-        order.setPlayerId(player.getUniqueId());
-        order.setItemName(item.getItemName());
-        order.setSectionName(item.getSectionName());
-        order.setShopName(item.getShopName());
-        order.setQuantity(quantity);
-        order.setUnitPrice(unitPrice);
-        order.setCurrencyType(currencyType);
-        item.getOrders().add(order);
-        if(shopItemRepository.update(item)) {
-            return true;
-        } else {
-            item.getOrders().remove(order);
-            return false;
-        }
+        return shopOrderRepository.createBuyOrder(player.getUniqueId(), item, quantity, unitPrice, currencyType);
     }
 
     public boolean createSellOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
-        ShopOrderEntity order = new ShopOrderEntity();
-        order.setType(OrderType.SELL);
-        order.setPlayerId(player.getUniqueId());
-        order.setItemName(item.getItemName());
-        order.setSectionName(item.getSectionName());
-        order.setShopName(item.getShopName());
-        order.setQuantity(quantity);
-        order.setUnitPrice(unitPrice);
-        order.setCurrencyType(currencyType);
-        item.getOrders().add(order);
-        if(shopItemRepository.update(item)) {
-            return true;
-        } else {
-            item.getOrders().remove(order);
-            return false;
-        }
-    }
-
-    public boolean updateOrder(ShopOrderEntity newOrder) {
-        return shopOrderRepository.update(newOrder);
+        return shopOrderRepository.createSellOrder(player.getUniqueId(), item, quantity, unitPrice, currencyType);
     }
 
     public boolean deleteOrder(ShopOrderEntity order) {
