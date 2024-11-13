@@ -1,6 +1,7 @@
 package com.github.yuqingliu.economy.modules;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
+import com.github.yuqingliu.economy.api.services.*;
 import com.github.yuqingliu.economy.api.managers.*;
 import com.github.yuqingliu.economy.logger.LoggerImpl;
 import com.github.yuqingliu.economy.managers.*;
@@ -26,186 +27,34 @@ public class PluginModule extends AbstractModule {
         return HibernateModule.createSessionFactory(plugin.getDataFolder().getAbsolutePath());
     }
 
-    @Provides
-    @Singleton
-    public Logger provideEconomyLogger() {
-        return new LoggerImpl();
+    @Override
+    protected void configure() {
+        // Logger
+        bind(Logger.class).to(LoggerImpl.class).in(Singleton.class);
+        // Repositories
+        bind(AccountRepository.class).in(Singleton.class);
+        bind(BankRepository.class).in(Singleton.class);
+        bind(CurrencyRepository.class).in(Singleton.class);
+        bind(PlayerRepository.class).in(Singleton.class);
+        bind(PurseRepository.class).in(Singleton.class);
+        bind(VendorRepository.class).in(Singleton.class);
+        bind(VendorSectionRepository.class).in(Singleton.class);
+        bind(VendorItemRepository.class).in(Singleton.class);
+        bind(ShopRepository.class).in(Singleton.class);
+        bind(ShopSectionRepository.class).in(Singleton.class);
+        bind(ShopItemRepository.class).in(Singleton.class);
+        bind(ShopOrderRepository.class).in(Singleton.class);
+        // Services
+        bind(PlayerService.class).to(PlayerServiceImpl.class).in(Singleton.class);
+        bind(CurrencyService.class).to(CurrencyServiceImpl.class).in(Singleton.class);
+        bind(VendorService.class).to(VendorServiceImpl.class).in(Singleton.class);
+        bind(ShopService.class).to(ShopServiceImpl.class).in(Singleton.class);
+        bind(BankService.class).to(BankServiceImpl.class).in(Singleton.class);
+        // Managers
+        bind(NameSpacedKeyManager.class).to(NameSpacedKeyManagerImpl.class).in(Singleton.class);
+        bind(SoundManager.class).to(SoundManagerImpl.class).in(Singleton.class);
+        bind(EventManager.class).to(EventManagerImpl.class).in(Singleton.class);
+        bind(InventoryManager.class).to(InventoryManagerImpl.class).in(Singleton.class);
+        bind(CommandManager.class).to(CommandManagerImpl.class).in(Singleton.class);
     }
-
-    // Repositories
-    @Provides
-    @Singleton
-    public AccountRepository provideAccountRepository(SessionFactory sessionFactory) {
-        return new AccountRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public BankRepository provideBankRepository(SessionFactory sessionFactory) {
-        return new BankRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public CurrencyRepository provideCurrencyRepository(SessionFactory sessionFactory) {
-        return new CurrencyRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public PlayerRepository providePlayerRepository(SessionFactory sessionFactory) {
-        return new PlayerRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public PurseRepository providePurseRepository(SessionFactory sessionFactory) {
-        return new PurseRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public VendorRepository provideVendorRepository(SessionFactory sessionFactory) {
-        return new VendorRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public VendorSectionRepository provideVendorSectionRepository(SessionFactory sessionFactory) {
-        return new VendorSectionRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public VendorItemRepository provideVendorItemRepository(SessionFactory sessionFactory) {
-        return new VendorItemRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public ShopRepository provideShopRepository(SessionFactory sessionFactory) {
-        return new ShopRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public ShopSectionRepository provideShopSectionRepository(SessionFactory sessionFactory) {
-        return new ShopSectionRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public ShopItemRepository provideShopItemRepository(SessionFactory sessionFactory) {
-        return new ShopItemRepository(sessionFactory);
-    }
-
-    @Provides
-    @Singleton
-    public ShopOrderRepository provideShopOrderRepository(SessionFactory sessionFactory) {
-        return new ShopOrderRepository(sessionFactory);
-    }
-
-    // Services
-    @Provides
-    @Singleton
-    public PlayerService providePlayerService(PlayerRepository playerRepository,
-            CurrencyRepository currencyRepository) {
-        return new PlayerService(playerRepository, currencyRepository);
-    }
-
-    @Provides
-    @Singleton
-    public CurrencyService provideCurrencyService(CurrencyRepository currencyRepository, BankRepository bankRepository,
-            PurseRepository purseRepository) {
-        return new CurrencyService(currencyRepository, bankRepository, purseRepository);
-    }
-
-    @Provides
-    @Singleton
-    public VendorService provideVendorService(VendorRepository vendorRepository,
-            VendorSectionRepository vendorSectionRepository, VendorItemRepository vendorItemRepository) {
-        return new VendorService(vendorRepository, vendorSectionRepository, vendorItemRepository);
-    }
-
-    @Provides
-    @Singleton
-    public ShopService provideShopService(ShopRepository shopRepository, ShopSectionRepository shopSectionRepository,
-            ShopItemRepository shopItemRepository, ShopOrderRepository shopOrderRepository) {
-        return new ShopService(shopRepository, shopSectionRepository, shopItemRepository, shopOrderRepository);
-    }
-
-    @Provides
-    @Singleton
-    public BankService provideBankService(PlayerRepository playerRepository, CurrencyRepository currencyRepository,
-            AccountRepository accountRepository, BankRepository bankRepository, CurrencyService currencyService) {
-        return new BankService(playerRepository, currencyRepository, accountRepository, bankRepository, currencyService);
-    }
-
-    // Managers
-    @Provides
-    @Singleton
-    public NameSpacedKeyManager provideNameSpacedKeyManager() {
-        return new NameSpacedKeyManagerImpl(plugin);
-    }
-
-    @Provides
-    @Singleton
-    public SoundManager provideSoundManager() {
-        return new SoundManagerImpl();
-    }
-
-    @Provides
-    @Singleton
-    public EventManager provideEventManager(
-            PlayerService playerService,
-            NameSpacedKeyManager nameSpacedKeyManager,
-            InventoryManager inventoryManager) {
-        return new EventManagerImpl(
-                plugin,
-                playerService,
-                nameSpacedKeyManager,
-                inventoryManager);
-    }
-
-    @Provides
-    @Singleton
-    public InventoryManager provideInventoryManager(
-            EventManager eventManager,
-            SoundManager soundManager,
-            Logger logger,
-            CurrencyService currencyService,
-            VendorService vendorService,
-            ShopService shopService,
-            BankService bankService) {
-        return new InventoryManagerImpl(
-                eventManager,
-                soundManager,
-                logger,
-                currencyService,
-                vendorService,
-                shopService,
-                bankService);
-    }
-
-    @Provides
-    @Singleton
-    public CommandManager provideCommandManager(
-            Logger logger,
-            InventoryManager inventoryManager,
-            CurrencyService currencyService,
-            VendorService vendorService,
-            ShopService shopService,
-            BankService bankService,
-            NameSpacedKeyManager nameSpacedKeyManager) {
-        return new CommandManagerImpl(
-                plugin,
-                logger,
-                inventoryManager,
-                currencyService,
-                vendorService,
-                shopService,
-                bankService,
-                nameSpacedKeyManager);
-    }
-
 }

@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.persistence.services;
 
+import com.github.yuqingliu.economy.api.services.BankService;
+import com.github.yuqingliu.economy.api.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
@@ -23,17 +25,12 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
 @Singleton
-@RequiredArgsConstructor
-public class BankService {
-    @Inject
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+public class BankServiceImpl implements BankService {
     private final PlayerRepository playerRepository;
-    @Inject
     private final CurrencyRepository currencyRepository;
-    @Inject
     private final AccountRepository accountRepository;
-    @Inject
     private final BankRepository bankRepository;
-    @Inject
     private final CurrencyService currencyService;
 
     public boolean addBank(String bankName, long cooldown) {
