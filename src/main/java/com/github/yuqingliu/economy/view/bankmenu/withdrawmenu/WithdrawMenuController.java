@@ -94,15 +94,15 @@ public class WithdrawMenuController {
     public void withdraw(Inventory inv, Player player, CurrencyEntity currency) {
         AccountEntity account = accounts.get(player);
         inv.close();
-        PlayerInventory bank = bankMenu.getInventoryManager().getInventory(BankMenu.class.getSimpleName());
+        PlayerInventory bank = bankMenu.getPluginManager().getInventoryManager().getInventory(BankMenu.class.getSimpleName());
         bank.setDisplayName(Component.text(account.getBank().getBankName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = bank.load(player);
             Scheduler.runAsync((task) -> {
-                boolean successfulTransaction = bankMenu.getBankService().withdrawPlayerAccount(player, Double.parseDouble(userInput), currency);
+                boolean successfulTransaction = bankMenu.getBankService().withdrawPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
                 if(successfulTransaction) {
-                    bankMenu.getSoundManager().playTransactionSound(player);
+                    bankMenu.getPluginManager().getSoundManager().playTransactionSound(player);
                 } else {
                     bankMenu.getLogger().sendPlayerErrorMessage(player, "Could not withdraw that amount.");
                 }
@@ -110,7 +110,7 @@ public class WithdrawMenuController {
             });
         };        
 
-        TextMenu scanner = (TextMenu) bankMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) bankMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("withdraw amount", NamedTextColor.RED));
         scanner.open(player);

@@ -100,7 +100,7 @@ public class DepositMenuController {
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = bank.load(player);
             Scheduler.runAsync((task) -> {
-                boolean successfulTransaction = bankMenu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency);
+                boolean successfulTransaction = bankMenu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
                 if(successfulTransaction) {
                     bankMenu.getPluginManager().getSoundManager().playTransactionSound(player);
                 } else {
