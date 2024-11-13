@@ -54,7 +54,6 @@ public class CurrencyRepository {
         }
     }
 
-
     public CurrencyEntity getFirst(String currencyName) {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("FROM CurrencyEntity WHERE currencyName = :currencyName", CurrencyEntity.class)

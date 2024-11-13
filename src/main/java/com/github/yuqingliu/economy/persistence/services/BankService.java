@@ -1,7 +1,5 @@
 package com.github.yuqingliu.economy.persistence.services;
 
-import com.github.yuqingliu.economy.api.services.BankService;
-import com.github.yuqingliu.economy.api.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
@@ -26,13 +24,11 @@ import org.bukkit.inventory.ItemStack;
 
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class BankServiceImpl implements BankService {
-    private final PlayerRepository playerRepository;
+public class BankService {
     private final CurrencyRepository currencyRepository;
     private final AccountRepository accountRepository;
     private final BankRepository bankRepository;
-    private final CurrencyService currencyService;
-
+    
     public boolean addBank(String bankName, long cooldown) {
         BankEntity newBank = new BankEntity();
         newBank.setBankName(bankName);
@@ -40,69 +36,25 @@ public class BankServiceImpl implements BankService {
         newBank.setLastInterestTimestamp(Instant.now());
         return bankRepository.save(newBank);
     }
-
+    
     public boolean deleteBank(String bankName) {
         return bankRepository.delete(bankName);
     }
-
+    
     public boolean addBankAccountToAll(String accountName, String bankName, ItemStack icon, double interestRate, String unlockCurrencyName, double unlockCost) {
-        BankEntity bank = bankRepository.get(bankName);
-        Set<PlayerEntity> players = playerRepository.findAll();
-        for(PlayerEntity player : players) {
-            AccountEntity newAccount = new AccountEntity();
-            newAccount.setBank(bank);
-            newAccount.setIcon(icon);
-            newAccount.setPlayer(player);
-            newAccount.setAccountId(player.getPlayerId());
-            newAccount.setAccountName(accountName);
-            newAccount.setInterestRate(interestRate);
-            newAccount.setUnlockCurrencyType(unlockCurrencyName);
-            newAccount.setUnlockCost(unlockCost);
-            Set<CurrencyEntity> currencies = player.getPurse().getCurrencies();
-            for(CurrencyEntity entity : currencies) {
-                CurrencyEntity currency = new CurrencyEntity();
-                currency.setCurrencyName(entity.getCurrencyName());
-                currency.setAmount(0);
-                currency.setIcon(entity.getIcon());
-                currency.setPurseId(UUID.randomUUID());
-                currency.setAccountId(player.getPlayerId());
-                currency.setPurse(null);
-                currency.setAccount(newAccount);
-                newAccount.getCurrencies().add(currency);
-            }
-            if(!accountRepository.save(newAccount)) {
-                return false;
-            }
-        }
-        return true;
+        return bankRepository.addBankAccountToAll(accountName, bankName, icon, interestRate, unlockCurrencyName, unlockCost);
     }
-
+    
     public boolean deleteBankAccountFromAll(String accountName, String bankName) {
         return accountRepository.deleteBankAccountsByAccountName(accountName, bankName);
     }
-
+    
     public List<AccountEntity> getPlayerAccountsByBank(String bankName, OfflinePlayer player) {
         return accountRepository.getPlayerAccountsByBank(bankName, player.getUniqueId());
     }
-
-    public boolean updateAccount(AccountEntity account) {
-        return accountRepository.update(account);
-    }
-
-    public boolean depositPlayerAccount(OfflinePlayer player, double amount, CurrencyEntity currency) {
-        boolean sucessfulWithdrawal = currencyService.withdrawPlayerPurse(player, currency.getCurrencyName(), amount);
-        if(!sucessfulWithdrawal) {
-            return false;
-        }
-        double initial = currency.getAmount();
-        currency.setAmount(initial + amount);
-        boolean sucessfulDeposit = currencyRepository.update(currency);
-        if(!sucessfulDeposit) {
-            currency.setAmount(initial);
-            currencyService.depositPlayerPurse(player, currency.getCurrencyName(), amount);
-            return false;
-        }
-        return true;
+    
+    public boolean depositPlayerAccount(UUID accountId, OfflinePlayer player, double amount, String currencyName) {
+        return accountRepository.depositPlayerAccount(accountId, player.getUniqueId(), amount, currencyName);
     }
 
     public boolean withdrawPlayerAccount(OfflinePlayer player, double amount, CurrencyEntity currency) {
@@ -125,7 +77,15 @@ public class BankServiceImpl implements BankService {
         return true;
     }
 
-    public boolean depositInterest(BankEntity bank) {
+    public boolean depositAllInterest() {
+        Set<BankEntity> banks = bankRepository.findAll();
+        banks.forEach(bank -> {
+            depositInterest(bank);
+        });
+        return true;
+    }
+
+    private boolean depositInterest(BankEntity bank) {
         Instant now = Instant.now();
         Instant lastInterestTimestamp = bank.getLastInterestTimestamp();
         Duration interestCooldown = bank.getInterestCooldown();
@@ -144,14 +104,6 @@ public class BankServiceImpl implements BankService {
             bank.setLastInterestTimestamp(now);
             bankRepository.update(bank);
         }
-        return true;
-    }
-
-    public boolean depositAllInterest() {
-        Set<BankEntity> banks = bankRepository.findAll();
-        banks.forEach(bank -> {
-            depositInterest(bank);
-        });
         return true;
     }
 }

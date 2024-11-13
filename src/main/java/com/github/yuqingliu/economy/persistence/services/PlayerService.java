@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.bukkit.OfflinePlayer;
 
-import com.github.yuqingliu.economy.api.services.PlayerService;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
 import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
@@ -18,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class PlayerServiceImpl implements PlayerService {
+public class PlayerService {
     private final PlayerRepository playerRepository;
     private final CurrencyRepository currencyRepository;
 

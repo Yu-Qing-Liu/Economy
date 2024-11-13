@@ -5,7 +5,6 @@ import java.util.List;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.api.services.ShopService;
 import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
@@ -26,7 +25,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class ShopServiceImpl implements ShopService {
+public class ShopService {
     private final ShopRepository shopRepository;
     private final ShopSectionRepository shopSectionRepository;
     private final ShopItemRepository shopItemRepository;

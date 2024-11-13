@@ -6,7 +6,6 @@ import com.github.yuqingliu.economy.api.managers.*;
 import com.github.yuqingliu.economy.logger.LoggerImpl;
 import com.github.yuqingliu.economy.managers.*;
 import com.github.yuqingliu.economy.persistence.repositories.*;
-import com.github.yuqingliu.economy.persistence.services.*;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -45,16 +44,17 @@ public class PluginModule extends AbstractModule {
         bind(ShopItemRepository.class).in(Singleton.class);
         bind(ShopOrderRepository.class).in(Singleton.class);
         // Services
-        bind(PlayerService.class).to(PlayerServiceImpl.class).in(Singleton.class);
-        bind(CurrencyService.class).to(CurrencyServiceImpl.class).in(Singleton.class);
-        bind(VendorService.class).to(VendorServiceImpl.class).in(Singleton.class);
-        bind(ShopService.class).to(ShopServiceImpl.class).in(Singleton.class);
-        bind(BankService.class).to(BankServiceImpl.class).in(Singleton.class);
+        bind(PlayerService.class).in(Singleton.class);
+        bind(CurrencyService.class).in(Singleton.class);
+        bind(VendorService.class).in(Singleton.class);
+        bind(ShopService.class).in(Singleton.class);
+        bind(BankService.class).in(Singleton.class);
         // Managers
         bind(NameSpacedKeyManager.class).to(NameSpacedKeyManagerImpl.class).in(Singleton.class);
         bind(SoundManager.class).to(SoundManagerImpl.class).in(Singleton.class);
         bind(EventManager.class).to(EventManagerImpl.class).in(Singleton.class);
         bind(InventoryManager.class).to(InventoryManagerImpl.class).in(Singleton.class);
         bind(CommandManager.class).to(CommandManagerImpl.class).in(Singleton.class);
+        bind(PluginManager.class).to(PluginManagerImpl.class).in(Singleton.class);
     }
 }

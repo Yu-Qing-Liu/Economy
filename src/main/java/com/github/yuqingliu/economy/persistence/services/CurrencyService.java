@@ -1,6 +1,5 @@
 package com.github.yuqingliu.economy.persistence.services;
 
-import com.github.yuqingliu.economy.api.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
@@ -21,7 +20,7 @@ import org.bukkit.inventory.ItemStack;
 
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class CurrencyServiceImpl implements CurrencyService {
+public class CurrencyService {
     private final CurrencyRepository currencyRepository;
     private final BankRepository bankRepository;
     private final PurseRepository purseRepository;

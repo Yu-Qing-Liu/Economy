@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.api.services.VendorService;
 import com.github.yuqingliu.economy.persistence.entities.VendorEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
@@ -21,7 +20,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
-public class VendorServiceImpl implements VendorService {
+public class VendorService {
     private final VendorRepository vendorRepository;
     private final VendorSectionRepository vendorSectionRepository;
     private final VendorItemRepository vendorItemRepository;

@@ -16,9 +16,10 @@ import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.EventManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
+import com.github.yuqingliu.economy.api.managers.PluginManager;
 import com.github.yuqingliu.economy.api.managers.SoundManager;
-import com.github.yuqingliu.economy.persistence.services.BankService;
-import com.github.yuqingliu.economy.persistence.services.CurrencyService;
+import com.github.yuqingliu.economy.api.services.BankService;
+import com.github.yuqingliu.economy.api.services.CurrencyService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 import com.github.yuqingliu.economy.view.bankmenu.accountmenu.AccountMenu;
 import com.github.yuqingliu.economy.view.bankmenu.depositmenu.DepositMenu;
@@ -46,17 +47,16 @@ public class BankMenu extends AbstractPlayerInventory {
     private final WithdrawMenu WithdrawMenu;
 
     @Inject
-    public BankMenu(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName, BankService bankService, CurrencyService currencyService, InventoryManager inventoryManager) {
+    public BankMenu(PluginManager pluginManager, Logger logger, Component displayName) {
         super(
-            eventManager,
-            soundManager,
+            pluginManager,
             logger,
             displayName,
             27
         );
-        this.bankService = bankService;
-        this.currencyService = currencyService;
-        this.inventoryManager = inventoryManager;
+        this.bankService = pluginManager.getServiceManager().getBankService();
+        this.currencyService = pluginManager.getServiceManager().getCurrencyService();
+        this.inventoryManager = pluginManager.getInventoryManager();
         this.mainMenu = new MainMenu(this);
         this.accountMenu = new AccountMenu(this);
         this.depositMenu = new DepositMenu(this);

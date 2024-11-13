@@ -2,8 +2,7 @@ package com.github.yuqingliu.economy.view;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.logger.Logger;
-import com.github.yuqingliu.economy.api.managers.EventManager;
-import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.github.yuqingliu.economy.api.managers.PluginManager;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
 import com.google.inject.Inject;
 
@@ -32,8 +31,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @Getter
 public abstract class AbstractPlayerInventory implements PlayerInventory {
     protected final int inventoryLength = 9;
-    protected EventManager eventManager;
-    protected final SoundManager soundManager;
+    protected final PluginManager pluginManager;
     protected final Logger logger;
     @Setter protected Component displayName;
     protected final int inventorySize;
@@ -49,9 +47,8 @@ public abstract class AbstractPlayerInventory implements PlayerInventory {
     protected ItemStack loading;
         
     @Inject
-    public AbstractPlayerInventory(EventManager eventManager, SoundManager soundManager, Logger logger, Component displayName, int inventorySize) {
-        this.eventManager = eventManager;
-        this.soundManager = soundManager;
+    public AbstractPlayerInventory(PluginManager pluginManager, Logger logger, Component displayName, int inventorySize) {
+        this.pluginManager = pluginManager;
         this.logger = logger;
         this.displayName = displayName;
         this.inventorySize = inventorySize;
