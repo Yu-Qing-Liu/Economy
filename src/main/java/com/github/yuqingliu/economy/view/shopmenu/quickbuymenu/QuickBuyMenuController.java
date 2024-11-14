@@ -66,7 +66,10 @@ public class QuickBuyMenuController {
 
     public void quickBuy(int amount, Player player) {
         Scheduler.runAsync((task) -> {
-            shopMenu.getShopService().quickBuy(item, amount, orderOption.getCurrencyName(), player);
+            int[] data = shopMenu.getShopService().quickBuy(item, amount, orderOption.getCurrencyName(), player);
+            int filled = amount - data[0];
+            double cost = data[1];
+            shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Bought %d items for %f.2 %s", filled, cost, orderOption.getCurrencyName()));
         });
     }
 

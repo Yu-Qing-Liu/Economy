@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -67,7 +66,10 @@ public class QuickSellMenuController {
 
     public void quickSell(int amount, Player player) {
         Scheduler.runAsync((task) -> {
-            shopMenu.getShopService().quickSell(item, amount, orderOption.getCurrencyName(), player);
+            int[] data = shopMenu.getShopService().quickSell(item, amount, orderOption.getCurrencyName(), player);
+            int filled = amount - data[0];
+            double profit = data[1];
+            shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d items for %f.2 %s", filled, profit, orderOption.getCurrencyName()));
         });
     }
 

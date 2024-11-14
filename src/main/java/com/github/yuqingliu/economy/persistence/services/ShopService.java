@@ -1,6 +1,7 @@
 package com.github.yuqingliu.economy.persistence.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -112,12 +113,28 @@ public class ShopService {
         return shopOrderRepository.getSellOrdersByPlayer(player.getUniqueId());
     }
 
-    public boolean quickBuy(ShopItemEntity item, int amount, String currencyType, Player player) {
-        return shopItemRepository.quickBuy(item, amount, currencyType, player);
+    public int[] quickBuy(ShopItemEntity item, int amount, String currencyType, Player player) {
+        Set<ShopOrderEntity> orders = item.getSellOrders().get(currencyType);
+        int[] required = new int[]{amount, 0};
+        for(ShopOrderEntity order : orders) {
+            if(required[0] == 0) {
+                return required;
+            }
+            required = shopOrderRepository.fillSellOrder(player, order, required, currencyType);
+        }
+        return required;
     }
 
-    public boolean quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
-        return shopItemRepository.quickSell(item, amount, currencyType, player);
+    public int[] quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
+        Set<ShopOrderEntity> orders = item.getBuyOrders().get(currencyType);
+        int[] required = new int[]{amount, 0};
+        for(ShopOrderEntity order : orders) {
+            if(required[0] == 0) {
+                return required;
+            }
+            required = shopOrderRepository.fillBuyOrder(player, order, required, currencyType);
+        }
+        return required;
     }
 }
 
