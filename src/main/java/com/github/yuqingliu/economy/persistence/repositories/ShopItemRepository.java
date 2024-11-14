@@ -85,11 +85,11 @@ public class ShopItemRepository {
                 if(qty > required) {
                     cost += required * order.getUnitPrice();
                     order.setFilledQuantity(order.getFilledQuantity() + required);
-                    if(purseCurrency.getAmount() < cost) {
+                    if(purseCurrency.getAmount() < required * order.getUnitPrice()) {
                         logger.sendPlayerErrorMessage(player, "Not enough currency.");
                         throw new IllegalArgumentException();
                     }
-                    purseCurrency.setAmount(purseCurrency.getAmount() - cost);
+                    purseCurrency.setAmount(purseCurrency.getAmount() - required * order.getUnitPrice());
                     session.merge(purseCurrency);
                     session.merge(order);
                     inventoryManager.addItemToPlayer(player, item.getIcon().clone(), required);
@@ -98,11 +98,11 @@ public class ShopItemRepository {
                 } else if(qty == required) {
                     cost += required * order.getUnitPrice();
                     order.setFilledQuantity(order.getFilledQuantity() + required);
-                    if(purseCurrency.getAmount() < cost) {
+                    if(purseCurrency.getAmount() < required * order.getUnitPrice()) {
                         logger.sendPlayerErrorMessage(player, "Not enough currency.");
                         throw new IllegalArgumentException();
                     }
-                    purseCurrency.setAmount(purseCurrency.getAmount() - cost);
+                    purseCurrency.setAmount(purseCurrency.getAmount() - required * order.getUnitPrice());
                     session.merge(purseCurrency);
                     session.merge(order);
                     inventoryManager.addItemToPlayer(player, item.getIcon().clone(), required);
@@ -111,11 +111,11 @@ public class ShopItemRepository {
                 } else {
                     cost += qty * order.getUnitPrice();
                     order.setFilledQuantity(order.getFilledQuantity() + qty);
-                    if(purseCurrency.getAmount() < cost) {
+                    if(purseCurrency.getAmount() < qty * order.getUnitPrice()) {
                         logger.sendPlayerErrorMessage(player, "Not enough currency.");
                         throw new IllegalArgumentException();
                     }
-                    purseCurrency.setAmount(purseCurrency.getAmount() - cost);
+                    purseCurrency.setAmount(purseCurrency.getAmount() - qty * order.getUnitPrice());
                     session.merge(purseCurrency);
                     session.merge(order);
                     inventoryManager.addItemToPlayer(player, item.getIcon().clone(), qty);
@@ -140,7 +140,7 @@ public class ShopItemRepository {
         Transaction transaction = null;
         try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
-            Set<ShopOrderEntity> sellOffers = item.getBuyOrders().get(currencyType);
+            Set<ShopOrderEntity> buyOrders = item.getBuyOrders().get(currencyType);
             int required = amount;
             double profit = 0;
             Query<CurrencyEntity> query = session.createQuery(
@@ -150,45 +150,45 @@ public class ShopItemRepository {
             query.setParameter("purseId", player.getUniqueId());
             query.setParameter("currencyName", currencyType);
             CurrencyEntity purseCurrency = query.uniqueResult();
-            for(ShopOrderEntity order : sellOffers) {
+            for(ShopOrderEntity order : buyOrders) {
                 if(order.getQuantity() == order.getFilledQuantity()) {
                     continue;
                 }
                 int qty = order.getQuantity() - order.getFilledQuantity();
                 if(qty > required) {
-                    profit += required * order.getUnitPrice();
                     order.setFilledQuantity(order.getFilledQuantity() + required);
-                    purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+                    purseCurrency.setAmount(purseCurrency.getAmount() + required * order.getUnitPrice());
                     session.merge(purseCurrency);
                     session.merge(order);
-                    if(inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), required)) {
+                    if(!inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), required)) {
                         logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
                         throw new RuntimeException();
                     }
+                    profit += required * order.getUnitPrice();
                     required = 0;
                     break;
                 } else if(qty == required) {
-                    profit += required * order.getUnitPrice();
                     order.setFilledQuantity(order.getFilledQuantity() + required);
-                    purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+                    purseCurrency.setAmount(purseCurrency.getAmount() + required * order.getUnitPrice());
                     session.merge(purseCurrency);
                     session.merge(order);
-                    if(inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), required)) {
+                    if(!inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), required)) {
                         logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
                         throw new RuntimeException();
                     }
+                    profit += required * order.getUnitPrice();
                     required = 0;
                     break;
                 } else {
-                    profit += qty * order.getUnitPrice();
                     order.setFilledQuantity(order.getFilledQuantity() + qty);
-                    purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+                    purseCurrency.setAmount(purseCurrency.getAmount() + qty * order.getUnitPrice());
                     session.merge(purseCurrency);
                     session.merge(order);
-                    if(inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), qty)) {
+                    if(!inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), qty)) {
                         logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
                         throw new RuntimeException();
                     }
+                    profit += qty * order.getUnitPrice();
                     required -= qty;
                 }
             };

@@ -11,20 +11,20 @@ import org.hibernate.service.ServiceRegistry;
 
 import com.github.yuqingliu.economy.persistence.entities.*;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
-@Singleton
 public class Hibernate {
     private final ThreadLocal<Session> sessionThreadLocal = new ThreadLocal<>();
-    private final SessionFactory sessionFactory;
+    private static SessionFactory sessionFactory;
 
     @Inject
     public Hibernate(JavaPlugin plugin) {
-        this.sessionFactory = createSessionFactory(plugin.getDataFolder().getAbsolutePath());
+        if(sessionFactory == null) {
+            sessionFactory = createSessionFactory(plugin.getDataFolder().getAbsolutePath());
+        }
     }
 
     // Factory method to create and provide the SessionFactory
-    public SessionFactory createSessionFactory(String dataFolderPath) {
+    public static SessionFactory createSessionFactory(String dataFolderPath) {
         Configuration configuration = new Configuration();
         
         // Set up SQLite connection
@@ -35,6 +35,7 @@ public class Hibernate {
         configuration.setProperty("hibernate.hbm2ddl.auto", "update"); // "update", "create", "create-drop"
         configuration.setProperty("hibernate.show_sql", "false");
         configuration.setProperty("hibernate.format_sql", "false");
+        configuration.setProperty("hibernate.connection.autocommit", "false");
 
         // Use CHAR type for UUIDs
         configuration.setProperty("hibernate.type.preferred_uuid_jdbc_type", "CHAR");
@@ -65,11 +66,8 @@ public class Hibernate {
 
     // Method to retrieve the current session for the current thread
     public Session getSession() {
-        Session session = sessionThreadLocal.get();
-        if (session == null) {
-            session = sessionFactory.openSession();  // Open a new session if none is available
-            sessionThreadLocal.set(session);         // Set the session to ThreadLocal
-        }
+        Session session = sessionFactory.openSession();
+        sessionThreadLocal.set(session);
         return session;
     }
 

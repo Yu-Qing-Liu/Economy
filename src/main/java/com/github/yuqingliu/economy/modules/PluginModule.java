@@ -28,7 +28,7 @@ public class PluginModule extends AbstractModule {
     @Override
     protected void configure() {
         // Hibernate
-        bind(Hibernate.class).in(Singleton.class);
+        bind(Hibernate.class);
         // Logger
         bind(Logger.class).to(LoggerImpl.class).in(Singleton.class);
         // Repositories
