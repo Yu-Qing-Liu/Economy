@@ -31,7 +31,8 @@ public class BankRepository {
     // Transactions
     public boolean save(BankEntity bank) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(bank);
             transaction.commit();
@@ -39,12 +40,15 @@ public class BankRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean delete(String bankName) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             BankEntity bank = session.get(BankEntity.class, bankName);
             if (bank != null) {
@@ -55,12 +59,15 @@ public class BankRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean addBankAccountToAll(String accountName, String bankName, ItemStack icon, double interestRate, String unlockCurrencyName, double unlockCost) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             BankEntity bank = this.get(bankName);
             Set<PlayerEntity> players = Set.copyOf(session.createQuery("from PlayerEntity", PlayerEntity.class).list());
@@ -94,12 +101,15 @@ public class BankRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean depositAllInterestForAllBanks() {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             Set<BankEntity> banks = this.findAll();
             Instant now = Instant.now();
@@ -127,12 +137,15 @@ public class BankRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean unlockAccount(AccountEntity account, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             double unlockPrice = account.getUnlockCost();
             String currencyType = account.getUnlockCurrencyType();
@@ -156,6 +169,8 @@ public class BankRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 

@@ -30,7 +30,8 @@ public class AccountRepository {
     // Transactions 
     public boolean deleteBankAccountsByAccountName(String accountName, String bankName) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             BankEntity bank = session.get(BankEntity.class, bankName);
             if (bank == null) {
@@ -56,12 +57,15 @@ public class AccountRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean depositPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             Query<CurrencyEntity> query1 = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
@@ -90,12 +94,15 @@ public class AccountRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean withdrawPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             Query<CurrencyEntity> query1 = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
@@ -124,12 +131,15 @@ public class AccountRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean delete(UUID accountId) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             AccountEntity account = session.get(AccountEntity.class, accountId);
             if (account != null) {
@@ -140,6 +150,8 @@ public class AccountRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     

@@ -34,7 +34,8 @@ public class ShopOrderRepository {
     // Transactions
     public boolean save(ShopOrderEntity order) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(order);
             transaction.commit();
@@ -42,12 +43,15 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     
     public boolean delete(ShopOrderKey key) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             ShopOrderEntity order = session.get(ShopOrderEntity.class, key);
             ShopItemEntity item = session.get(ShopItemEntity.class, new ShopItemKey(key.getItemName(), key.getSectionName(), key.getShopName()));
@@ -61,14 +65,17 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean createBuyOrder(Player player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
         UUID playerId = player.getUniqueId();
         double cost = unitPrice * quantity;
+        Session session = hibernate.getSession();
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        try {
             transaction = session.beginTransaction();
             Query<CurrencyEntity> query = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
@@ -100,13 +107,16 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean createSellOrder(Player player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
         Transaction transaction = null;
         UUID playerId = player.getUniqueId();
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             if(!inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), quantity)) {
                 logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
@@ -129,12 +139,15 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean cancelBuyOrder(ShopOrderEntity order, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             UUID playerId = order.getPlayerId();
             order.setQuantity(order.getQuantity() - order.getFilledQuantity());
@@ -156,12 +169,15 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean cancelSellOrder(ShopOrderEntity order, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             UUID playerId = order.getPlayerId();
             order.setQuantity(order.getQuantity() - order.getFilledQuantity());
@@ -183,12 +199,15 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean claimBuyOrder(ShopOrderEntity order, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             int amount = order.getFilledQuantity();
             order.setQuantity(order.getQuantity() - order.getFilledQuantity());
@@ -204,12 +223,15 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean claimSellOrder(ShopOrderEntity order, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             double profit = order.getFilledQuantity();
             order.setQuantity(order.getQuantity() - order.getFilledQuantity());
@@ -233,6 +255,8 @@ public class ShopOrderRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     

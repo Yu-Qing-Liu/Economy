@@ -34,7 +34,8 @@ public class VendorItemRepository {
     // Transactions
     public boolean save(VendorItemEntity item) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(item);
             transaction.commit();
@@ -42,12 +43,15 @@ public class VendorItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean updateVendorItem(String vendorName, String sectionName, ItemStack icon, Map<String, Double> buyPrices, Map<String, Double> sellPrices) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             String itemName = PlainTextComponentSerializer.plainText().serialize(icon.displayName());
             VendorItemEntity item = this.get(new VendorItemKey(itemName, sectionName, vendorName));
@@ -62,12 +66,15 @@ public class VendorItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     
     public boolean delete(VendorItemKey key) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             VendorItemEntity item = session.get(VendorItemEntity.class, key);
             VendorSectionEntity section = session.get(VendorSectionEntity.class, new VendorSectionKey(key.getSectionName(), key.getVendorName()));
@@ -81,12 +88,15 @@ public class VendorItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean buy(VendorItemEntity item, int amount, String currencyType, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             double cost = amount * item.getBuyPrices().get(currencyType);
             Query<CurrencyEntity> query = session.createQuery(
@@ -110,12 +120,15 @@ public class VendorItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean sell(VendorItemEntity item, int amount, String currencyType, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             double profit = amount * item.getBuyPrices().get(currencyType);
             Query<CurrencyEntity> query = session.createQuery(
@@ -138,6 +151,8 @@ public class VendorItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     

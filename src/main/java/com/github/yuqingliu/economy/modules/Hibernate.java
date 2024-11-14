@@ -6,8 +6,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.cfg.Configuration;
 
 import com.github.yuqingliu.economy.persistence.entities.*;
 import com.google.inject.Inject;
@@ -18,16 +18,13 @@ public class Hibernate {
 
     @Inject
     public Hibernate(JavaPlugin plugin) {
-        if(sessionFactory == null) {
+        if (sessionFactory == null) {
             sessionFactory = createSessionFactory(plugin.getDataFolder().getAbsolutePath());
         }
     }
 
-    // Factory method to create and provide the SessionFactory
     public static SessionFactory createSessionFactory(String dataFolderPath) {
         Configuration configuration = new Configuration();
-        
-        // Set up SQLite connection
         String dbUrl = "jdbc:sqlite:" + dataFolderPath + "/database.db";
         configuration.setProperty("hibernate.connection.url", dbUrl);
         configuration.setProperty("hibernate.connection.driver_class", "org.sqlite.JDBC");
@@ -36,9 +33,6 @@ public class Hibernate {
         configuration.setProperty("hibernate.show_sql", "false");
         configuration.setProperty("hibernate.format_sql", "false");
         configuration.setProperty("hibernate.connection.autocommit", "false");
-
-        // Use CHAR type for UUIDs
-        configuration.setProperty("hibernate.type.preferred_uuid_jdbc_type", "CHAR");
 
         StandardServiceRegistryBuilder serviceRegistryBuilder = new StandardServiceRegistryBuilder();
         serviceRegistryBuilder.applySettings(configuration.getProperties());

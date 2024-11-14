@@ -28,7 +28,8 @@ public class CurrencyRepository {
     // Transactions
     public boolean save(CurrencyEntity currency) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(currency);
             transaction.commit();
@@ -36,12 +37,15 @@ public class CurrencyRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean addCurrencyToAllAccountsAndPurses(String currencyName, double amount, ItemStack icon) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             Set<BankEntity> banks = Set.copyOf(session.createQuery("from BankEntity", BankEntity.class).list());
             banks.forEach(bank -> {
@@ -74,12 +78,15 @@ public class CurrencyRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean delete(CurrencyKey key) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             CurrencyEntity currency = session.find(CurrencyEntity.class, key);
             PurseEntity purse = session.get(PurseEntity.class, key.getPurseId());
@@ -96,12 +103,15 @@ public class CurrencyRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean deleteAllByCurrencyName(String currencyName) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             String hql = "DELETE FROM CurrencyEntity c WHERE c.currencyName = :currencyName";
             MutationQuery query = session.createMutationQuery(hql);
@@ -112,12 +122,15 @@ public class CurrencyRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean depositPlayerPurse(UUID playerId, String currencyName, double amount) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             Query<CurrencyEntity> query = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
@@ -133,12 +146,15 @@ public class CurrencyRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean withdrawPlayerPurse(UUID playerId, String currencyName, double amount) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             Query<CurrencyEntity> query = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
@@ -157,6 +173,8 @@ public class CurrencyRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 

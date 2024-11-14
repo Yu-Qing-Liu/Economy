@@ -21,7 +21,8 @@ public class PurseRepository {
     // Transactions
     public boolean save(PurseEntity purse) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(purse);
             transaction.commit();
@@ -29,12 +30,15 @@ public class PurseRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean delete(UUID playerId) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             PurseEntity purse = session.get(PurseEntity.class, playerId);
             if (purse != null) {
@@ -45,6 +49,8 @@ public class PurseRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     

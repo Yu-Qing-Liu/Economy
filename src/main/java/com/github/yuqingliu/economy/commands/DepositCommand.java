@@ -12,8 +12,6 @@ import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 @RequiredArgsConstructor
 public class DepositCommand implements CommandExecutor {
@@ -31,7 +29,13 @@ public class DepositCommand implements CommandExecutor {
                 return false;
             }
             if (args.length == 2) {
-                if(currencyService.depositPlayerPurse(player, args[0], Double.parseDouble(args[1]))) {
+                double amount = 0;
+                try {
+                    amount = Double.parseDouble(args[2]);
+                } catch (Exception e) {
+                    return false;
+                }
+                if(currencyService.depositPlayerPurse(player, args[0], amount)) {
                     logger.sendPlayerAcknowledgementMessage(player, String.format("Deposited %s %s!", args[1], args[0]));
                     return true;
                 } else {
@@ -41,7 +45,13 @@ public class DepositCommand implements CommandExecutor {
             }
             if (args.length == 3) {
                 OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-                if(currencyService.depositPlayerPurse(target, args[1], Double.parseDouble(args[2]))) {
+                double amount = 0;
+                try {
+                    amount = Double.parseDouble(args[2]);
+                } catch (Exception e) {
+                    return false;
+                }
+                if(currencyService.depositPlayerPurse(target, args[1], amount)) {
                     logger.sendPlayerAcknowledgementMessage(player, String.format("Deposited %s %s to %s!", args[2], args[1], args[0]));
                     return true;
                 } else {

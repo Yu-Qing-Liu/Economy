@@ -20,7 +20,8 @@ public class ShopSectionRepository {
     // Transactions
     public boolean save(ShopSectionEntity section) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(section);
             transaction.commit();
@@ -28,12 +29,15 @@ public class ShopSectionRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     
     public boolean delete(ShopSectionKey key) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             ShopSectionEntity section = session.get(ShopSectionEntity.class, key);
             ShopEntity vendor = session.get(ShopEntity.class, key.getShopName());
@@ -47,6 +51,8 @@ public class ShopSectionRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     

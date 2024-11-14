@@ -23,7 +23,8 @@ public class PlayerRepository {
     // Transactions
     public boolean addPlayer(UUID playerId) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             PlayerEntity player = this.get(playerId);            
             if(player == null) {
@@ -59,6 +60,8 @@ public class PlayerRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 

@@ -33,7 +33,8 @@ public class ShopItemRepository {
     // Transactions
     public boolean save(ShopItemEntity item) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(item);
             transaction.commit();
@@ -41,12 +42,15 @@ public class ShopItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     
     public boolean delete(ShopItemKey key) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             ShopItemEntity item = session.get(ShopItemEntity.class, key);
             ShopSectionEntity section = session.get(ShopSectionEntity.class, new ShopSectionKey(key.getSectionName(), key.getShopName()));
@@ -60,12 +64,15 @@ public class ShopItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean quickBuy(ShopItemEntity item, int amount, String currencyType, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             Set<ShopOrderEntity> sellOffers = item.getSellOrders().get(currencyType);
             int required = amount;
@@ -133,12 +140,15 @@ public class ShopItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             Set<ShopOrderEntity> buyOrders = item.getBuyOrders().get(currencyType);
             int required = amount;
@@ -203,10 +213,11 @@ public class ShopItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
-        } 
+        } finally {
+            session.close();
+        }
     }
 
-    
     // Queries
     public ShopItemEntity get(ShopItemKey key) {
         try (Session session = hibernate.getSession()) {

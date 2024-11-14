@@ -18,7 +18,8 @@ public class ShopRepository {
     // Transactions
     public boolean save(ShopEntity shop) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(shop);
             transaction.commit();
@@ -26,12 +27,15 @@ public class ShopRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     
     public boolean delete(String shopName) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             ShopEntity player = session.get(ShopEntity.class, shopName);
             if (player != null) {
@@ -42,6 +46,8 @@ public class ShopRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     

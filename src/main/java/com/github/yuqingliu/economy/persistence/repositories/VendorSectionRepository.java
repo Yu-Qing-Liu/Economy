@@ -19,7 +19,8 @@ public class VendorSectionRepository {
 
     public boolean save(VendorSectionEntity section) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(section);
             transaction.commit();
@@ -27,12 +28,15 @@ public class VendorSectionRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean delete(VendorSectionKey key) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             VendorSectionEntity section = session.get(VendorSectionEntity.class, key);
             VendorEntity vendor = session.get(VendorEntity.class, key.getVendorName());
@@ -46,9 +50,12 @@ public class VendorSectionRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
-
+    
+    // Queries
     public VendorSectionEntity get(VendorSectionKey key) {
         try (Session session = hibernate.getSession()) {
             return session.get(VendorSectionEntity.class, key);

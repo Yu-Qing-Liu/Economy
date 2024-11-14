@@ -18,7 +18,8 @@ public class VendorRepository {
     // Transactions
     public boolean save(VendorEntity vendor) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             session.persist(vendor);
             transaction.commit();
@@ -26,12 +27,15 @@ public class VendorRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
 
     public boolean delete(String vendorName) {
         Transaction transaction = null;
-        try (Session session = hibernate.getSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             VendorEntity player = session.get(VendorEntity.class, vendorName);
             if (player != null) {
@@ -42,6 +46,8 @@ public class VendorRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
+        } finally {
+            session.close();
         }
     }
     
