@@ -277,6 +277,9 @@ public class ShopOrderRepository {
             int available = order.getQuantity() - order.getFilledQuantity();
             int filled = Math.min(available, data[0]);
             double profit = filled * order.getUnitPrice();
+            if(order.getFilledQuantity() + filled > order.getQuantity()) {
+                throw new RuntimeException();
+            }
             purseCurrency.setAmount(purseCurrency.getAmount() + profit);
             order.setFilledQuantity(order.getFilledQuantity() + filled);
             session.merge(order);
@@ -304,6 +307,9 @@ public class ShopOrderRepository {
             int available = order.getQuantity() - order.getFilledQuantity();
             int filled = Math.min(available, data[0]);
             double cost = filled * order.getUnitPrice();
+            if(order.getFilledQuantity() + filled > order.getQuantity()) {
+                throw new RuntimeException();
+            }
             order.setFilledQuantity(order.getFilledQuantity() + filled);
             inventoryManager.addItemToPlayer(player, order.getShopItem().getIcon().clone(), filled);
             transaction.commit();

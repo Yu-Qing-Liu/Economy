@@ -81,7 +81,7 @@ public class VendorService {
     }
 
     public boolean sell(VendorItemEntity item, int amount, String currencyType, Player player) {
-        return vendorItemRepository.buy(item, amount, currencyType, player);
+        return vendorItemRepository.sell(item, amount, currencyType, player);
     }
 }
 

@@ -138,12 +138,12 @@ public class VendorItemRepository {
             query.setParameter("purseId", player.getUniqueId());
             query.setParameter("currencyName", currencyType);
             CurrencyEntity purseCurrency = query.uniqueResult();
-            purseCurrency.setAmount(purseCurrency.getAmount() + profit);
-            session.merge(purseCurrency);
             if(!inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), amount)) {
                 logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
                 throw new RuntimeException();
             }
+            purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+            session.merge(purseCurrency);
             transaction.commit();
             logger.sendPlayerNotificationMessage(player, String.format("Sold %d item(s) for %.2f %s", amount, profit, currencyType));
             soundManager.playTransactionSound(player);
