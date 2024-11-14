@@ -112,10 +112,9 @@ public class SellOrderDetailsMenuController {
         shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
         shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
         shopMenu.setItem(inv, refreshButton, shopMenu.getReload());
-        double refund = (order.getQuantity() - order.getFilledQuantity()) * order.getUnitPrice(); 
         double profit = order.getFilledQuantity() * order.getUnitPrice(); 
         List<Component> cancelLore = Arrays.asList(
-            Component.text("Refund: ", NamedTextColor.BLUE).append(Component.text(refund + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD))),
+            Component.text("Refund: ", NamedTextColor.BLUE).append(Component.text(profit + "$ ", NamedTextColor.DARK_GREEN).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD))),
             Component.text("Return: ", NamedTextColor.BLUE).append(Component.text(order.getQuantity() - order.getFilledQuantity() + "x ", NamedTextColor.DARK_GREEN).append(Component.text("items", NamedTextColor.GOLD)))
         );
         ItemStack cancelButton = shopMenu.createSlotItem(Material.RED_CONCRETE, Component.text("Cancel Order", NamedTextColor.RED), cancelLore);

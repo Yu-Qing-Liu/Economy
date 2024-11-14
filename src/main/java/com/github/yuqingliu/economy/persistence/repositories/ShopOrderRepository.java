@@ -316,6 +316,7 @@ public class ShopOrderRepository {
             }
             order.setFilledQuantity(order.getFilledQuantity() + filled);
             inventoryManager.addItemToPlayer(player, order.getShopItem().getIcon().clone(), filled);
+            session.merge(order);
             transaction.commit();
             data[0] -= filled;
             data[1] += cost;

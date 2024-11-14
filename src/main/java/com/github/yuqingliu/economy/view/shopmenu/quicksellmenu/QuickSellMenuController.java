@@ -87,7 +87,7 @@ public class QuickSellMenuController {
             for(ShopOrderEntity order : orderOption.getOrders()) {
                 int amount = order.getQuantity() - order.getFilledQuantity();
                 if(amount > qty) {
-                    profit = qty * order.getUnitPrice();
+                    profit += qty * order.getUnitPrice();
                     qty = 0;
                     break;
                 } else {

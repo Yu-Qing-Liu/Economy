@@ -85,7 +85,8 @@ public class QuickBuyMenuController {
             for(ShopOrderEntity order : orderOption.getOrders()) {
                 int amount = order.getQuantity() - order.getFilledQuantity();
                 if(amount > qty) {
-                    cost = qty * order.getUnitPrice();
+                    cost += qty * order.getUnitPrice();
+                    qty = 0;
                     break;
                 } else {
                     qty -= amount;
