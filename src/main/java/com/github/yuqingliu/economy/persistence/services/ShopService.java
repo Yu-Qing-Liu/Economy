@@ -114,7 +114,7 @@ public class ShopService {
     }
 
     public int[] quickBuy(ShopItemEntity item, int amount, String currencyType, Player player) {
-        Set<ShopOrderEntity> orders = item.getSellOrders().get(currencyType);
+        List<ShopOrderEntity> orders = item.getSellOrders().get(currencyType);
         int[] required = new int[]{amount, 0};
         for(ShopOrderEntity order : orders) {
             if(required[0] == 0) {
@@ -126,7 +126,7 @@ public class ShopService {
     }
 
     public int[] quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
-        Set<ShopOrderEntity> orders = item.getBuyOrders().get(currencyType);
+        List<ShopOrderEntity> orders = item.getBuyOrders().get(currencyType);
         int[] required = new int[]{amount, 0};
         for(ShopOrderEntity order : orders) {
             if(required[0] == 0) {

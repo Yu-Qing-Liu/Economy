@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
@@ -157,11 +156,11 @@ public class OrderMenuController {
 
     private void fetchBuyOptions() {
         buyPageData.clear();
-        Map<String, Set<ShopOrderEntity>> buyOrders = item.getBuyOrders();
+        Map<String, List<ShopOrderEntity>> buyOrders = item.getBuyOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
-        for(Map.Entry<String, Set<ShopOrderEntity>> entry : buyOrders.entrySet()) {
+        for(Map.Entry<String, List<ShopOrderEntity>> entry : buyOrders.entrySet()) {
             String currencyName = entry.getKey();
-            Set<ShopOrderEntity> orders = buyOrders.get(currencyName);
+            List<ShopOrderEntity> orders = buyOrders.get(currencyName);
             ItemStack icon =  shopMenu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
             OrderOption option = new OrderOption(icon, orders);
             temp.offer(option);
@@ -183,11 +182,11 @@ public class OrderMenuController {
 
     private void fetchSellOptions() {
         sellPageData.clear();
-        Map<String, Set<ShopOrderEntity>> sellOrders = item.getSellOrders();
+        Map<String, List<ShopOrderEntity>> sellOrders = item.getSellOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
-        for(Map.Entry<String, Set<ShopOrderEntity>> entry : sellOrders.entrySet()) {
+        for(Map.Entry<String, List<ShopOrderEntity>> entry : sellOrders.entrySet()) {
             String currencyName = entry.getKey();
-            Set<ShopOrderEntity> orders = sellOrders.get(currencyName);
+            List<ShopOrderEntity> orders = sellOrders.get(currencyName);
             ItemStack icon =  shopMenu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
             OrderOption option = new OrderOption(icon, orders);
             temp.offer(option);
@@ -218,7 +217,7 @@ public class OrderMenuController {
             } else {
                 ItemStack item = option.getIcon().clone(); 
                 List<Component> topOrders = new ArrayList<>();
-                Set<ShopOrderEntity> orders = option.getOrders();
+                List<ShopOrderEntity> orders = option.getOrders();
                 int count = 0;
                 int valid = 0;
                 int maxCount = 3;
@@ -262,7 +261,7 @@ public class OrderMenuController {
             } else {
                 ItemStack item = option.getIcon().clone(); 
                 List<Component> topOrders = new ArrayList<>();
-                Set<ShopOrderEntity> orders = option.getOrders();
+                List<ShopOrderEntity> orders = option.getOrders();
                 int count = 0;
                 int valid = 0;
                 int maxCount = 3;

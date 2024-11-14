@@ -1,6 +1,6 @@
 package com.github.yuqingliu.economy.view.shopmenu.ordermenu;
 
-import java.util.Set;
+import java.util.List;
 
 import org.bukkit.inventory.ItemStack;
 
@@ -14,7 +14,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 @Getter
 public class OrderOption {
     private final ItemStack icon;
-    private final Set<ShopOrderEntity> orders;
+    private final List<ShopOrderEntity> orders;
 
     public String getCurrencyName() {
         String name = PlainTextComponentSerializer.plainText().serialize(icon.displayName());

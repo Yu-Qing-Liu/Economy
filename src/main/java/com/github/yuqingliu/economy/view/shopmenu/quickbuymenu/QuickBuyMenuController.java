@@ -69,7 +69,11 @@ public class QuickBuyMenuController {
             int[] data = shopMenu.getShopService().quickBuy(item, amount, orderOption.getCurrencyName(), player);
             int filled = amount - data[0];
             double cost = data[1];
-            shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Bought %d items for %f.2 %s", filled, cost, orderOption.getCurrencyName()));
+            if(cost > 0) {
+                shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Bought %d items for %.2f %s", filled, cost, orderOption.getCurrencyName()));
+            } else {
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "No more offers");
+            }
         });
     }
 
@@ -115,6 +119,7 @@ public class QuickBuyMenuController {
 
     private void buttons(Inventory inv, Player player) {
         BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
+            displayBuyOptions(inv);
             int freeSpace = shopMenu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
             double cost = 0;
             int qty = freeSpace;

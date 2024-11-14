@@ -69,7 +69,11 @@ public class QuickSellMenuController {
             int[] data = shopMenu.getShopService().quickSell(item, amount, orderOption.getCurrencyName(), player);
             int filled = amount - data[0];
             double profit = data[1];
-            shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d items for %f.2 %s", filled, profit, orderOption.getCurrencyName()));
+            if(profit > 0) {
+                shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d items for %.2f %s", filled, profit, orderOption.getCurrencyName()));
+            } else {
+                shopMenu.getLogger().sendPlayerErrorMessage(player, "No more offers.");
+            }
         });
     }
 
@@ -120,6 +124,7 @@ public class QuickSellMenuController {
 
     private void buttons(Inventory inv, Player player) {
         BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
+            displaySellOptions(inv, player);
             int total = shopMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
             double profit = 0;
             int qty = total;
