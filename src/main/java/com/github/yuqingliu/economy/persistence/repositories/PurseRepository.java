@@ -1,9 +1,9 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -16,12 +16,12 @@ import java.util.UUID;
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class PurseRepository {
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
     
     // Transactions
     public boolean save(PurseEntity purse) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             session.persist(purse);
             transaction.commit();
@@ -34,7 +34,7 @@ public class PurseRepository {
 
     public boolean delete(UUID playerId) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             PurseEntity purse = session.get(PurseEntity.class, playerId);
             if (purse != null) {
@@ -50,7 +50,7 @@ public class PurseRepository {
     
     // Queries
     public PurseEntity get(UUID playerId) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.get(PurseEntity.class, playerId);
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,7 +59,7 @@ public class PurseRepository {
     }
 
     public Set<PurseEntity> findAll() {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return Set.copyOf(session.createQuery("from PurseEntity", PurseEntity.class).list());
         } catch (Exception e) {
             e.printStackTrace();

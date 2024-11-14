@@ -11,7 +11,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
 import org.bukkit.plugin.java.JavaPlugin;
-import org.hibernate.SessionFactory;
 
 public class PluginModule extends AbstractModule {
     private final JavaPlugin plugin;
@@ -26,14 +25,10 @@ public class PluginModule extends AbstractModule {
         return this.plugin;
     }
 
-    @Provides
-    @Singleton
-    public SessionFactory provideSessionFactory() {
-        return HibernateModule.createSessionFactory(plugin.getDataFolder().getAbsolutePath());
-    }
-
     @Override
     protected void configure() {
+        // Hibernate
+        bind(Hibernate.class).in(Singleton.class);
         // Logger
         bind(Logger.class).to(LoggerImpl.class).in(Singleton.class);
         // Repositories

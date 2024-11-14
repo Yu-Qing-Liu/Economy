@@ -1,9 +1,9 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
@@ -15,12 +15,12 @@ import lombok.RequiredArgsConstructor;
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopSectionRepository {
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
     
     // Transactions
     public boolean save(ShopSectionEntity section) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             session.persist(section);
             transaction.commit();
@@ -33,7 +33,7 @@ public class ShopSectionRepository {
     
     public boolean delete(ShopSectionKey key) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             ShopSectionEntity section = session.get(ShopSectionEntity.class, key);
             ShopEntity vendor = session.get(ShopEntity.class, key.getShopName());
@@ -52,7 +52,7 @@ public class ShopSectionRepository {
     
     // Queries
     public ShopSectionEntity get(ShopSectionKey key) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.get(ShopSectionEntity.class, key);
         } catch (Exception e) {
             return null;

@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.modules;
 
+import org.bukkit.plugin.java.JavaPlugin;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -8,10 +10,21 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
 import com.github.yuqingliu.economy.persistence.entities.*;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
-public class HibernateModule {
+@Singleton
+public class Hibernate {
+    private final ThreadLocal<Session> sessionThreadLocal = new ThreadLocal<>();
+    private final SessionFactory sessionFactory;
 
-    public static SessionFactory createSessionFactory(String dataFolderPath) {
+    @Inject
+    public Hibernate(JavaPlugin plugin) {
+        this.sessionFactory = createSessionFactory(plugin.getDataFolder().getAbsolutePath());
+    }
+
+    // Factory method to create and provide the SessionFactory
+    public SessionFactory createSessionFactory(String dataFolderPath) {
         Configuration configuration = new Configuration();
         
         // Set up SQLite connection
@@ -48,6 +61,25 @@ public class HibernateModule {
 
         Metadata metadata = sources.getMetadataBuilder().build();
         return metadata.getSessionFactoryBuilder().build();
+    }
+
+    // Method to retrieve the current session for the current thread
+    public Session getSession() {
+        Session session = sessionThreadLocal.get();
+        if (session == null) {
+            session = sessionFactory.openSession();  // Open a new session if none is available
+            sessionThreadLocal.set(session);         // Set the session to ThreadLocal
+        }
+        return session;
+    }
+
+    // Close session for the current thread
+    public void closeSession() {
+        Session session = sessionThreadLocal.get();
+        if (session != null) {
+            session.close();
+            sessionThreadLocal.remove();
+        }
     }
 }
 

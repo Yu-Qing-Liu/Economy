@@ -5,13 +5,13 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopOrderRepository {
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
     private final InventoryManager inventoryManager;
     private final SoundManager soundManager;
     private final Logger logger;
@@ -34,7 +34,7 @@ public class ShopOrderRepository {
     // Transactions
     public boolean save(ShopOrderEntity order) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             session.persist(order);
             transaction.commit();
@@ -47,7 +47,7 @@ public class ShopOrderRepository {
     
     public boolean delete(ShopOrderKey key) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             ShopOrderEntity order = session.get(ShopOrderEntity.class, key);
             ShopItemEntity item = session.get(ShopItemEntity.class, new ShopItemKey(key.getItemName(), key.getSectionName(), key.getShopName()));
@@ -68,7 +68,7 @@ public class ShopOrderRepository {
         UUID playerId = player.getUniqueId();
         double cost = unitPrice * quantity;
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             Query<CurrencyEntity> query = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
@@ -106,7 +106,7 @@ public class ShopOrderRepository {
     public boolean createSellOrder(Player player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
         Transaction transaction = null;
         UUID playerId = player.getUniqueId();
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             if(!inventoryManager.removeItemFromPlayer(player, item.getIcon().clone(), quantity)) {
                 logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
@@ -134,7 +134,7 @@ public class ShopOrderRepository {
 
     public boolean cancelBuyOrder(ShopOrderEntity order, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             UUID playerId = order.getPlayerId();
             order.setQuantity(order.getQuantity() - order.getFilledQuantity());
@@ -161,7 +161,7 @@ public class ShopOrderRepository {
 
     public boolean cancelSellOrder(ShopOrderEntity order, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             UUID playerId = order.getPlayerId();
             order.setQuantity(order.getQuantity() - order.getFilledQuantity());
@@ -188,7 +188,7 @@ public class ShopOrderRepository {
 
     public boolean claimBuyOrder(ShopOrderEntity order, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             int amount = order.getFilledQuantity();
             order.setQuantity(order.getQuantity() - order.getFilledQuantity());
@@ -209,7 +209,7 @@ public class ShopOrderRepository {
 
     public boolean claimSellOrder(ShopOrderEntity order, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             double profit = order.getFilledQuantity();
             order.setQuantity(order.getQuantity() - order.getFilledQuantity());
@@ -238,7 +238,7 @@ public class ShopOrderRepository {
     
     // Queries
     public ShopOrderEntity get(ShopOrderKey key) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.get(ShopOrderEntity.class, key);
         } catch (Exception e) {
             return null;
@@ -246,7 +246,7 @@ public class ShopOrderRepository {
     }
 
     public List<ShopOrderEntity> getBuyOrdersByPlayer(UUID playerId) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             String hql = "FROM ShopOrderEntity WHERE playerId = :playerId AND type = :orderType";
             Query<ShopOrderEntity> query = session.createQuery(hql, ShopOrderEntity.class);
             query.setParameter("playerId", playerId);
@@ -258,7 +258,7 @@ public class ShopOrderRepository {
     }
 
     public List<ShopOrderEntity> getSellOrdersByPlayer(UUID playerId) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             String hql = "FROM ShopOrderEntity WHERE playerId = :playerId AND type = :orderType";
             Query<ShopOrderEntity> query = session.createQuery(hql, ShopOrderEntity.class);
             query.setParameter("playerId", playerId);

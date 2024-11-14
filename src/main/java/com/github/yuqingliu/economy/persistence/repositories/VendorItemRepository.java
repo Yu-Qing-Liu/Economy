@@ -12,6 +12,7 @@ import org.hibernate.query.Query;
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
@@ -26,7 +27,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class VendorItemRepository {
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
     private final Logger logger;
     private InventoryManager inventoryManager;
     private SoundManager soundManager;
@@ -34,7 +35,7 @@ public class VendorItemRepository {
     // Transactions
     public boolean save(VendorItemEntity item) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             session.persist(item);
             transaction.commit();
@@ -47,7 +48,7 @@ public class VendorItemRepository {
 
     public boolean updateVendorItem(String vendorName, String sectionName, ItemStack icon, Map<String, Double> buyPrices, Map<String, Double> sellPrices) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             String itemName = PlainTextComponentSerializer.plainText().serialize(icon.displayName());
             VendorItemEntity item = this.get(new VendorItemKey(itemName, sectionName, vendorName));
@@ -67,7 +68,7 @@ public class VendorItemRepository {
     
     public boolean delete(VendorItemKey key) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             VendorItemEntity item = session.get(VendorItemEntity.class, key);
             VendorSectionEntity section = session.get(VendorSectionEntity.class, new VendorSectionKey(key.getSectionName(), key.getVendorName()));
@@ -86,7 +87,7 @@ public class VendorItemRepository {
 
     public boolean buy(VendorItemEntity item, int amount, String currencyType, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             double cost = amount * item.getBuyPrices().get(currencyType);
             Query<CurrencyEntity> query = session.createQuery(
@@ -115,7 +116,7 @@ public class VendorItemRepository {
 
     public boolean sell(VendorItemEntity item, int amount, String currencyType, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             double profit = amount * item.getBuyPrices().get(currencyType);
             Query<CurrencyEntity> query = session.createQuery(
@@ -143,7 +144,7 @@ public class VendorItemRepository {
     
     // Queries
     public VendorItemEntity get(VendorItemKey key) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.get(VendorItemEntity.class, key);
         } catch (Exception e) {
             return null;

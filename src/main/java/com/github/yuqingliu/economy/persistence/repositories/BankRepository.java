@@ -5,6 +5,7 @@ import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
@@ -25,13 +25,13 @@ import java.util.UUID;
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class BankRepository {
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
     private final Logger logger;
     
     // Transactions
     public boolean save(BankEntity bank) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             session.persist(bank);
             transaction.commit();
@@ -44,7 +44,7 @@ public class BankRepository {
 
     public boolean delete(String bankName) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             BankEntity bank = session.get(BankEntity.class, bankName);
             if (bank != null) {
@@ -60,7 +60,7 @@ public class BankRepository {
 
     public boolean addBankAccountToAll(String accountName, String bankName, ItemStack icon, double interestRate, String unlockCurrencyName, double unlockCost) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             BankEntity bank = this.get(bankName);
             Set<PlayerEntity> players = Set.copyOf(session.createQuery("from PlayerEntity", PlayerEntity.class).list());
@@ -99,7 +99,7 @@ public class BankRepository {
 
     public boolean depositAllInterestForAllBanks() {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             Set<BankEntity> banks = this.findAll();
             Instant now = Instant.now();
@@ -132,7 +132,7 @@ public class BankRepository {
 
     public boolean unlockAccount(AccountEntity account, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             double unlockPrice = account.getUnlockCost();
             String currencyType = account.getUnlockCurrencyType();
@@ -161,7 +161,7 @@ public class BankRepository {
 
     // Queries
     public BankEntity get(String bankName) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.get(BankEntity.class, bankName);
         } catch (Exception e) {
             return null;
@@ -169,7 +169,7 @@ public class BankRepository {
     }
 
     public Set<BankEntity> findAll() {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return Set.copyOf(session.createQuery("from BankEntity", BankEntity.class).list());
         } catch (Exception e) {
             return Set.of();

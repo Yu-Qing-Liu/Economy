@@ -5,11 +5,11 @@ import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.MutationQuery;
 import org.hibernate.query.Query;
 
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
@@ -23,12 +23,12 @@ import lombok.RequiredArgsConstructor;
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class CurrencyRepository {
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
     
     // Transactions
     public boolean save(CurrencyEntity currency) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             session.persist(currency);
             transaction.commit();
@@ -41,7 +41,7 @@ public class CurrencyRepository {
 
     public boolean addCurrencyToAllAccountsAndPurses(String currencyName, double amount, ItemStack icon) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             Set<BankEntity> banks = Set.copyOf(session.createQuery("from BankEntity", BankEntity.class).list());
             banks.forEach(bank -> {
@@ -79,7 +79,7 @@ public class CurrencyRepository {
 
     public boolean delete(CurrencyKey key) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             CurrencyEntity currency = session.find(CurrencyEntity.class, key);
             PurseEntity purse = session.get(PurseEntity.class, key.getPurseId());
@@ -101,7 +101,7 @@ public class CurrencyRepository {
 
     public boolean deleteAllByCurrencyName(String currencyName) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             String hql = "DELETE FROM CurrencyEntity c WHERE c.currencyName = :currencyName";
             MutationQuery query = session.createMutationQuery(hql);
@@ -117,7 +117,7 @@ public class CurrencyRepository {
 
     public boolean depositPlayerPurse(UUID playerId, String currencyName, double amount) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             Query<CurrencyEntity> query = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
@@ -138,7 +138,7 @@ public class CurrencyRepository {
 
     public boolean withdrawPlayerPurse(UUID playerId, String currencyName, double amount) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             Query<CurrencyEntity> query = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
@@ -162,7 +162,7 @@ public class CurrencyRepository {
 
     // Queries
     public CurrencyEntity get(CurrencyKey key) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.find(CurrencyEntity.class, key);
         } catch (Exception e) {
             return null;
@@ -170,7 +170,7 @@ public class CurrencyRepository {
     }
 
     public CurrencyEntity getFirst(String currencyName) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.createQuery("FROM CurrencyEntity WHERE currencyName = :currencyName", CurrencyEntity.class)
                           .setParameter("currencyName", currencyName)
                           .setMaxResults(1)
@@ -181,7 +181,7 @@ public class CurrencyRepository {
     }
 
     public Set<CurrencyEntity> findAllUniqueCurrencies() {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return Set.copyOf(session.createQuery(
                 "FROM CurrencyEntity c WHERE c.currencyName IN (" +
                 "SELECT DISTINCT c2.currencyName FROM CurrencyEntity c2)", 
@@ -193,7 +193,7 @@ public class CurrencyRepository {
     }
 
     public Set<CurrencyEntity> findAll() {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return Set.copyOf(session.createQuery("from CurrencyEntity", CurrencyEntity.class).list());
         } catch (Exception e) {
             return Set.of();

@@ -4,13 +4,13 @@ import java.util.Set;
 
 import org.bukkit.entity.Player;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopItemRepository {
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
     private final InventoryManager inventoryManager;
     private final Logger logger;
     private final SoundManager soundManager;
@@ -33,7 +33,7 @@ public class ShopItemRepository {
     // Transactions
     public boolean save(ShopItemEntity item) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             session.persist(item);
             transaction.commit();
@@ -46,7 +46,7 @@ public class ShopItemRepository {
     
     public boolean delete(ShopItemKey key) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             ShopItemEntity item = session.get(ShopItemEntity.class, key);
             ShopSectionEntity section = session.get(ShopSectionEntity.class, new ShopSectionKey(key.getSectionName(), key.getShopName()));
@@ -65,7 +65,7 @@ public class ShopItemRepository {
 
     public boolean quickBuy(ShopItemEntity item, int amount, String currencyType, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             Set<ShopOrderEntity> sellOffers = item.getSellOrders().get(currencyType);
             int required = amount;
@@ -93,6 +93,7 @@ public class ShopItemRepository {
                     session.merge(purseCurrency);
                     session.merge(order);
                     inventoryManager.addItemToPlayer(player, item.getIcon().clone(), required);
+                    required = 0;
                     break;
                 } else if(qty == required) {
                     cost += required * order.getUnitPrice();
@@ -105,6 +106,7 @@ public class ShopItemRepository {
                     session.merge(purseCurrency);
                     session.merge(order);
                     inventoryManager.addItemToPlayer(player, item.getIcon().clone(), required);
+                    required = 0;
                     break;
                 } else {
                     cost += qty * order.getUnitPrice();
@@ -136,9 +138,9 @@ public class ShopItemRepository {
 
     public boolean quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
-            Set<ShopOrderEntity> sellOffers = item.getSellOrders().get(currencyType);
+            Set<ShopOrderEntity> sellOffers = item.getBuyOrders().get(currencyType);
             int required = amount;
             double profit = 0;
             Query<CurrencyEntity> query = session.createQuery(
@@ -163,6 +165,7 @@ public class ShopItemRepository {
                         logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
                         throw new RuntimeException();
                     }
+                    required = 0;
                     break;
                 } else if(qty == required) {
                     profit += required * order.getUnitPrice();
@@ -174,6 +177,7 @@ public class ShopItemRepository {
                         logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
                         throw new RuntimeException();
                     }
+                    required = 0;
                     break;
                 } else {
                     profit += qty * order.getUnitPrice();
@@ -199,13 +203,13 @@ public class ShopItemRepository {
         } catch (Exception e) {
             transaction.rollback();
             return false;
-        }
+        } 
     }
 
     
     // Queries
     public ShopItemEntity get(ShopItemKey key) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.get(ShopItemEntity.class, key);
         } catch (Exception e) {
             return null;

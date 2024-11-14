@@ -114,7 +114,7 @@ public class ShopService {
     }
 
     public boolean quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
-        return shopItemRepository.quickBuy(item, amount, currencyType, player);
+        return shopItemRepository.quickSell(item, amount, currencyType, player);
     }
 }
 

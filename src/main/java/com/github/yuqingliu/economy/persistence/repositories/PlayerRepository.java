@@ -1,11 +1,11 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
 import com.github.yuqingliu.economy.persistence.entities.PurseEntity;
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -18,12 +18,12 @@ import java.util.UUID;
 @Singleton
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class PlayerRepository {
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
     
     // Transactions
     public boolean addPlayer(UUID playerId) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             transaction = session.beginTransaction();
             PlayerEntity player = this.get(playerId);            
             if(player == null) {
@@ -64,7 +64,7 @@ public class PlayerRepository {
 
     // Queries
     public PlayerEntity get(UUID playerId) {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return session.get(PlayerEntity.class, playerId);
         } catch (Exception e) {
             return null;
@@ -72,7 +72,7 @@ public class PlayerRepository {
     }
 
     public Set<PlayerEntity> findAll() {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return Set.copyOf(session.createQuery("from PlayerEntity", PlayerEntity.class).list());
         } catch (Exception e) {
             return Set.of();
