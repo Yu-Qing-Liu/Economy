@@ -100,12 +100,7 @@ public class DepositMenuController {
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = bank.load(player);
             Scheduler.runAsync((task) -> {
-                boolean successfulTransaction = bankMenu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
-                if(successfulTransaction) {
-                    bankMenu.getPluginManager().getSoundManager().playTransactionSound(player);
-                } else {
-                    bankMenu.getLogger().sendPlayerErrorMessage(player, "Could not deposit that amount.");
-                }
+                bankMenu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
                 bankMenu.getDepositMenu().getController().openDepositMenu(player, inventory, account);
             });
         };        
@@ -117,7 +112,8 @@ public class DepositMenuController {
     }
 
     private void fetchCurrencies(Inventory inv, Player player) {
-        AccountEntity account = accounts.get(player);
+        AccountEntity account = bankMenu.getBankService().getAccount(accounts.get(player).getAccountId());
+        accounts.put(player, account);
         Set<CurrencyEntity> currencies = account.getCurrencies();
         if(currencies.isEmpty()) {
             return;

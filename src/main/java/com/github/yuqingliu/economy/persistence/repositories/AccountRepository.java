@@ -6,6 +6,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class AccountRepository {
     private final Hibernate hibernate;
+    private final SoundManager soundManager;
     private final Logger logger;
 
     // Transactions 
@@ -90,6 +92,8 @@ public class AccountRepository {
             session.merge(purseCurrency);
             session.merge(accountCurrency);
             transaction.commit();
+            soundManager.playTransactionSound(player);
+            logger.sendPlayerNotificationMessage(player, String.format("Deposited %.2f %s into %s account", amount, currencyName, account.getAccountName()));
             return true;
         } catch (Exception e) {
             transaction.rollback();
@@ -119,7 +123,7 @@ public class AccountRepository {
             CurrencyEntity purseCurrency = query1.uniqueResult();
             CurrencyEntity accountCurrency = query2.uniqueResult();
             if(accountCurrency.getAmount() < amount) {
-                logger.sendPlayerErrorMessage(player, "You withdraw deposit that amount.");
+                logger.sendPlayerErrorMessage(player, "You cannot withdraw that amount.");
                 throw new IllegalArgumentException();
             }
             accountCurrency.setAmount(accountCurrency.getAmount() - amount);
@@ -127,6 +131,8 @@ public class AccountRepository {
             session.merge(purseCurrency);
             session.merge(accountCurrency);
             transaction.commit();
+            soundManager.playTransactionSound(player);
+            logger.sendPlayerNotificationMessage(player, String.format("Withdrew %.2f %s from %s account", amount, currencyName, account.getAccountName()));
             return true;
         } catch (Exception e) {
             transaction.rollback();

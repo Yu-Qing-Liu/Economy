@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -44,6 +45,10 @@ public class BankService {
     
     public List<AccountEntity> getPlayerAccountsByBank(String bankName, OfflinePlayer player) {
         return accountRepository.getPlayerAccountsByBank(bankName, player.getUniqueId());
+    }
+
+    public AccountEntity getAccount(UUID accountId) {
+        return accountRepository.get(accountId);
     }
     
     public boolean depositPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {

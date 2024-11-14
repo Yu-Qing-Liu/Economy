@@ -100,12 +100,7 @@ public class WithdrawMenuController {
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = bank.load(player);
             Scheduler.runAsync((task) -> {
-                boolean successfulTransaction = bankMenu.getBankService().withdrawPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
-                if(successfulTransaction) {
-                    bankMenu.getPluginManager().getSoundManager().playTransactionSound(player);
-                } else {
-                    bankMenu.getLogger().sendPlayerErrorMessage(player, "Could not withdraw that amount.");
-                }
+                bankMenu.getBankService().withdrawPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
                 bankMenu.getWithdrawMenu().getController().openWithdrawMenu(player, inventory, account);
             });
         };        
@@ -117,7 +112,8 @@ public class WithdrawMenuController {
     }
 
     private void fetchCurrencies(Inventory inv, Player player) {
-        AccountEntity account = accounts.get(player);
+        AccountEntity account = bankMenu.getBankService().getAccount(accounts.get(player).getAccountId());
+        accounts.put(player, account);
         Set<CurrencyEntity> currencies = account.getCurrencies();
         if(currencies.isEmpty()) {
             return;
