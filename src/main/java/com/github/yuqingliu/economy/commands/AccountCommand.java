@@ -10,7 +10,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.persistence.services.BankService;
-import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;

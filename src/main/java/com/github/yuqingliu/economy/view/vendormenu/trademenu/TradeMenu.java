@@ -23,7 +23,7 @@ public class TradeMenu implements Listener {
     public TradeMenu(VendorMenu vendorMenu) {
         this.vendorMenu = vendorMenu;
         this.controller = new TradeMenuController(vendorMenu);
-        vendorMenu.getEventManager().registerEvent(this);
+        vendorMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler
@@ -54,12 +54,12 @@ public class TradeMenu implements Listener {
                 return;
             }
             if(Arrays.equals(slot, controller.getBuyInventoryButton())) {
-                int amount = vendorMenu.countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
+                int amount = vendorMenu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
                 controller.buy(player, amount);
                 return;
             }
             if(Arrays.equals(slot, controller.getSellInventoryButton())) {
-                int amount = vendorMenu.countItemFromPlayer(player, controller.getItem().getIcon());
+                int amount = vendorMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, controller.getItem().getIcon());
                 controller.sell(player, amount);
                 return;
             }

@@ -1,12 +1,16 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
+import org.bukkit.entity.Player;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import com.github.yuqingliu.economy.api.logger.Logger;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
+import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
+import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -19,79 +23,17 @@ import java.util.Set;
 import java.util.UUID;
 
 @Singleton
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class AccountRepository {
-    @Inject
-    private final SessionFactory sessionFactory;
+    private final Hibernate hibernate;
+    private final SoundManager soundManager;
+    private final Logger logger;
 
-    public boolean save(AccountEntity account) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.persist(account);
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean update(AccountEntity account) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.merge(account);
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public AccountEntity get(UUID accountId) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(AccountEntity.class, accountId);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public boolean delete(UUID accountId) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            AccountEntity account = session.get(AccountEntity.class, accountId);
-            if (account != null) {
-                session.remove(account);
-            }
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public List<AccountEntity> getPlayerAccountsByBank(String bankName, UUID playerId) {
-        try (Session session = sessionFactory.openSession()) {
-            BankEntity bank = session.get(BankEntity.class, bankName);
-            if (bank == null) {
-                return Collections.emptyList();
-            }
-            Query<AccountEntity> query = session.createQuery("FROM AccountEntity a WHERE a.player.playerId = :playerId AND a.bank.bankName = :bankName", AccountEntity.class);
-            query.setParameter("playerId", playerId);
-            query.setParameter("bankName", bankName);
-            return query.list();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
-
-    
+    // Transactions 
     public boolean deleteBankAccountsByAccountName(String accountName, String bankName) {
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        Session session = hibernate.getSession();
+        try {
             transaction = session.beginTransaction();
             BankEntity bank = session.get(BankEntity.class, bankName);
             if (bank == null) {
@@ -99,7 +41,8 @@ public class AccountRepository {
             }
             Query<AccountEntity> query = session.createQuery(
                 "FROM AccountEntity a WHERE a.accountName = :accountName AND a.bank.bankName = :bankName", 
-                AccountEntity.class);
+                AccountEntity.class
+            );
             query.setParameter("accountName", accountName);
             query.setParameter("bankName", bankName);
             List<AccountEntity> accountsToDelete = query.list();
@@ -114,16 +57,138 @@ public class AccountRepository {
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            transaction.rollback();
             return false;
+        } finally {
+            session.close();
+        }
+    }
+
+    public boolean depositPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            Query<CurrencyEntity> query1 = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query1.setParameter("purseId", player.getUniqueId());
+            query1.setParameter("currencyName", currencyName);
+            Query<CurrencyEntity> query2 = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.accountId = :accountId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query2.setParameter("accountId", account.getAccountId());
+            query2.setParameter("currencyName", currencyName);
+            CurrencyEntity purseCurrency = query1.uniqueResult();
+            CurrencyEntity accountCurrency = query2.uniqueResult();
+            if(purseCurrency.getAmount() < amount) {
+                logger.sendPlayerErrorMessage(player, "You cannot deposit that amount.");
+                throw new IllegalArgumentException();
+            }
+            purseCurrency.setAmount(purseCurrency.getAmount() - amount);
+            accountCurrency.setAmount(accountCurrency.getAmount() + amount);
+            session.merge(purseCurrency);
+            session.merge(accountCurrency);
+            transaction.commit();
+            soundManager.playTransactionSound(player);
+            logger.sendPlayerNotificationMessage(player, String.format("Deposited %.2f %s into %s account", amount, currencyName, account.getAccountName()));
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        } finally {
+            session.close();
+        }
+    }
+
+    public boolean withdrawPlayerAccount(AccountEntity account, Player player, double amount, String currencyName) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            Query<CurrencyEntity> query1 = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query1.setParameter("purseId", player.getUniqueId());
+            query1.setParameter("currencyName", currencyName);
+            Query<CurrencyEntity> query2 = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.accountId = :accountId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query2.setParameter("accountId", account.getAccountId());
+            query2.setParameter("currencyName", currencyName);
+            CurrencyEntity purseCurrency = query1.uniqueResult();
+            CurrencyEntity accountCurrency = query2.uniqueResult();
+            if(accountCurrency.getAmount() < amount) {
+                logger.sendPlayerErrorMessage(player, "You cannot withdraw that amount.");
+                throw new IllegalArgumentException();
+            }
+            accountCurrency.setAmount(accountCurrency.getAmount() - amount);
+            purseCurrency.setAmount(purseCurrency.getAmount() + amount);
+            session.merge(purseCurrency);
+            session.merge(accountCurrency);
+            transaction.commit();
+            soundManager.playTransactionSound(player);
+            logger.sendPlayerNotificationMessage(player, String.format("Withdrew %.2f %s from %s account", amount, currencyName, account.getAccountName()));
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        } finally {
+            session.close();
+        }
+    }
+
+    public boolean delete(UUID accountId) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            AccountEntity account = session.get(AccountEntity.class, accountId);
+            if (account != null) {
+                session.remove(account);
+            }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        } finally {
+            session.close();
+        }
+    }
+    
+    // Queries
+    public AccountEntity get(UUID accountId) {
+        try (Session session = hibernate.getSession()) {
+            return session.get(AccountEntity.class, accountId);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public List<AccountEntity> getPlayerAccountsByBank(String bankName, UUID playerId) {
+        try (Session session = hibernate.getSession()) {
+            BankEntity bank = session.get(BankEntity.class, bankName);
+            if (bank == null) {
+                return Collections.emptyList();
+            }
+            Query<AccountEntity> query = session.createQuery("FROM AccountEntity a WHERE a.player.playerId = :playerId AND a.bank.bankName = :bankName", AccountEntity.class);
+            query.setParameter("playerId", playerId);
+            query.setParameter("bankName", bankName);
+            return query.list();
+        } catch (Exception e) {
+            return Collections.emptyList();
         }
     }
 
     public Set<AccountEntity> findAll() {
-        try (Session session = sessionFactory.openSession()) {
+        try (Session session = hibernate.getSession()) {
             return Set.copyOf(session.createQuery("from AccountEntity", AccountEntity.class).list());
         } catch (Exception e) {
-            e.printStackTrace();
             return Set.of();
         }
     }

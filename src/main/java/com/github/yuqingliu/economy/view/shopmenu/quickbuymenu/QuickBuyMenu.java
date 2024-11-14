@@ -23,7 +23,7 @@ public class QuickBuyMenu implements Listener {
     public QuickBuyMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
         this.controller = new QuickBuyMenuController(shopMenu);
-        shopMenu.getEventManager().registerEvent(this);
+        shopMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler
@@ -50,7 +50,7 @@ public class QuickBuyMenu implements Listener {
                 return;
             }
             if(Arrays.equals(slot, controller.getBuyInventoryButton())) {
-                int amount = shopMenu.countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
+                int amount = shopMenu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
                 controller.quickBuy(amount, player);
                 return;
             }

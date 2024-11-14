@@ -65,34 +65,14 @@ public class TradeMenuController {
 
     public void buy(Player player, int slotAmount) {
         Scheduler.runAsync((task) -> {
-            double cost = slotAmount * currencyOption.getBuyPrice();
-            boolean successfulWithdrawal = vendorMenu.getCurrencyService().withdrawPlayerPurse(player, currencyOption.getCurrencyName(), cost);
-            if(!successfulWithdrawal) {
-                vendorMenu.getLogger().sendPlayerErrorMessage(player, "Not enough currency.");
-                return;
-            }
-            vendorMenu.addItemToPlayer(player, item.getIcon().clone(), slotAmount);
-            vendorMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Bought %d item(s) for %.2f %s", slotAmount, cost, currencyOption.getCurrencyName()));
-            vendorMenu.getSoundManager().playTransactionSound(player);
+            vendorMenu.getVendorService().buy(item, slotAmount, currencyOption.getCurrencyName(), player);
         });
     }
 
     public void sell(Player player, int slotAmount) {
         Scheduler.runAsync((task) -> {
-            int amount = Math.min(vendorMenu.countItemFromPlayer(player, item.getIcon().clone()), slotAmount);
-            double profit = amount * currencyOption.getSellPrice();
-            boolean sucessfulItemRemoval = vendorMenu.removeItemFromPlayer(player, item.getIcon().clone(), amount);
-            if(!sucessfulItemRemoval) {
-                vendorMenu.getLogger().sendPlayerErrorMessage(player, "Not enough items to sell.");
-                return;
-            }
-            boolean sucessfulDeposit = vendorMenu.getCurrencyService().depositPlayerPurse(player, currencyOption.getCurrencyName(), profit);
-            if(!sucessfulDeposit) {
-                vendorMenu.getLogger().sendPlayerErrorMessage(player, "Could not sell item(s)");
-                vendorMenu.addItemToPlayer(player, item.getIcon().clone(), amount);
-            }
-            vendorMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d item(s) for %.2f %s", amount, profit, currencyOption.getCurrencyName()));
-            vendorMenu.getSoundManager().playTransactionSound(player);
+            int amount = Math.min(vendorMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon().clone()), slotAmount);
+            vendorMenu.getVendorService().sell(item, amount, currencyOption.getCurrencyName(), player);
         });
     }
 
@@ -109,8 +89,8 @@ public class TradeMenuController {
 
     private void buttons(Inventory inv, Player player) {
         BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
-            int freeSpace = vendorMenu.countAvailableInventorySpace(player, item.getIcon().getType());
-            int amount = vendorMenu.countItemFromPlayer(player, item.getIcon());
+            int freeSpace = vendorMenu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
+            int amount = vendorMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
             List<Component> fillLore = Arrays.asList(
                 Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(freeSpace + "x", NamedTextColor.RED)),
                 Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(freeSpace) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))

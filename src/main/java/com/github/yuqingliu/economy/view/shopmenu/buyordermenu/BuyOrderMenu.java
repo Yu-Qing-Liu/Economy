@@ -23,7 +23,7 @@ public class BuyOrderMenu implements Listener {
     public BuyOrderMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
         this.controller = new BuyOrderMenuController(shopMenu);
-        shopMenu.getEventManager().registerEvent(this);
+        shopMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler

@@ -24,7 +24,7 @@ public class MainMenu implements Listener {
     public MainMenu(BankMenu bankMenu) {
         this.bankMenu = bankMenu;
         this.controller = new MainMenuController(bankMenu);
-        bankMenu.getEventManager().registerEvent(this);
+        bankMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
     @EventHandler
@@ -47,7 +47,9 @@ public class MainMenu implements Listener {
             if(bankMenu.rectangleContains(slot, controller.getAccounts())) {
                 int pageNumber = controller.getPageNumbers().get(player)[0];
                 AccountEntity account = controller.getPageData().get(pageNumber).get(Arrays.asList(slot[0], slot[1]));
-                bankMenu.getAccountMenu().getController().openAccountMenu(player, clickedInventory, account);
+                if(controller.unlockAccount(account, player)) {
+                    bankMenu.getAccountMenu().getController().openAccountMenu(player, clickedInventory, account);
+                }
                 return;
             }
             if(Arrays.equals(slot, controller.getNextPageButton())) {

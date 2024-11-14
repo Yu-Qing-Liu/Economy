@@ -1,17 +1,17 @@
 package com.github.yuqingliu.economy.persistence.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
-import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
-import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
 import com.github.yuqingliu.economy.persistence.repositories.ShopItemRepository;
 import com.github.yuqingliu.economy.persistence.repositories.ShopOrderRepository;
@@ -24,15 +24,11 @@ import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Singleton
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopService {
-    @Inject
     private final ShopRepository shopRepository;
-    @Inject
     private final ShopSectionRepository shopSectionRepository;
-    @Inject
     private final ShopItemRepository shopItemRepository;
-    @Inject
     private final ShopOrderRepository shopOrderRepository;
 
     public boolean addShop(String shopName) {
@@ -47,6 +43,22 @@ public class ShopService {
 
     public ShopEntity getShop(String shopName) {
         return shopRepository.get(shopName);
+    }
+
+    public boolean cancelBuyOrder(ShopOrderEntity order, Player player) {
+        return shopOrderRepository.cancelBuyOrder(order, player);
+    }
+
+    public boolean claimBuyOrder(ShopOrderEntity order, Player player) {
+        return shopOrderRepository.claimBuyOrder(order, player);
+    }
+
+    public boolean cancelSellOrder(ShopOrderEntity order, Player player) {
+        return shopOrderRepository.cancelSellOrder(order, player);
+    }
+
+    public boolean claimSellOrder(ShopOrderEntity order, Player player) {
+        return shopOrderRepository.claimSellOrder(order, player);
     }
 
     public boolean addShopSection(String shopName, String sectionName, ItemStack icon) {
@@ -71,56 +83,26 @@ public class ShopService {
         return shopItemRepository.save(item);
     }
 
+    public ShopItemEntity getShopItem(String shopName, String sectionName, String itemName) {
+        ShopItemKey key = new ShopItemKey(itemName, sectionName, shopName);
+        return shopItemRepository.get(key);
+    }
+
     public boolean deleteShopItem(String shopName, String sectionName, String itemName) {
         ShopItemKey key = new ShopItemKey(itemName, sectionName, shopName);
         return shopItemRepository.delete(key);
     }
 
-    public boolean createBuyOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
-        ShopOrderEntity order = new ShopOrderEntity();
-        order.setType(OrderType.BUY);
-        order.setPlayerId(player.getUniqueId());
-        order.setItemName(item.getItemName());
-        order.setSectionName(item.getSectionName());
-        order.setShopName(item.getShopName());
-        order.setQuantity(quantity);
-        order.setUnitPrice(unitPrice);
-        order.setCurrencyType(currencyType);
-        item.getOrders().add(order);
-        if(shopItemRepository.update(item)) {
-            return true;
-        } else {
-            item.getOrders().remove(order);
-            return false;
-        }
+    public boolean createBuyOrder(Player player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        return shopOrderRepository.createBuyOrder(player, item, quantity, unitPrice, currencyType);
     }
 
-    public boolean createSellOrder(OfflinePlayer player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
-        ShopOrderEntity order = new ShopOrderEntity();
-        order.setType(OrderType.SELL);
-        order.setPlayerId(player.getUniqueId());
-        order.setItemName(item.getItemName());
-        order.setSectionName(item.getSectionName());
-        order.setShopName(item.getShopName());
-        order.setQuantity(quantity);
-        order.setUnitPrice(unitPrice);
-        order.setCurrencyType(currencyType);
-        item.getOrders().add(order);
-        if(shopItemRepository.update(item)) {
-            return true;
-        } else {
-            item.getOrders().remove(order);
-            return false;
-        }
-    }
-
-    public boolean updateOrder(ShopOrderEntity newOrder) {
-        return shopOrderRepository.update(newOrder);
+    public boolean createSellOrder(Player player, ShopItemEntity item, int quantity, double unitPrice, String currencyType) {
+        return shopOrderRepository.createSellOrder(player, item, quantity, unitPrice, currencyType);
     }
 
     public boolean deleteOrder(ShopOrderEntity order) {
-        ShopOrderKey key = new ShopOrderKey(order.getPlayerId(), order.getItemName(), order.getSectionName(), order.getShopName(), order.getType(), order.getCurrencyType());
-        return shopOrderRepository.delete(key);
+        return shopOrderRepository.delete(order.getOrderId());
     }
 
     public List<ShopOrderEntity> getPlayerBuyOrders(OfflinePlayer player) {
@@ -129,6 +111,30 @@ public class ShopService {
 
     public List<ShopOrderEntity> getPlayerSellOrders(OfflinePlayer player) {
         return shopOrderRepository.getSellOrdersByPlayer(player.getUniqueId());
+    }
+
+    public int[] quickBuy(ShopItemEntity item, int amount, String currencyType, Player player) {
+        List<ShopOrderEntity> orders = item.getSellOrders().get(currencyType);
+        int[] required = new int[]{amount, 0};
+        for(ShopOrderEntity order : orders) {
+            if(required[0] == 0) {
+                return required;
+            }
+            required = shopOrderRepository.fillSellOrder(player, order, required, currencyType);
+        }
+        return required;
+    }
+
+    public int[] quickSell(ShopItemEntity item, int amount, String currencyType, Player player) {
+        List<ShopOrderEntity> orders = item.getBuyOrders().get(currencyType);
+        int[] required = new int[]{amount, 0};
+        for(ShopOrderEntity order : orders) {
+            if(required[0] == 0) {
+                return required;
+            }
+            required = shopOrderRepository.fillBuyOrder(player, order, required, currencyType);
+        }
+        return required;
     }
 }
 

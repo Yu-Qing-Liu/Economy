@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -55,7 +54,7 @@ public class QuickSellMenuController {
         border(inv);
         buttons(inv, player);
         displayItem(inv);
-        displaySellOptions(inv);
+        displaySellOptions(inv, player);
     }
 
     public void onClose(Player player) {
@@ -67,87 +66,11 @@ public class QuickSellMenuController {
 
     public void quickSell(int amount, Player player) {
         Scheduler.runAsync((task) -> {
-            int required = amount;
-            double cost = 0;
-            for(ShopOrderEntity order : orderOption.getOrders()) {
-                if(order.getQuantity() == order.getFilledQuantity()) {
-                    continue;
-                }
-                int qty = order.getQuantity() - order.getFilledQuantity();
-                if(qty > required) {
-                    order.setFilledQuantity(order.getFilledQuantity() + required);
-                    boolean sucessfulItemRemoval = shopMenu.removeItemFromPlayer(player, item.getIcon().clone(), required);
-                    if(!sucessfulItemRemoval) {
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
-                        return;
-                    }
-                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
-                    if(!sucessfulOrderUpdate) {
-                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
-                        return;
-                    }
-                    boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
-                    if(!sucessfulDeposit) {
-                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
-                        return;
-                    }
-                    cost += required * order.getUnitPrice();
-                    required = 0;
-                    break;
-                } else if(qty == required) {
-                    order.setFilledQuantity(order.getFilledQuantity() + required);
-                    boolean sucessfulItemRemoval = shopMenu.removeItemFromPlayer(player, item.getIcon().clone(), required);
-                    if(!sucessfulItemRemoval) {
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
-                        return;
-                    }
-                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
-                    if(!sucessfulOrderUpdate) {
-                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
-                        return;
-                    }
-                    boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), required * order.getUnitPrice());
-                    if(!sucessfulDeposit) {
-                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), required);
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
-                        return;
-                    }
-                    cost += required * order.getUnitPrice();
-                    Player owner = Bukkit.getPlayer(order.getPlayerId());
-                    if(owner != null) {
-                        shopMenu.getLogger().sendPlayerNotificationMessage(owner, String.format("Order for %s has been filled.", order.getItemName()));
-                    }
-                    required = 0;
-                    break;
-                } else {
-                    order.setFilledQuantity(order.getFilledQuantity() + qty);
-                    boolean sucessfulItemRemoval = shopMenu.removeItemFromPlayer(player, item.getIcon().clone(), qty);
-                    if(!sucessfulItemRemoval) {
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
-                        return;
-                    }
-                    boolean sucessfulOrderUpdate = shopMenu.getShopService().updateOrder(order);
-                    if(!sucessfulOrderUpdate) {
-                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
-                        return;
-                    }
-                    boolean sucessfulDeposit = shopMenu.getCurrencyService().depositPlayerPurse(player, order.getCurrencyType(), qty * order.getUnitPrice());
-                    if(!sucessfulDeposit) {
-                        shopMenu.addItemToPlayer(player, item.getIcon().clone(), qty);
-                        shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not perform transaction.");
-                        return;
-                    }
-                    required -= qty;
-                    cost += qty * order.getUnitPrice();
-                }
-            }
-            if(required != amount) {
-                shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d item(s) for %.2f %s", amount - required, cost, orderOption.getCurrencyName()));
-                shopMenu.getSoundManager().playTransactionSound(player);
+            int[] data = shopMenu.getShopService().quickSell(item, amount, orderOption.getCurrencyName(), player);
+            int filled = amount - data[0];
+            double profit = data[1];
+            if(profit > 0) {
+                shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d items for %.2f %s", filled, profit, orderOption.getCurrencyName()));
             } else {
                 shopMenu.getLogger().sendPlayerErrorMessage(player, "No more offers.");
             }
@@ -158,15 +81,18 @@ public class QuickSellMenuController {
         shopMenu.setItem(inv, itemSlot, item.getIcon().clone());
     }
 
-    private void displaySellOptions(Inventory inv) {
+    private void displaySellOptions(Inventory inv, Player player) {
         int index = 0;
         for(int[] coords : sellOptions) {
+            int max = shopMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
+            int total = Math.min(max, quantities[index]);
             double profit = 0;
-            int qty = quantities[index];
+            int qty = total;
             for(ShopOrderEntity order : orderOption.getOrders()) {
                 int amount = order.getQuantity() - order.getFilledQuantity();
                 if(amount > qty) {
-                    profit = qty * order.getUnitPrice();
+                    profit += qty * order.getUnitPrice();
+                    qty = 0;
                     break;
                 } else {
                     qty -= amount;
@@ -174,16 +100,19 @@ public class QuickSellMenuController {
                 }
             }
             int leftover;
-            if(quantities[index] - qty > 0) {
-                leftover = quantities[index] - qty;
+            if(total - qty > 0) {
+                leftover = total - qty;
             } else {
-                leftover = quantities[index];
+                leftover = 0;
             }
             Component sell = Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
             Component profitComponent = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
             ItemStack option = shopMenu.createSlotItem(Material.RED_STAINED_GLASS, sell, profitComponent);
             option.setAmount(leftover);
             shopMenu.setItem(inv, coords, option);
+            if(leftover == 0) {
+                shopMenu.setItem(inv, coords, shopMenu.createSlotItem(Material.BARRIER, sell, profitComponent));
+            }
             index++;
         }
     }
@@ -195,13 +124,15 @@ public class QuickSellMenuController {
 
     private void buttons(Inventory inv, Player player) {
         BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
-            int total = shopMenu.countItemFromPlayer(player, item.getIcon());
+            displaySellOptions(inv, player);
+            int total = shopMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
             double profit = 0;
             int qty = total;
             for(ShopOrderEntity order : orderOption.getOrders()) {
                 int amount = order.getQuantity() - order.getFilledQuantity();
                 if(amount > qty) {
                     profit = qty * order.getUnitPrice();
+                    qty = 0;
                     break;
                 } else {
                     qty -= amount;

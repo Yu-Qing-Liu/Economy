@@ -94,30 +94,30 @@ public class DepositMenuController {
     public void deposit(Inventory inv, Player player, CurrencyEntity currency) {
         AccountEntity account = accounts.get(player);
         inv.close();
-        PlayerInventory bank = bankMenu.getInventoryManager().getInventory(BankMenu.class.getSimpleName());
+        PlayerInventory bank = bankMenu.getPluginManager().getInventoryManager().getInventory(BankMenu.class.getSimpleName());
         bank.setDisplayName(Component.text(account.getBank().getBankName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = bank.load(player);
             Scheduler.runAsync((task) -> {
-                boolean successfulTransaction = bankMenu.getBankService().depositPlayerAccount(player, Double.parseDouble(userInput), currency);
-                if(successfulTransaction) {
-                    bankMenu.getSoundManager().playTransactionSound(player);
-                } else {
-                    bankMenu.getLogger().sendPlayerErrorMessage(player, "Could not deposit that amount.");
+                try {
+                    bankMenu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
+                } catch (Exception e) {
+                    bankMenu.getLogger().sendPlayerErrorMessage(player, "Invalid amount");
                 }
                 bankMenu.getDepositMenu().getController().openDepositMenu(player, inventory, account);
             });
         };        
 
-        TextMenu scanner = (TextMenu) bankMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) bankMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("deposit amount", NamedTextColor.RED));
         scanner.open(player);
     }
 
     private void fetchCurrencies(Inventory inv, Player player) {
-        AccountEntity account = accounts.get(player);
+        AccountEntity account = bankMenu.getBankService().getAccount(accounts.get(player).getAccountId());
+        accounts.put(player, account);
         Set<CurrencyEntity> currencies = account.getCurrencies();
         if(currencies.isEmpty()) {
             return;

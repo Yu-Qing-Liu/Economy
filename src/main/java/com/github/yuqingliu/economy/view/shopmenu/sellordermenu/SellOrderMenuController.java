@@ -69,7 +69,7 @@ public class SellOrderMenuController {
 
     public void setCurrencyType(Inventory inv, Player player) {
         inv.close();
-        PlayerInventory shop = shopMenu.getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+        PlayerInventory shop = shopMenu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
@@ -93,7 +93,7 @@ public class SellOrderMenuController {
             });
         };        
 
-        TextMenu scanner = (TextMenu) shopMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) shopMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("currency", NamedTextColor.RED));
         scanner.open(player);
@@ -101,7 +101,7 @@ public class SellOrderMenuController {
 
     public void setQuantity(Inventory inv, Player player) {
         inv.close();
-        PlayerInventory shop = shopMenu.getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+        PlayerInventory shop = shopMenu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
@@ -128,7 +128,7 @@ public class SellOrderMenuController {
             } catch (Exception e) {}
         };        
 
-        TextMenu scanner = (TextMenu) shopMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) shopMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("quantity", NamedTextColor.RED));
         scanner.open(player);
@@ -136,7 +136,7 @@ public class SellOrderMenuController {
 
     public void setUnitPrice(Inventory inv, Player player) {
         inv.close();
-        PlayerInventory shop = shopMenu.getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+        PlayerInventory shop = shopMenu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
@@ -163,7 +163,7 @@ public class SellOrderMenuController {
             } catch (Exception e) {}
         };        
 
-        TextMenu scanner = (TextMenu) shopMenu.getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) shopMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("unit price", NamedTextColor.RED));
         scanner.open(player);
@@ -172,21 +172,10 @@ public class SellOrderMenuController {
     public void confirmOrder(Inventory inv, Player player) {
         PlayerData data = playersData.get(player);
         Scheduler.runAsync((task) -> {
-            boolean sucessfulItemRemoval = shopMenu.removeItemFromPlayer(player, item.getIcon().clone(), data.getQuantityInput());
-            if(!sucessfulItemRemoval) {
-                shopMenu.getLogger().sendPlayerErrorMessage(player, "Not enough item(s) to sell.");
-                return;
+            if(shopMenu.getShopService().createSellOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput())) {
+                onClose(player);
+                shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
             }
-            boolean successfulOrder = shopMenu.getShopService().createSellOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput());
-            if(!successfulOrder) {
-                shopMenu.addItemToPlayer(player, item.getIcon().clone(), data.getQuantityInput());
-                shopMenu.getLogger().sendPlayerErrorMessage(player, "Could not create order. Duplicate order (same item, same currency).");
-                return;
-            }
-            shopMenu.getLogger().sendPlayerAcknowledgementMessage(player, String.format("Sell order created for %s", item.getItemName()));
-            shopMenu.getSoundManager().playConfirmOrderSound(player);
-            onClose(player);
-            shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
         });
     }
 

@@ -2,6 +2,7 @@ package com.github.yuqingliu.economy.persistence.services;
 
 import java.util.Map;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.persistence.entities.VendorEntity;
@@ -19,13 +20,10 @@ import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Singleton
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class VendorService {
-    @Inject
     private final VendorRepository vendorRepository;
-    @Inject
     private final VendorSectionRepository vendorSectionRepository;
-    @Inject
     private final VendorItemRepository vendorItemRepository;
 
     public boolean addVendor(String vendorName) {
@@ -70,19 +68,20 @@ public class VendorService {
     }
 
     public boolean updateVendorItem(String vendorName, String sectionName, ItemStack icon, Map<String, Double> buyPrices, Map<String, Double> sellPrices) {
-        String itemName = PlainTextComponentSerializer.plainText().serialize(icon.displayName());
-        VendorItemEntity item = vendorItemRepository.get(new VendorItemKey(itemName, sectionName, vendorName));
-        if(item == null) {
-            return false;
-        }
-        item.getBuyPrices().putAll(buyPrices);
-        item.getSellPrices().putAll(sellPrices);
-        return vendorItemRepository.update(item);
+        return vendorItemRepository.updateVendorItem(vendorName, sectionName, icon, buyPrices, sellPrices);
     }
 
     public boolean deleteVendorItem(String vendorName, String sectionName, String itemName) {
         VendorItemKey key = new VendorItemKey(itemName, sectionName, vendorName);
         return vendorItemRepository.delete(key);
+    }
+
+    public boolean buy(VendorItemEntity item, int amount, String currencyType, Player player) {
+        return vendorItemRepository.buy(item, amount, currencyType, player);
+    }
+
+    public boolean sell(VendorItemEntity item, int amount, String currencyType, Player player) {
+        return vendorItemRepository.sell(item, amount, currencyType, player);
     }
 }
 
