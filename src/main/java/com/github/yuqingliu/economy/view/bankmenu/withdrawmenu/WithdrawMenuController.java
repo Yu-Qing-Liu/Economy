@@ -100,7 +100,11 @@ public class WithdrawMenuController {
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = bank.load(player);
             Scheduler.runAsync((task) -> {
-                bankMenu.getBankService().withdrawPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
+                try {
+                    bankMenu.getBankService().withdrawPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
+                } catch (Exception e) {
+                    bankMenu.getLogger().sendPlayerErrorMessage(player, "Invalid amount");
+                }
                 bankMenu.getWithdrawMenu().getController().openWithdrawMenu(player, inventory, account);
             });
         };        

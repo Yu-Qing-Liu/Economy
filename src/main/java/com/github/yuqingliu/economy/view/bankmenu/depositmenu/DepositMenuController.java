@@ -100,7 +100,11 @@ public class DepositMenuController {
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = bank.load(player);
             Scheduler.runAsync((task) -> {
-                bankMenu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
+                try {
+                    bankMenu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
+                } catch (Exception e) {
+                    bankMenu.getLogger().sendPlayerErrorMessage(player, "Invalid amount");
+                }
                 bankMenu.getDepositMenu().getController().openDepositMenu(player, inventory, account);
             });
         };        
