@@ -55,7 +55,7 @@ public class QuickSellMenuController {
         border(inv);
         buttons(inv, player);
         displayItem(inv);
-        displaySellOptions(inv);
+        displaySellOptions(inv, player);
     }
 
     public void onClose(Player player) {
@@ -75,15 +75,18 @@ public class QuickSellMenuController {
         shopMenu.setItem(inv, itemSlot, item.getIcon().clone());
     }
 
-    private void displaySellOptions(Inventory inv) {
+    private void displaySellOptions(Inventory inv, Player player) {
         int index = 0;
         for(int[] coords : sellOptions) {
+            int max = shopMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
+            int total = Math.min(max, quantities[index]);
             double profit = 0;
-            int qty = quantities[index];
+            int qty = total;
             for(ShopOrderEntity order : orderOption.getOrders()) {
                 int amount = order.getQuantity() - order.getFilledQuantity();
                 if(amount > qty) {
                     profit = qty * order.getUnitPrice();
+                    qty = 0;
                     break;
                 } else {
                     qty -= amount;
@@ -91,16 +94,19 @@ public class QuickSellMenuController {
                 }
             }
             int leftover;
-            if(quantities[index] - qty > 0) {
-                leftover = quantities[index] - qty;
+            if(total - qty > 0) {
+                leftover = total - qty;
             } else {
-                leftover = quantities[index];
+                leftover = 0;
             }
             Component sell = Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
             Component profitComponent = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
             ItemStack option = shopMenu.createSlotItem(Material.RED_STAINED_GLASS, sell, profitComponent);
             option.setAmount(leftover);
             shopMenu.setItem(inv, coords, option);
+            if(leftover == 0) {
+                shopMenu.setItem(inv, coords, shopMenu.createSlotItem(Material.BARRIER, sell, profitComponent));
+            }
             index++;
         }
     }
@@ -119,6 +125,7 @@ public class QuickSellMenuController {
                 int amount = order.getQuantity() - order.getFilledQuantity();
                 if(amount > qty) {
                     profit = qty * order.getUnitPrice();
+                    qty = 0;
                     break;
                 } else {
                     qty -= amount;

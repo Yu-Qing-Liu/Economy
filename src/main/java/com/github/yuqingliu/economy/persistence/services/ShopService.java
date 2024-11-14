@@ -11,7 +11,6 @@ import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
-import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
 import com.github.yuqingliu.economy.persistence.repositories.ShopItemRepository;
 import com.github.yuqingliu.economy.persistence.repositories.ShopOrderRepository;
@@ -83,6 +82,11 @@ public class ShopService {
         return shopItemRepository.save(item);
     }
 
+    public ShopItemEntity getShopItem(String shopName, String sectionName, String itemName) {
+        ShopItemKey key = new ShopItemKey(itemName, sectionName, shopName);
+        return shopItemRepository.get(key);
+    }
+
     public boolean deleteShopItem(String shopName, String sectionName, String itemName) {
         ShopItemKey key = new ShopItemKey(itemName, sectionName, shopName);
         return shopItemRepository.delete(key);
@@ -97,8 +101,7 @@ public class ShopService {
     }
 
     public boolean deleteOrder(ShopOrderEntity order) {
-        ShopOrderKey key = new ShopOrderKey(order.getPlayerId(), order.getItemName(), order.getSectionName(), order.getShopName(), order.getType(), order.getCurrencyType());
-        return shopOrderRepository.delete(key);
+        return shopOrderRepository.delete(order.getOrderId());
     }
 
     public List<ShopOrderEntity> getPlayerBuyOrders(OfflinePlayer player) {

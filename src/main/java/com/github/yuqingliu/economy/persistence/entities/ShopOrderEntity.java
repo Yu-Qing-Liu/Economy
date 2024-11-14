@@ -2,14 +2,12 @@ package com.github.yuqingliu.economy.persistence.entities;
 
 import java.util.UUID;
 
-import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
@@ -20,7 +18,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "shoporders")
-@IdClass(ShopOrderKey.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,29 +25,27 @@ public class ShopOrderEntity {
     public enum OrderType {
         BUY, SELL;
     }
-
     @Id
+    @GeneratedValue
+    @Column(name = "orderId", updatable = false, nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID orderId;
+
     @Column(name = "playerId", columnDefinition = "VARCHAR(36)")
     private UUID playerId;
     
-    @Id
     @Column(name = "itemName", columnDefinition = "VARCHAR(16)")
     private String itemName;
 
-    @Id
     @Column(name = "sectionName", columnDefinition = "VARCHAR(16)")
     private String sectionName;
 
-    @Id
     @Column(name = "shopName", columnDefinition = "VARCHAR(16)")
     private String shopName;
     
-    @Id
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private OrderType type;
     
-    @Id
     @Column(name = "currencyType")
     private String currencyType;
 

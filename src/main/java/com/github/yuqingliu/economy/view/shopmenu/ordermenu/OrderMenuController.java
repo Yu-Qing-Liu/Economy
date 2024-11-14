@@ -84,6 +84,7 @@ public class OrderMenuController {
     }
 
     public void reload(Inventory inv, Player player) {
+        item = shopMenu.getShopService().getShopItem(item.getShopName(),item.getShopSection().getSectionName(), item.getItemName());
         fetchBuyOptions();
         fetchSellOptions();
         displayBuyOptions(inv, player);

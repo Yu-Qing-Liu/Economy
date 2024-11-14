@@ -31,7 +31,7 @@ public class DepositCommand implements CommandExecutor {
             if (args.length == 2) {
                 double amount = 0;
                 try {
-                    amount = Double.parseDouble(args[2]);
+                    amount = Double.parseDouble(args[1]);
                 } catch (Exception e) {
                     return false;
                 }

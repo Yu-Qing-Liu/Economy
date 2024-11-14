@@ -17,7 +17,6 @@ import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity.OrderType;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
-import com.github.yuqingliu.economy.persistence.entities.keys.ShopOrderKey;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -48,13 +47,13 @@ public class ShopOrderRepository {
         }
     }
     
-    public boolean delete(ShopOrderKey key) {
+    public boolean delete(UUID orderId) {
         Transaction transaction = null;
         Session session = hibernate.getSession();
         try {
             transaction = session.beginTransaction();
-            ShopOrderEntity order = session.get(ShopOrderEntity.class, key);
-            ShopItemEntity item = session.get(ShopItemEntity.class, new ShopItemKey(key.getItemName(), key.getSectionName(), key.getShopName()));
+            ShopOrderEntity order = session.get(ShopOrderEntity.class, orderId);
+            ShopItemEntity item = session.get(ShopItemEntity.class, new ShopItemKey(order.getItemName(), order.getSectionName(), order.getShopName()));
             if (order != null) {
                 item.getOrders().remove(order);
                 session.remove(order);
@@ -261,9 +260,9 @@ public class ShopOrderRepository {
     }
     
     // Queries
-    public ShopOrderEntity get(ShopOrderKey key) {
+    public ShopOrderEntity get(UUID orderId) {
         try (Session session = hibernate.getSession()) {
-            return session.get(ShopOrderEntity.class, key);
+            return session.get(ShopOrderEntity.class, orderId);
         } catch (Exception e) {
             return null;
         }
