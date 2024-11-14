@@ -258,6 +258,55 @@ public class ShopOrderRepository {
             session.close();
         }
     }
+
+    public int fillBuyOrder(Player player, ShopOrderEntity order, int qty, String currencyType) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            if(order.getQuantity() == order.getFilledQuantity()) {
+                return qty;
+            }
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName", 
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", player.getUniqueId());
+            query.setParameter("currencyName", currencyType);
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            int available = order.getQuantity() - order.getFilledQuantity();
+            int filled = Math.min(available, qty);
+            double profit = filled * order.getUnitPrice();
+            purseCurrency.setAmount(purseCurrency.getAmount() + profit);
+            order.setFilledQuantity(order.getFilledQuantity() + filled);
+            session.merge(order);
+            session.merge(purseCurrency);
+            transaction.commit();
+            return qty - filled;
+        } catch (Exception e) {
+            transaction.rollback();
+            return qty;
+        } finally {
+            session.close();
+        }
+    }
+
+    public int fillSellOrder(Player player, ShopOrderEntity order, int qty, String currencyType) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            
+
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        } finally {
+            session.close();
+        }
+    }
     
     // Queries
     public ShopOrderEntity get(UUID orderId) {
