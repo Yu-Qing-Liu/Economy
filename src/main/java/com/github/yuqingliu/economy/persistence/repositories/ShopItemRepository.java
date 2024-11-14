@@ -1,19 +1,10 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
-import java.util.Set;
-
-import org.bukkit.entity.Player;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
-import com.github.yuqingliu.economy.api.logger.Logger;
-import com.github.yuqingliu.economy.api.managers.InventoryManager;
-import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.modules.Hibernate;
-import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
-import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopItemKey;
 import com.github.yuqingliu.economy.persistence.entities.keys.ShopSectionKey;
@@ -26,9 +17,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopItemRepository {
     private final Hibernate hibernate;
-    private final InventoryManager inventoryManager;
-    private final Logger logger;
-    private final SoundManager soundManager;
 
     // Transactions
     public boolean save(ShopItemEntity item) {

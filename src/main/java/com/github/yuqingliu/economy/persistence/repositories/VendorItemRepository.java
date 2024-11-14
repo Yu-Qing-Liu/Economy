@@ -28,8 +28,8 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 public class VendorItemRepository {
     private final Hibernate hibernate;
     private final Logger logger;
-    private InventoryManager inventoryManager;
-    private SoundManager soundManager;
+    private final InventoryManager inventoryManager;
+    private final SoundManager soundManager;
     
     // Transactions
     public boolean save(VendorItemEntity item) {

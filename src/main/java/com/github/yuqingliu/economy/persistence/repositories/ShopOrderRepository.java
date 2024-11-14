@@ -280,6 +280,10 @@ public class ShopOrderRepository {
             if(order.getFilledQuantity() + filled > order.getQuantity()) {
                 throw new RuntimeException();
             }
+            if(!inventoryManager.removeItemFromPlayer(player, order.getShopItem().getIcon().clone(), filled)) {
+                logger.sendPlayerErrorMessage(player, "Not enough items to be sold.");
+                throw new RuntimeException();
+            }
             purseCurrency.setAmount(purseCurrency.getAmount() + profit);
             order.setFilledQuantity(order.getFilledQuantity() + filled);
             session.merge(order);
