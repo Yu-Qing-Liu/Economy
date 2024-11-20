@@ -97,7 +97,7 @@ public class DepositMenuController extends AbstractPlayerInventoryController<Ban
                 } catch (Exception e) {
                     menu.getLogger().sendPlayerErrorMessage(player, "Invalid amount");
                 }
-                menu.getDepositMenu().getControllers().computeIfAbsent(player, this).openMenu(account);
+                menu.getDepositMenu().getControllers().getPlayerInventoryController(player, this).openMenu(account);
             });
         };        
 

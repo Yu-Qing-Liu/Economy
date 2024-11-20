@@ -97,7 +97,7 @@ public class WithdrawMenuController extends AbstractPlayerInventoryController<Ba
                 } catch (Exception e) {
                     menu.getLogger().sendPlayerErrorMessage(player, "Invalid amount");
                 }
-                menu.getWithdrawMenu().getControllers().computeIfAbsent(player, this).openMenu(this.account);
+                menu.getWithdrawMenu().getControllers().getPlayerInventoryController(player, this).openMenu(this.account);
             });
         };        
 

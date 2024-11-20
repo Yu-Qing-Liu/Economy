@@ -11,7 +11,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
-import com.github.yuqingliu.economy.view.InventoryControllerFactory;
+import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 import com.github.yuqingliu.economy.view.bankmenu.accountmenu.AccountMenuController;
@@ -21,7 +21,7 @@ import lombok.Getter;
 @Getter
 public class MainMenu implements Listener {
     private final BankMenu bankMenu;
-    private final InventoryControllerFactory<MainMenuController> controllers = new InventoryControllerFactory<>();
+    private final PlayerInventoryControllerFactory<MainMenuController> controllers = new PlayerInventoryControllerFactory<>();
     
     public MainMenu(BankMenu bankMenu) {
         this.bankMenu = bankMenu;
@@ -33,7 +33,7 @@ public class MainMenu implements Listener {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
         ItemStack currentItem = event.getCurrentItem();
-        MainMenuController controller = controllers.computeIfAbsent(player, new MainMenuController(player, clickedInventory, bankMenu));
+        MainMenuController controller = controllers.getPlayerInventoryController(player, new MainMenuController(player, clickedInventory, bankMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(bankMenu.getDisplayName())) {
             return;
@@ -49,7 +49,7 @@ public class MainMenu implements Listener {
             if(controller.rectangleContains(slot, controller.getAccounts())) {
                 AccountEntity account = controller.getPageData().get(controller.getPageNumber(), slot);
                 if(controller.unlockAccount(account)) {
-                    bankMenu.getAccountMenu().getControllers().computeIfAbsent(player, new AccountMenuController(player, clickedInventory, bankMenu)).openMenu(account);
+                    bankMenu.getAccountMenu().getControllers().getPlayerInventoryController(player, new AccountMenuController(player, clickedInventory, bankMenu)).openMenu(account);
                 }
                 return;
             }
@@ -67,7 +67,7 @@ public class MainMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(bankMenu.getDisplayName())) {
-            controllers.removeController((Player) event.getPlayer());
+            controllers.removePlayerInventoryController((Player) event.getPlayer());
         }
     }
 }

@@ -5,14 +5,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.entity.Player;
 
-public class InventoryControllerFactory<T> {
+public class PlayerInventoryControllerFactory<T> {
     private final Map<Player, T> controllers = new ConcurrentHashMap<>();
     
-    public T computeIfAbsent(Player player, T controller) {
+    public T getPlayerInventoryController(Player player, T controller) {
         return controllers.computeIfAbsent(player, p -> controller);
     }
 
-    public void removeController(Player player) {
+    public void removePlayerInventoryController(Player player) {
         this.controllers.remove(player);
     }
 }
