@@ -22,7 +22,7 @@ import com.github.yuqingliu.economy.api.view.PlayerInventory;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.view.PageData;
-import com.github.yuqingliu.economy.view.PlayerInventoryController;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 import com.github.yuqingliu.economy.view.textmenu.TextMenu;
@@ -32,7 +32,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class DepositMenuController extends PlayerInventoryController<BankMenu> {
+public class DepositMenuController extends AbstractPlayerInventoryController<BankMenu> {
     private final int[] prevMenuButton = new int[]{1,1};
     private final int[] exitMenuButton = new int[]{2,1};
     private final int[] prevPageButton = new int[]{3,1};

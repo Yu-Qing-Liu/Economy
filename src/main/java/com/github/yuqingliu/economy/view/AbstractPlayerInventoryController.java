@@ -17,14 +17,14 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public abstract class PlayerInventoryController<T> {
+public abstract class AbstractPlayerInventoryController<T> {
     protected final Player player;
     protected Inventory inventory;
     protected final T menu;
     protected int inventoryLength = 9;
     protected int inventorySize;
     
-    public PlayerInventoryController(Player player, Inventory inventory, T menu) {
+    public AbstractPlayerInventoryController(Player player, Inventory inventory, T menu) {
         this.player = player;
         this.inventory = inventory;
         this.menu = menu;

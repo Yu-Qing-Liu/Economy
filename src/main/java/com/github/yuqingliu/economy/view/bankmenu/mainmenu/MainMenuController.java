@@ -18,7 +18,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.view.PageData;
-import com.github.yuqingliu.economy.view.PlayerInventoryController;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 
@@ -27,7 +27,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class MainMenuController extends PlayerInventoryController<BankMenu> {
+public class MainMenuController extends AbstractPlayerInventoryController<BankMenu> {
     private final int[] prevPageButton = new int[]{1,1};
     private final int[] nextPageButton = new int[]{7,1};
     private final int[] accountsStart = new int[]{2,1};
