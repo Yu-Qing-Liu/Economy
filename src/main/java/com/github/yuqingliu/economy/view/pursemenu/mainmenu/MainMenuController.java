@@ -43,7 +43,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<PurseM
         this.currencies = rectangleArea(currencyStart, currencyWidth, currencyLength);
     }
     
-    public void openMainMenu() {
+    public void openMenu() {
         Scheduler.runLaterAsync((task) -> {
             menu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
         }, Duration.ofMillis(50));

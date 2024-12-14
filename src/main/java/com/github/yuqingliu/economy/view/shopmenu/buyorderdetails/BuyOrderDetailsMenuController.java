@@ -38,47 +38,47 @@ public class BuyOrderDetailsMenuController extends AbstractPlayerInventoryContro
         super(player, inventory, shopMenu);
     }   
 
-    public void openBuyOrderDetailsMenu(Inventory inv, ShopOrderEntity order, Player player) {
+    public void openMenu(ShopOrderEntity order) {
         Scheduler.runLaterAsync((task) -> {
             menu.getPlayerMenuTypes().put(player, MenuType.BuyOrderDetailsMenu);
         }, Duration.ofMillis(50));
-        reload(inv, player);
+        reload();
     }
 
-    public void reload(Inventory inv, Player player) {
+    public void reload() {
         fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
-        border(inv);
-        displayItem(inv, player);
-        displayOrderInfo(inv, player);
-        buttons(inv, player);
+        border();
+        displayItem();
+        displayOrderInfo();
+        buttons();
     }
 
-    public void cancelOrder(Inventory inv, Player player) {
+    public void cancelOrder() {
         Scheduler.runAsync((task) -> {
             if(menu.getShopService().cancelBuyOrder(order, player)) {
-                menu.getBuyOrdersMenu().getController().openBuyOrdersMenu(inv, player);
+                menu.getBuyOrdersMenu().getController().openBuyOrdersMenu();
                 return;
             }
-            reload(inv, player);
+            reload();
         });
     }
 
-    public void claimOrder(Inventory inv, Player player) {
+    public void claimOrder() {
         Scheduler.runAsync((task) -> {
             if(menu.getShopService().claimBuyOrder(order, player)) {
-                menu.getBuyOrdersMenu().getController().openBuyOrdersMenu(inv, player);
+                menu.getBuyOrdersMenu().getController().openBuyOrdersMenu();
                 return;
             } 
-            reload(inv, player);
+            reload();
         });
     }
 
-    private void displayItem(Inventory inv, Player player) {
+    private void displayItem() {
         ItemStack item = order.getShopItem().getIcon().clone();
         setItem(itemSlot, item);
     }
 
-    private void displayOrderInfo(Inventory inv, Player player) {
+    private void displayOrderInfo() {
         ItemStack orderIcon = new ItemStack(Material.CREEPER_BANNER_PATTERN);
         ItemMeta meta = orderIcon.getItemMeta();
         if(meta != null) {
@@ -95,13 +95,13 @@ public class BuyOrderDetailsMenuController extends AbstractPlayerInventoryContro
         setItem(orderInfo, orderIcon);
     }
 
-    private void border(Inventory inv) {
+    private void border() {
         ItemStack borderItem = createSlotItem(Material.BLACK_STAINED_GLASS_PANE, getUnavailableComponent());
         fillRectangleArea(new int[]{1,2}, 3, 7, borderItem);
         fillRectangleArea(new int[]{3,0}, 2, 3, borderItem);
     }
 
-    private void buttons(Inventory inv, Player player) {
+    private void buttons() {
         setItem(prevMenuButton, getPrevMenuIcon());
         setItem(exitMenuButton, getExitMenuIcon());
         setItem(refreshButton, getReloadIcon());

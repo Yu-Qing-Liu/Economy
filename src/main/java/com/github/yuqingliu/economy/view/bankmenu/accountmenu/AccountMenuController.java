@@ -28,7 +28,7 @@ public class AccountMenuController extends AbstractPlayerInventoryController<Ban
     private final int[] accountInfo = new int[]{3,1};
     private final int[] depositButton = new int[]{5,1};
     private final int[] withdrawButton = new int[]{7,1};
-    AccountEntity account;
+    private AccountEntity account;
 
     public AccountMenuController(Player player, Inventory inventory, BankMenu bankMenu) {
         super(player, inventory, bankMenu);

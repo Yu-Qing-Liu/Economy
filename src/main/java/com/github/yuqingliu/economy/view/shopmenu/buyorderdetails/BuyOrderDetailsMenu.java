@@ -46,15 +46,15 @@ public class BuyOrderDetailsMenu implements Listener {
                 return;
             }
             if(Arrays.equals(slot, controller.getCancelOrderButton())) {
-                controller.cancelOrder(clickedInventory, player);
+                controller.cancelOrder();
                 return;
             }
             if(Arrays.equals(slot, controller.getClaimOrderButton())) {
-                controller.claimOrder(clickedInventory, player);
+                controller.claimOrder();
                 return;
             }
             if(Arrays.equals(slot, controller.getRefreshButton())) {
-                controller.reload(clickedInventory, player);
+                controller.reload();
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
