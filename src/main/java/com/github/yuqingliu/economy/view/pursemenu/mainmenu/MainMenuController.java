@@ -43,28 +43,28 @@ public class MainMenuController extends AbstractPlayerInventoryController<PurseM
         this.currencies = rectangleArea(currencyStart, currencyWidth, currencyLength);
     }
     
-    public void openMainMenu(Player player, Inventory inv) {
+    public void openMainMenu() {
         Scheduler.runLaterAsync((task) -> {
             menu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
         }, Duration.ofMillis(50));
         fill(getBackgroundTile(Material.BROWN_STAINED_GLASS_PANE));
-        buttons(inv);
+        buttons();
         rectangleAreaLoading(currencyStart, currencyWidth, currencyLength);
         Scheduler.runAsync((task) -> {
-            fetchCurrencies(player);
-            displayCurrencies(player, inv);
+            fetchCurrencies();
+            displayCurrencies();
         });
     }
 
-    public void nextPage(Player player, Inventory inv) {
-        pageData.nextPage(() -> displayCurrencies(player, inv));
+    public void nextPage() {
+        pageData.nextPage(() -> displayCurrencies());
     }
 
-    public void prevPage(Player player, Inventory inv) {
-        pageData.prevPage(() -> displayCurrencies(player, inv));
+    public void prevPage() {
+        pageData.prevPage(() -> displayCurrencies());
     }
 
-    private void fetchCurrencies(Player player) {
+    private void fetchCurrencies() {
         Set<CurrencyEntity> currencies = menu.getCurrencyService().getPlayerPurseCurrencies(player);
         if(currencies.isEmpty()) {
             return;
@@ -86,7 +86,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<PurseM
         }
     }
 
-    private void displayCurrencies(Player player, Inventory inv) {
+    private void displayCurrencies() {
         Map<List<Integer>, CurrencyEntity> options = pageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, CurrencyEntity> entry : options.entrySet()) {
             List<Integer> coords = entry.getKey();
@@ -109,7 +109,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<PurseM
         }
     }
 
-    private void buttons(Inventory inv) {
+    private void buttons() {
         setItem(nextPageButton, getNextPageIcon());
         setItem(prevPageButton, getPrevPageIcon());
     }

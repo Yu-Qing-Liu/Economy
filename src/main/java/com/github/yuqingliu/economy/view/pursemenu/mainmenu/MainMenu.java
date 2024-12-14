@@ -45,11 +45,11 @@ public class MainMenu implements Listener {
                 return;
             }
             if(Arrays.equals(slot, controller.getNextPageButton())) {
-                controller.nextPage(player, clickedInventory);
+                controller.nextPage();
                 return;
             } 
             if(Arrays.equals(slot, controller.getPrevPageButton())) {
-                controller.prevPage(player, clickedInventory);
+                controller.prevPage();
                 return;
             }
         }
