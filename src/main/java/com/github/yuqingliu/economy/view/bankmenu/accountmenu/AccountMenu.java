@@ -14,6 +14,7 @@ import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 import com.github.yuqingliu.economy.view.bankmenu.depositmenu.DepositMenuController;
+import com.github.yuqingliu.economy.view.bankmenu.mainmenu.MainMenuController;
 import com.github.yuqingliu.economy.view.bankmenu.withdrawmenu.WithdrawMenuController;
 
 import lombok.Getter;
@@ -47,7 +48,7 @@ public class AccountMenu implements Listener {
                 return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                bankMenu.getMainMenu().getController().openMainMenu(player, clickedInventory);
+                bankMenu.getMainMenu().getControllers().getPlayerInventoryController(player, new MainMenuController(player, clickedInventory, bankMenu)).openMenu();
                 return;
             }
             if(Arrays.equals(slot, controller.getDepositButton())) {
