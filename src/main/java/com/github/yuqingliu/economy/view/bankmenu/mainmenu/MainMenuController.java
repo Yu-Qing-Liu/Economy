@@ -21,6 +21,7 @@ import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
+import com.github.yuqingliu.economy.view.bankmenu.accountmenu.AccountMenuController;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -36,7 +37,6 @@ public class MainMenuController extends AbstractPlayerInventoryController<BankMe
     private final int accountsSize = accountsWidth * accountsLength;
     private final List<int[]> accounts;
     private final PageData<AccountEntity> pageData = new PageData<>();
-    private int pageNumber = 1;
 
     public MainMenuController(Player player, Inventory inventory, BankMenu bankMenu) {
         super(player, inventory, bankMenu);
@@ -57,34 +57,25 @@ public class MainMenuController extends AbstractPlayerInventoryController<BankMe
     }
 
     public void nextPage() {
-        pageNumber++;
-        if(pageData.hasPage(pageNumber)) {
-            displayAccounts(); 
-        } else {
-            pageNumber--;
-        }     
+        pageData.nextPage(() -> displayAccounts());
     }
 
     public void prevPage() {
-        pageNumber--;
-        if(pageNumber > 0) {
-            displayAccounts();
-        } else {
-            pageNumber++;
-        }
+        pageData.prevPage(() -> displayAccounts());
     }
 
-    public boolean unlockAccount(AccountEntity account) {
+    public void unlockAccount(int[] slot) {
+        AccountEntity account = pageData.get(slot);
         if(account.isUnlocked()) {
-            return true;
+            return;
         } else {
             if(!menu.getBankService().unlockAccount(account, player)) {
                 menu.getLogger().sendPlayerErrorMessage(player, "Could not unlock the account.");
-                return false;
+                return;
             }
             menu.getLogger().sendPlayerNotificationMessage(player, String.format("Sucessfully unlocked account for %.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType()));
             menu.getPluginManager().getSoundManager().playTransactionSound(player);
-            return true;
+            menu.getAccountMenu().getControllers().getPlayerInventoryController(player, new AccountMenuController(player, inventory, menu)).openMenu(account);
         }
     }
 
@@ -111,7 +102,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<BankMe
     }
 
     private void displayAccounts() {
-        Map<List<Integer>, AccountEntity> options = pageData.get(pageNumber);
+        Map<List<Integer>, AccountEntity> options = pageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, AccountEntity> entry : options.entrySet()) {
             List<Integer> coords = entry.getKey();
             AccountEntity account = entry.getValue();

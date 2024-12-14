@@ -47,8 +47,7 @@ public class WithdrawMenu implements Listener {
                 return;
             }
             if(controller.rectangleContains(slot, controller.getCurrencies())) {
-                CurrencyEntity currency = controller.getPageData().get(controller.getPageNumber(), slot);
-                controller.withdraw(currency);
+                controller.withdraw(slot);
                 return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {

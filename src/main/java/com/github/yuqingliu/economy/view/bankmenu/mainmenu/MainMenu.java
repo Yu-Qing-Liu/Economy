@@ -10,11 +10,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
-import com.github.yuqingliu.economy.view.bankmenu.accountmenu.AccountMenuController;
 
 import lombok.Getter;
 
@@ -47,10 +45,7 @@ public class MainMenu implements Listener {
                 return;
             }
             if(controller.rectangleContains(slot, controller.getAccounts())) {
-                AccountEntity account = controller.getPageData().get(controller.getPageNumber(), slot);
-                if(controller.unlockAccount(account)) {
-                    bankMenu.getAccountMenu().getControllers().getPlayerInventoryController(player, new AccountMenuController(player, clickedInventory, bankMenu)).openMenu(account);
-                }
+                controller.unlockAccount(slot);
                 return;
             }
             if(Arrays.equals(slot, controller.getNextPageButton())) {

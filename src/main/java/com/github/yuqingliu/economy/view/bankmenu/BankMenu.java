@@ -21,6 +21,7 @@ import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 import com.github.yuqingliu.economy.view.bankmenu.accountmenu.AccountMenu;
 import com.github.yuqingliu.economy.view.bankmenu.depositmenu.DepositMenu;
 import com.github.yuqingliu.economy.view.bankmenu.mainmenu.MainMenu;
+import com.github.yuqingliu.economy.view.bankmenu.mainmenu.MainMenuController;
 import com.github.yuqingliu.economy.view.bankmenu.withdrawmenu.WithdrawMenu;
 
 import net.kyori.adventure.text.Component;
@@ -87,12 +88,12 @@ public class BankMenu extends AbstractPlayerInventory {
         Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
         return inventory;
-    } 
+    }
 
     @Override
     public void open(Player player) {
         Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
-        mainMenu.getController().openMainMenu(player, inventory);
+        mainMenu.getControllers().getPlayerInventoryController(player, new MainMenuController(player, inventory, this));
     }
 }

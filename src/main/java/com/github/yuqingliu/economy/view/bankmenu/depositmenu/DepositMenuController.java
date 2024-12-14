@@ -44,7 +44,6 @@ public class DepositMenuController extends AbstractPlayerInventoryController<Ban
     private final List<int[]> currencies;
     private final PageData<CurrencyEntity> pageData = new PageData<>();
     private AccountEntity account;
-    private int pageNumber = 1;
 
     public DepositMenuController(Player player, Inventory inventory, BankMenu bankMenu) {
         super(player, inventory, bankMenu);
@@ -67,25 +66,16 @@ public class DepositMenuController extends AbstractPlayerInventoryController<Ban
     }
 
     public void nextPage() {
-        pageNumber++;
-        if(pageData.hasPage(pageNumber)) {
-            displayCurrencies(); 
-        } else {
-            pageNumber--;
-        }     
+        pageData.nextPage(() -> displayCurrencies());
     }
 
     public void prevPage() {
-        pageNumber--;
-        if(pageNumber > 0) {
-            displayCurrencies();
-        } else {
-            pageNumber++;
-        }
+        pageData.prevPage(() -> displayCurrencies());
     }
 
-    public void deposit(CurrencyEntity currency) {
+    public void deposit(int[] slot) {
         inventory.close();
+        CurrencyEntity currency = pageData.get(slot);
         PlayerInventory bank = menu.getPluginManager().getInventoryManager().getInventory(BankMenu.class.getSimpleName());
         bank.setDisplayName(Component.text(account.getBank().getBankName(), NamedTextColor.DARK_GRAY));
 
@@ -131,7 +121,7 @@ public class DepositMenuController extends AbstractPlayerInventoryController<Ban
     }
 
     private void displayCurrencies() {
-        Map<List<Integer>, CurrencyEntity> options = pageData.get(pageNumber);
+        Map<List<Integer>, CurrencyEntity> options = pageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, CurrencyEntity> entry : options.entrySet()) {
             List<Integer> coords = entry.getKey();
             CurrencyEntity currency = entry.getValue();
@@ -151,7 +141,6 @@ public class DepositMenuController extends AbstractPlayerInventoryController<Ban
                 setItem(coords, item);
             }
         }
-
     }
 
     private void buttons() {

@@ -6,13 +6,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
+@Getter
 public class PageData<T> {
     private final Map<Integer, Map<List<Integer>, T>> pageData = new ConcurrentHashMap<>();
-    
-    public T get(int pageNumber, int[] coords) {
+    int pageNumber = 1;
+
+    public boolean hasPage(int pageNumber) {
+        return pageData.containsKey(pageNumber);
+    }
+
+    public void nextPage(Runnable callback) {
+        if(hasPage(pageNumber + 1)) {
+            pageNumber++;
+            callback.run();
+        }
+    }
+
+    public void prevPage(Runnable callback) {
+        if(pageNumber > 1) {
+            pageNumber--;
+            callback.run();
+        }
+    }
+
+    public T get(int[] coords) {
         if(!pageData.containsKey(pageNumber)) {
             return null;
         }
@@ -22,7 +43,7 @@ public class PageData<T> {
         return pageData.get(pageNumber).get(Arrays.asList(coords[1], coords[2]));
     }
 
-    public Map<List<Integer>, T> get(int pageNumber) {
+    public Map<List<Integer>, T> getCurrentPageData() {
         if(!pageData.containsKey(pageNumber)) {
             return Collections.emptyMap();
         }
@@ -31,9 +52,5 @@ public class PageData<T> {
 
     public void put(int pageNumber, Map<List<Integer>, T> data) {
         pageData.put(pageNumber, data);
-    }
-
-    public boolean hasPage(int pageNumber) {
-        return pageData.containsKey(pageNumber);
     }
 }

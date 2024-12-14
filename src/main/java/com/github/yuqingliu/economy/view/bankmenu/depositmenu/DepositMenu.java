@@ -10,7 +10,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
@@ -47,8 +46,7 @@ public class DepositMenu implements Listener {
                 return;
             }
             if(controller.rectangleContains(slot, controller.getCurrencies())) {
-                CurrencyEntity currency = controller.getPageData().get(controller.getPageNumber(), slot);
-                controller.deposit(currency);
+                controller.deposit(slot);
                 return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
