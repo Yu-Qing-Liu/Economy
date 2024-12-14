@@ -46,7 +46,7 @@ public class BuyOrderMenu implements Listener {
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
                 controller.onClose();
-                shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                shopMenu.getOrderMenu().getController().openMenu(clickedInventory, controller.getItem(), player);
                 return;
             }
             if(Arrays.equals(slot, controller.getSetCurrencyTypeButton())) {
