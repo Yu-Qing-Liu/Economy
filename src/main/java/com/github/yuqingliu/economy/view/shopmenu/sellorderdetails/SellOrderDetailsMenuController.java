@@ -18,6 +18,7 @@ import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
+import com.github.yuqingliu.economy.view.shopmenu.sellordersmenu.SellOrdersMenuController;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -57,7 +58,7 @@ public class SellOrderDetailsMenuController extends AbstractPlayerInventoryContr
     public void cancelOrder() {
         Scheduler.runAsync((task) -> {
             if(menu.getShopService().cancelSellOrder(order, player)) {
-                menu.getSellOrdersMenu().getController().openSellOrdersMenu();
+                menu.getSellOrdersMenu().getControllers().getPlayerInventoryController(player, new SellOrdersMenuController(player, inventory, menu));
                 return;
             } 
             reload();
@@ -66,8 +67,8 @@ public class SellOrderDetailsMenuController extends AbstractPlayerInventoryContr
 
     public void claimOrder() {
         Scheduler.runAsync((task) -> {
-            if(shopMenu.getShopService().claimSellOrder(order, player)) {
-                menu.getSellOrdersMenu().getController().openSellOrdersMenu();
+            if(menu.getShopService().claimSellOrder(order, player)) {
+                menu.getSellOrdersMenu().getControllers().getPlayerInventoryController(player, new SellOrdersMenuController(player, inventory, menu));
                 return;
             }
             reload();
