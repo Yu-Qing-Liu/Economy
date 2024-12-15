@@ -20,18 +20,20 @@ import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 import com.github.yuqingliu.economy.view.shopmenu.buyordermenu.PlayerData;
+import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenuController;
 import com.github.yuqingliu.economy.view.textmenu.TextMenu;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class SellOrderMenuController {
-    private final ShopMenu shopMenu;
+public class SellOrderMenuController extends AbstractPlayerInventoryController<ShopMenu> {
     private final int[] prevMenuButton = new int[]{2,1};
     private final int[] itemSlot = new int[]{4,1};
     private final int[] exitMenuButton = new int[]{6,1};
@@ -43,70 +45,65 @@ public class SellOrderMenuController {
     private final int[] quantitySlot = new int[]{3,4};
     private final int[] priceSlot = new int[]{5,4};
     private final int[] confirmOrderButton = new int[]{7,4};
-    private Map<Player, PlayerData> playersData = new ConcurrentHashMap<>();
+    @Setter private PlayerData playerData = new PlayerData();
     private ShopItemEntity item;
-    private Map<Player, BukkitTask> tasks = new ConcurrentHashMap<>();
+    private BukkitTask task;
     
-    public SellOrderMenuController(ShopMenu shopMenu) {
-        this.shopMenu = shopMenu;
+    public SellOrderMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
+        super(player, inventory, shopMenu);
     }
 
-    public void openSellOrderMenu(Inventory inv, ShopItemEntity item, Player player) {
+    public void openMenu(ShopItemEntity item) {
         this.item = item;
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.SellOrderMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.SellOrderMenu);
         }, Duration.ofMillis(50));
-        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
-        border(inv);
-        buttons(inv);
-        displayItem(inv);
-        BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
-            orderInfo(inv, player);
-            results(inv, player);
+        fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
+        border();
+        buttons();
+        displayItem();
+        task = Scheduler.runTimerAsync((task) -> {
+            orderInfo();
+            results();
         }, Duration.ofSeconds(1), Duration.ofSeconds(0));
-        tasks.put(player, refreshTask);
     }
 
-    public void setCurrencyType(Inventory inv, Player player) {
-        inv.close();
-        PlayerInventory shop = shopMenu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+    public void setCurrencyType() {
+        inventory.close();
+        PlayerInventory shop = menu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = shop.load(player);
-            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(inventory, item, player);
+            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, new SellOrderMenuController(player, inventory, menu));
+            controller.openMenu(item);
             Scheduler.runAsync((task) -> {
-                CurrencyEntity curr = shopMenu.getCurrencyService().getCurrencyByName(userInput);
+                CurrencyEntity curr = menu.getCurrencyService().getCurrencyByName(userInput);
                 if (curr != null) {
                     ItemStack icon = curr.getIcon().clone();
-                    if(playersData.containsKey(player)) {
-                        playersData.get(player).setCurrencyTypeInput(userInput);
-                        playersData.get(player).setCurrencyTypeIcon(icon);
-                    } else {
-                        PlayerData data = new PlayerData();
-                        data.setCurrencyTypeIcon(icon);
-                        data.setCurrencyTypeInput(userInput);
-                        playersData.put(player, data);
-                    }
-                    shopMenu.setItem(inventory, currencySlot, icon);
+                    controller.setPlayerData(playerData);
+                    controller.getPlayerData().setCurrencyTypeInput(userInput);
+                    controller.getPlayerData().setCurrencyTypeIcon(icon);
+                    controller.setItem(currencySlot, icon);
                 }
             });
         };        
 
-        TextMenu scanner = (TextMenu) shopMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("currency", NamedTextColor.RED));
         scanner.open(player);
     }
 
-    public void setQuantity(Inventory inv, Player player) {
-        inv.close();
-        PlayerInventory shop = shopMenu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+    public void setQuantity() {
+        inventory.close();
+        PlayerInventory shop = menu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = shop.load(player);
-            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(inventory, item, player);
+            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, new SellOrderMenuController(player, inventory, menu));
+            controller.openMenu(item);
             try {
                 int quantityInput = Integer.parseInt(userInput);
                 ItemStack quantityIcon = new ItemStack(Material.PAPER);
@@ -115,33 +112,28 @@ public class SellOrderMenuController {
                     meta.displayName(Component.text(String.format("%sx", userInput), NamedTextColor.DARK_GREEN));
                 }
                 quantityIcon.setItemMeta(meta);
-                shopMenu.setItem(inventory, quantitySlot, quantityIcon);
-                if(playersData.containsKey(player)) {
-                    playersData.get(player).setQuantityIcon(quantityIcon);
-                    playersData.get(player).setQuantityInput(quantityInput);
-                } else {
-                    PlayerData data = new PlayerData();
-                    data.setQuantityIcon(quantityIcon);
-                    data.setQuantityInput(quantityInput);
-                    playersData.put(player, data);
-                }
+                controller.setPlayerData(playerData);
+                controller.getPlayerData().setQuantityIcon(quantityIcon);
+                controller.getPlayerData().setQuantityInput(quantityInput);
+                controller.setItem(quantitySlot, quantityIcon);
             } catch (Exception e) {}
         };        
 
-        TextMenu scanner = (TextMenu) shopMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("quantity", NamedTextColor.RED));
         scanner.open(player);
     }
 
-    public void setUnitPrice(Inventory inv, Player player) {
-        inv.close();
-        PlayerInventory shop = shopMenu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
+    public void setUnitPrice() {
+        inventory.close();
+        PlayerInventory shop = menu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = shop.load(player);
-            shopMenu.getSellOrderMenu().getController().openSellOrderMenu(inventory, item, player);
+            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, new SellOrderMenuController(player, inventory, menu));
+            controller.openMenu(item);
             try {
                 double unitPriceInput = Double.parseDouble(userInput);
                 ItemStack unitPriceIcon = new ItemStack(Material.PAPER);
@@ -150,116 +142,105 @@ public class SellOrderMenuController {
                     meta.displayName(Component.text(String.format("%s $/unit", userInput), NamedTextColor.DARK_GREEN));
                 }
                 unitPriceIcon.setItemMeta(meta);
-                shopMenu.setItem(inventory, priceSlot, unitPriceIcon);
-                if(playersData.containsKey(player)) {
-                    playersData.get(player).setUnitPriceIcon(unitPriceIcon);
-                    playersData.get(player).setUnitPriceInput(unitPriceInput);
-                } else {
-                    PlayerData data = new PlayerData();
-                    data.setUnitPriceIcon(unitPriceIcon);
-                    data.setUnitPriceInput(unitPriceInput);
-                    playersData.put(player, data);
-                }
+                controller.setPlayerData(playerData);
+                controller.getPlayerData().setUnitPriceIcon(unitPriceIcon);
+                controller.getPlayerData().setUnitPriceInput(unitPriceInput);
+                controller.setItem(priceSlot, unitPriceIcon);
             } catch (Exception e) {}
         };        
 
-        TextMenu scanner = (TextMenu) shopMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("unit price", NamedTextColor.RED));
         scanner.open(player);
     }
 
-    public void confirmOrder(Inventory inv, Player player) {
-        PlayerData data = playersData.get(player);
+    public void confirmOrder() {
         Scheduler.runAsync((task) -> {
-            if(shopMenu.getShopService().createSellOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput())) {
-                onClose(player);
-                shopMenu.getOrderMenu().getController().openOrderMenu(inv, item, player);
+            if(menu.getShopService().createSellOrder(player, item, playerData.getQuantityInput(), playerData.getUnitPriceInput(), playerData.getCurrencyTypeInput())) {
+                onClose();
+                menu.getOrderMenu().getControllers().getPlayerInventoryController(player, new OrderMenuController(player, inventory, menu)).openMenu(item);
             }
         });
     }
 
-    public void onClose(Player player) {
-        if(tasks.containsKey(player)) {
-            tasks.get(player).cancel();
-            tasks.remove(player);
+    public void onClose() {
+        if(task != null) {
+            task.cancel();
         }
     }
 
-    private void displayItem(Inventory inv) {
-        shopMenu.setItem(inv, itemSlot, item.getIcon().clone());
+    private void displayItem() {
+        setItem(itemSlot, item.getIcon().clone());
     }
 
-    private void border(Inventory inv) {
-        ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
-        shopMenu.fillRectangleArea(inv, new int[]{3,0}, 2, 3, borderItem);
-        shopMenu.fillRectangleArea(inv, new int[]{1,2}, 1, 7, borderItem);
+    private void border() {
+        ItemStack borderItem = createSlotItem(Material.BLACK_STAINED_GLASS_PANE, getUnavailableComponent());
+        fillRectangleArea(new int[]{3,0}, 2, 3, borderItem);
+        fillRectangleArea(new int[]{1,2}, 1, 7, borderItem);
     }
 
-    private void results(Inventory inv, Player player) {
-        PlayerData data = playersData.get(player);
-        if(data != null && data.getCurrencyTypeIcon() != null) {
-            shopMenu.setItem(inv, currencySlot, data.getCurrencyTypeIcon());
+    private void results() {
+        if(playerData != null && playerData.getCurrencyTypeIcon() != null) {
+            setItem(currencySlot, playerData.getCurrencyTypeIcon());
         } else {
-            shopMenu.setItem(inv, currencySlot, shopMenu.getUnavailable());
+            setItem(currencySlot, getUnavailableIcon());
         }
-        if(data != null && data.getQuantityIcon() != null) {
-            shopMenu.setItem(inv, quantitySlot, data.getQuantityIcon());
+        if(playerData != null && playerData.getQuantityIcon() != null) {
+            setItem(quantitySlot, playerData.getQuantityIcon());
         } else {
-            shopMenu.setItem(inv, quantitySlot, shopMenu.getUnavailable());
+            setItem(quantitySlot, getUnavailableIcon());
         }
-        if(data != null && data.getUnitPriceIcon() != null) {
-            shopMenu.setItem(inv, priceSlot, data.getUnitPriceIcon());
+        if(playerData != null && playerData.getUnitPriceIcon() != null) {
+            setItem(priceSlot, playerData.getUnitPriceIcon());
         } else {
-            shopMenu.setItem(inv, priceSlot, shopMenu.getUnavailable());
+            setItem(priceSlot, getUnavailableIcon());
         }
-        if(data != null && data.getUnitPriceIcon() != null && data.getQuantityIcon() != null && data.getCurrencyTypeIcon() != null) {
-            double totalProfit = data.getQuantityInput() * data.getUnitPriceInput();
+        if(playerData != null && playerData.getUnitPriceIcon() != null && playerData.getQuantityIcon() != null && playerData.getCurrencyTypeIcon() != null) {
+            double totalProfit = playerData.getQuantityInput() * playerData.getUnitPriceInput();
             ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
             ItemMeta m = confirmButton.getItemMeta();
             if(m != null) {
                 m.displayName(Component.text("CONFIRM", NamedTextColor.GREEN));
-                m.lore(Arrays.asList(Component.text("TOTAL PROFIT: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(data.getCurrencyTypeIcon().displayName()))));
+                m.lore(Arrays.asList(Component.text("TOTAL PROFIT: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(playerData.getCurrencyTypeIcon().displayName()))));
             }
             confirmButton.setItemMeta(m);
-            shopMenu.setItem(inv, confirmOrderButton, confirmButton);
+            setItem(confirmOrderButton, confirmButton);
         } else {
-            shopMenu.setItem(inv, confirmOrderButton, shopMenu.getUnavailable());
+            setItem(confirmOrderButton, getUnavailableIcon());
         }
     }
 
-    private void orderInfo(Inventory inv, Player player) {
-        PlayerData data = playersData.get(player);
+    private void orderInfo() {
         ItemStack order = new ItemStack(Material.CREEPER_BANNER_PATTERN);
         ItemMeta orderMeta = order.getItemMeta();
-        if(orderMeta != null && data != null) {
+        if(orderMeta != null && playerData != null) {
             orderMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             orderMeta.displayName(Component.text("SELL ORDER:", NamedTextColor.GOLD));
             List<Component> components = new ArrayList<>();
-            if(data.getCurrencyTypeIcon() != null) {
-                Component currencyComponent = Component.text("Currency: ", NamedTextColor.BLUE).append(Component.text(data.getCurrencyTypeInput(), NamedTextColor.GOLD));
+            if(playerData.getCurrencyTypeIcon() != null) {
+                Component currencyComponent = Component.text("Currency: ", NamedTextColor.BLUE).append(Component.text(playerData.getCurrencyTypeInput(), NamedTextColor.GOLD));
                 components.add(currencyComponent);
             }
-            if(data.getQuantityIcon() != null) {
-                Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(data.getQuantityInput() + "x", NamedTextColor.GOLD));
+            if(playerData.getQuantityIcon() != null) {
+                Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(playerData.getQuantityInput() + "x", NamedTextColor.GOLD));
                 components.add(quantityComponent);
             }
-            if(data.getUnitPriceIcon() != null) {
-                Component priceComponent = Component.text("Unit Price: ", NamedTextColor.BLUE).append(Component.text(data.getUnitPriceInput() + "$/unit", NamedTextColor.GOLD));
+            if(playerData.getUnitPriceIcon() != null) {
+                Component priceComponent = Component.text("Unit Price: ", NamedTextColor.BLUE).append(Component.text(playerData.getUnitPriceInput() + "$/unit", NamedTextColor.GOLD));
                 components.add(priceComponent);
             }
             orderMeta.lore(components);
         }
         order.setItemMeta(orderMeta);
-        shopMenu.setItem(inv, orderInfo, order);
+        setItem(orderInfo, order);
     }
 
-    private void buttons(Inventory inv) {
-        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
-        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
-        shopMenu.setItem(inv, setCurrencyTypeButton, shopMenu.createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Currency Type", NamedTextColor.WHITE)));
-        shopMenu.setItem(inv, setQuantityButton, shopMenu.createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Quantity", NamedTextColor.WHITE)));
-        shopMenu.setItem(inv, setPriceButton, shopMenu.createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Unit Price", NamedTextColor.WHITE)));
+    private void buttons() {
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
+        setItem(setCurrencyTypeButton, createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Currency Type", NamedTextColor.WHITE)));
+        setItem(setQuantityButton, createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Quantity", NamedTextColor.WHITE)));
+        setItem(setPriceButton, createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Set Unit Price", NamedTextColor.WHITE)));
     }
 }
-

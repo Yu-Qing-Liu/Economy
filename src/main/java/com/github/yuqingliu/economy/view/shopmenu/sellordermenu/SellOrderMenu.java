@@ -9,19 +9,20 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
+import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenuController;
 
 import lombok.Getter;
 
 @Getter
 public class SellOrderMenu implements Listener {
     private final ShopMenu shopMenu;
-    private final SellOrderMenuController controller;
+    private final PlayerInventoryControllerFactory<SellOrderMenuController> controllers = new PlayerInventoryControllerFactory<>();
 
     public SellOrderMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
-        this.controller = new SellOrderMenuController(shopMenu);
         shopMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
@@ -30,6 +31,7 @@ public class SellOrderMenu implements Listener {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
         ItemStack currentItem = event.getCurrentItem();
+        SellOrderMenuController controller = controllers.getPlayerInventoryController(player, new SellOrderMenuController(player, clickedInventory, shopMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(shopMenu.getDisplayName())) {
             return;
@@ -38,29 +40,29 @@ public class SellOrderMenu implements Listener {
         event.setCancelled(true);
 
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.SellOrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int[] slot = shopMenu.toCoords(event.getSlot());
-            if(shopMenu.isUnavailable(currentItem)) {
+            int[] slot = controller.toCoords(event.getSlot());
+            if(controller.isUnavailable(currentItem)) {
                 return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                controller.onClose(player);
-                shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                controller.onClose();
+                shopMenu.getOrderMenu().getControllers().getPlayerInventoryController(player, new OrderMenuController(player, clickedInventory, shopMenu)).openMenu(controller.getItem());
                 return;
             }
             if(Arrays.equals(slot, controller.getSetCurrencyTypeButton())) {
-                controller.setCurrencyType(clickedInventory, player);
+                controller.setCurrencyType();
                 return;
             }
             if(Arrays.equals(slot, controller.getSetQuantityButton())) {
-                controller.setQuantity(clickedInventory, player);
+                controller.setQuantity();
                 return;
             }
             if(Arrays.equals(slot, controller.getSetPriceButton())) {
-                controller.setUnitPrice(clickedInventory, player);
+                controller.setUnitPrice();
                 return;
             }
             if(Arrays.equals(slot, controller.getConfirmOrderButton())) {
-                controller.confirmOrder(clickedInventory, player);
+                controller.confirmOrder();
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {

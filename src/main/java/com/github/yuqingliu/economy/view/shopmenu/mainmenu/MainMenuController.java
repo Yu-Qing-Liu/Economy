@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -21,6 +20,8 @@ import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopSectionEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
+import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 
@@ -29,8 +30,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class MainMenuController {
-    private final ShopMenu shopMenu;
+public class MainMenuController extends AbstractPlayerInventoryController<ShopMenu> {
     private final int[] prevSectionsButton = new int[]{0,0};
     private final int[] nextSectionsButton = new int[]{0,5};
     private final int[] prevItemsButton = new int[]{2,0};
@@ -49,97 +49,67 @@ public class MainMenuController {
     private final int[] itemsStart = new int[]{3,1};
     private final List<int[]> sectionsOptions;
     private final List<int[]> itemsOptions;
-    private Map<Integer, Map<List<Integer>, ShopSectionEntity>> pageSectionData = new ConcurrentHashMap<>();
-    private Map<Integer, Map<List<Integer>, ShopItemEntity>> pageItemData = new ConcurrentHashMap<>();
-    private Map<Player, int[]> sectionPageNumbers = new ConcurrentHashMap<>();
-    private Map<Player, int[]> itemPageNumbers = new ConcurrentHashMap<>();
+    private final PageData<ShopSectionEntity> sectionsPageData = new PageData<>();
+    private final PageData<ShopItemEntity> itemPageData = new PageData<>();
 
-    public MainMenuController(ShopMenu shopMenu) {
-        this.shopMenu = shopMenu;
-        this.sectionsOptions = shopMenu.rectangleArea(sectionsStart, sectionsWidth, sectionsLength);
-        this.itemsOptions = shopMenu.rectangleArea(itemsStart, itemsWidth, itemsLength);
+    public MainMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
+        super(player, inventory, shopMenu);
+        this.sectionsOptions = rectangleArea(sectionsStart, sectionsWidth, sectionsLength);
+        this.itemsOptions = rectangleArea(itemsStart, itemsWidth, itemsLength);
     }
 
-    public void openMainMenu(Inventory inv, Player player) {
-        sectionPageNumbers.put(player, new int[]{1});
-        itemPageNumbers.put(player, new int[]{1});
+    public void openMenu() {
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
         }, Duration.ofMillis(50));
-        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
-        buttons(inv);
-        border(inv);
-        shopMenu.rectangleAreaLoading(inv, sectionsStart, sectionsWidth, sectionsLength);
-        shopMenu.rectangleAreaLoading(inv, itemsStart, itemsWidth, itemsLength);
+        fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
+        buttons();
+        border();
+        rectangleAreaLoading(sectionsStart, sectionsWidth, sectionsLength);
+        rectangleAreaLoading(itemsStart, itemsWidth, itemsLength);
         Scheduler.runAsync((task) -> {
             fetchSections();
-            displaySections(inv, player);
-            fetchItems(inv, player, sectionsStart);
-            displayItems(inv, player);
+            displaySections();
+            fetchItems(sectionsStart);
+            displayItems();
         });
     }
 
-    public void nextSectionPage(Inventory inv, Player player) {
-        sectionPageNumbers.get(player)[0]++;
-        if(pageSectionData.containsKey(sectionPageNumbers.get(player)[0])) {
-            displaySections(inv, player);
-        } else {
-            sectionPageNumbers.get(player)[0]--;
-        }     
+    public void nextSectionPage() {
+        sectionsPageData.nextPage(() -> displaySections());
     }
 
-    public void prevSectionPage(Inventory inv, Player player) {
-        sectionPageNumbers.get(player)[0]--;
-        if(sectionPageNumbers.get(player)[0] > 0) {
-            displaySections(inv, player);
-        } else {
-            sectionPageNumbers.get(player)[0]++;
-        }
+    public void prevSectionPage() {
+        sectionsPageData.prevPage(() -> displaySections());
     }
 
-    public void nextItemPage(Inventory inv, Player player) {
-        itemPageNumbers.get(player)[0]++;
-        if(pageItemData.containsKey(itemPageNumbers.get(player)[0])) {
-            displayItems(inv, player);
-        } else {
-            itemPageNumbers.get(player)[0]--;
-        }     
+    public void nextItemPage() {
+        itemPageData.nextPage(() -> displayItems());
     }
 
-    public void prevItemPage(Inventory inv, Player player) {
-        itemPageNumbers.get(player)[0]--;
-        if(itemPageNumbers.get(player)[0] > 0) {
-            displayItems(inv, player);
-        } else {
-            itemPageNumbers.get(player)[0]++;
-        }
+    public void prevItemPage() {
+        itemPageData.prevPage(() -> displayItems());
     }
 
-    public void onClose(Player player) {
-        sectionPageNumbers.remove(player);
-        itemPageNumbers.remove(player);
+    private void border() {
+        ItemStack borderItem = createSlotItem(Material.CHAIN, getUnavailableComponent());
+        fillRectangleArea(new int[]{2,1}, 4, 1, borderItem);
+        fillRectangleArea(new int[]{0,1}, 4, 1, borderItem);
     }
 
-    private void border(Inventory inv) {
-        ItemStack borderItem = shopMenu.createSlotItem(Material.CHAIN, shopMenu.getUnavailableComponent());
-        shopMenu.fillRectangleArea(inv, new int[]{2,1}, 4, 1, borderItem);
-        shopMenu.fillRectangleArea(inv, new int[]{0,1}, 4, 1, borderItem);
-    }
-
-    private void buttons(Inventory inv) {
-        shopMenu.setItem(inv, prevSectionsButton, shopMenu.getPrevPage());
-        shopMenu.setItem(inv, nextSectionsButton, shopMenu.getNextPage());
-        shopMenu.setItem(inv, prevItemsButton, shopMenu.getPrevPage());
-        shopMenu.setItem(inv, nextItemsButton, shopMenu.getNextPage());
-        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
-        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
-        shopMenu.setItem(inv, buyOrdersMenuButton, shopMenu.createSlotItem(Material.ENDER_CHEST, Component.text("Buy Orders", NamedTextColor.LIGHT_PURPLE)));
-        shopMenu.setItem(inv, sellOrdersMenuButton, shopMenu.createSlotItem(Material.ENDER_CHEST, Component.text("Sell Orders", NamedTextColor.LIGHT_PURPLE)));
+    private void buttons() {
+        setItem(prevSectionsButton, getPrevPageIcon());
+        setItem(nextSectionsButton, getNextPageIcon());
+        setItem(prevItemsButton, getPrevPageIcon());
+        setItem(nextItemsButton, getNextPageIcon());
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
+        setItem(buyOrdersMenuButton, createSlotItem(Material.ENDER_CHEST, Component.text("Buy Orders", NamedTextColor.LIGHT_PURPLE)));
+        setItem(sellOrdersMenuButton, createSlotItem(Material.ENDER_CHEST, Component.text("Sell Orders", NamedTextColor.LIGHT_PURPLE)));
     }
 
     private void fetchSections() {
-        pageSectionData.clear();
-        ShopEntity vendor = shopMenu.getShopService().getShop(shopMenu.getShopName()); 
+        ShopEntity vendor = menu.getShopService().getShop(menu.getShopName()); 
         if(vendor == null) {
             return;
         }
@@ -160,13 +130,12 @@ public class MainMenuController {
                     options.put(Arrays.asList(coords[0], coords[1]), temp.poll());
                 }
             }
-            pageSectionData.put(pageNum, options);
+            sectionsPageData.put(pageNum, options);
         }
     }
 
-    private void fetchItems(Inventory inv, Player player, int[] sectionCoords) {
-        pageItemData.clear();
-        Map<List<Integer>, ShopSectionEntity> sections = pageSectionData.getOrDefault(sectionPageNumbers.get(player)[0], Collections.emptyMap());
+    private void fetchItems(int[] sectionCoords) {
+        Map<List<Integer>, ShopSectionEntity> sections = sectionsPageData.getCurrentPageData();
         Set<ShopItemEntity> items = Collections.emptySet();
         if(sections.containsKey(Arrays.asList(sectionCoords[0], sectionCoords[1]))) {
             items = sections.get(Arrays.asList(sectionCoords[0], sectionCoords[1])).getItems();
@@ -187,17 +156,17 @@ public class MainMenuController {
                     options.put(Arrays.asList(coords[0], coords[1]), temp.poll());
                 }
             }
-            pageItemData.put(pageNum, options);
+            itemPageData.put(pageNum, options);
         }
     }
 
-    private void displaySections(Inventory inv, Player player) {
-        Map<List<Integer>, ShopSectionEntity> sections = pageSectionData.getOrDefault(sectionPageNumbers.get(player)[0], Collections.emptyMap());
+    private void displaySections() {
+        Map<List<Integer>, ShopSectionEntity> sections = sectionsPageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, ShopSectionEntity> entry : sections.entrySet()) {
             List<Integer> coords = entry.getKey();
             ShopSectionEntity section = entry.getValue();
             if(section == null) {
-                shopMenu.setItem(inv, coords, shopMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack item = section.getIcon().clone();
                 ItemMeta meta = item.getItemMeta();
@@ -206,39 +175,39 @@ public class MainMenuController {
                     meta.lore(Arrays.asList(description));
                     item.setItemMeta(meta);
                 }
-                shopMenu.setItem(inv, coords, item);
+                setItem(coords, item);
             }
         }
     }
 
     public void displayInitialItems(Inventory inv, Player player, int[] sectionCoords) {
-        shopMenu.rectangleAreaLoading(inv, itemsStart, itemsWidth, itemsLength);
+        rectangleAreaLoading(itemsStart, itemsWidth, itemsLength);
         Scheduler.runAsync((task) -> {
-            fetchItems(inv, player, sectionCoords);
-            Map<List<Integer>, ShopItemEntity> items = pageItemData.getOrDefault(itemPageNumbers.get(player)[0], Collections.emptyMap());
+            fetchItems(sectionCoords);
+            Map<List<Integer>, ShopItemEntity> items = itemPageData.getCurrentPageData();
             for(Map.Entry<List<Integer>, ShopItemEntity> entry : items.entrySet()) {
                 List<Integer> coords = entry.getKey();
                 ShopItemEntity item = entry.getValue();
                 if(item == null) {
-                    shopMenu.setItem(inv, coords, shopMenu.getUnavailable());
+                    setItem(coords, getUnavailableIcon());
                 } else {
                     ItemStack icon = item.getIcon().clone();
-                    shopMenu.setItem(inv, coords, icon);
+                    setItem(coords, icon);
                 }
             }
         });
     }
 
-    public void displayItems(Inventory inv, Player player) {
-        Map<List<Integer>, ShopItemEntity> items = pageItemData.getOrDefault(itemPageNumbers.get(player)[0], Collections.emptyMap());
+    public void displayItems() {
+        Map<List<Integer>, ShopItemEntity> items = itemPageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, ShopItemEntity> entry : items.entrySet()) {
             List<Integer> coords = entry.getKey();
             ShopItemEntity item = entry.getValue();
             if(item == null) {
-                shopMenu.setItem(inv, coords, shopMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack icon = item.getIcon().clone();
-                shopMenu.setItem(inv, coords, icon);
+                setItem(coords, icon);
             }
         }
     }

@@ -4,13 +4,11 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -22,6 +20,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
+import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 
@@ -30,8 +30,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class OrderMenuController {
-    private final ShopMenu shopMenu;
+public class OrderMenuController extends AbstractPlayerInventoryController<ShopMenu> {
     private final int[] prevMenuButton = new int[]{1,1};
     private final int[] exitMenuButton = new int[]{2,1};
     private final int[] refreshButton = new int[]{7,1};
@@ -52,116 +51,86 @@ public class OrderMenuController {
     private final int sellOrdersSize = sellOrdersWidth * sellOrdersLength;
     private final List<int[]> buyOrders;
     private final List<int[]> sellOrders;
-    private Map<Integer, Map<List<Integer>, OrderOption>> buyPageData = new ConcurrentHashMap<>();
-    private Map<Integer, Map<List<Integer>, OrderOption>> sellPageData = new ConcurrentHashMap<>();
-    private Map<Player, int[]> buyPageNumbers = new ConcurrentHashMap<>();
-    private Map<Player, int[]> sellPageNumbers = new ConcurrentHashMap<>();
+    private final PageData<OrderOption> buyPageData = new PageData<>();
+    private final PageData<OrderOption> sellPageData = new PageData<>();
     private ShopItemEntity item;
     
-    public OrderMenuController(ShopMenu shopMenu) {
-        this.shopMenu = shopMenu;
-        this.buyOrders = shopMenu.rectangleArea(buyOrdersStart, buyOrdersWidth, buyOrdersLength);
-        this.sellOrders = shopMenu.rectangleArea(sellOrdersStart, sellOrdersWidth, sellOrdersLength);
+    public OrderMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
+        super(player, inventory, shopMenu);
+        this.buyOrders = rectangleArea(buyOrdersStart, buyOrdersWidth, buyOrdersLength);
+        this.sellOrders = rectangleArea(sellOrdersStart, sellOrdersWidth, sellOrdersLength);
     }
 
-    public void openOrderMenu(Inventory inv, ShopItemEntity item, Player player) {
+    public void openMenu(ShopItemEntity item) {
         this.item = item;
-        buyPageNumbers.put(player, new int[]{1});
-        sellPageNumbers.put(player, new int[]{1});
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.OrderMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.OrderMenu);
         }, Duration.ofMillis(50));
-        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
-        border(inv);
-        buttons(inv);
-        displayItem(inv);
-        shopMenu.rectangleAreaLoading(inv, buyOrdersStart, buyOrdersWidth, buyOrdersLength);
-        shopMenu.rectangleAreaLoading(inv, sellOrdersStart, sellOrdersWidth, sellOrdersLength);
+        fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
+        border();
+        buttons();
+        displayItem();
+        rectangleAreaLoading(buyOrdersStart, buyOrdersWidth, buyOrdersLength);
+        rectangleAreaLoading(sellOrdersStart, sellOrdersWidth, sellOrdersLength);
         Scheduler.runAsync((task) -> {
-            reload(inv, player);
+            reload();
         });
     }
 
-    public void reload(Inventory inv, Player player) {
-        item = shopMenu.getShopService().getShopItem(item.getShopName(),item.getShopSection().getSectionName(), item.getItemName());
+    public void reload() {
+        item = menu.getShopService().getShopItem(item.getShopName(),item.getShopSection().getSectionName(), item.getItemName());
         fetchBuyOptions();
         fetchSellOptions();
-        displayBuyOptions(inv, player);
-        displaySellOptions(inv, player);
-        buttons(inv);
+        displayBuyOptions();
+        displaySellOptions();
+        buttons();
     }
 
-    public void nextBuyPage(Inventory inv, Player player) {
-        buyPageNumbers.get(player)[0]++;
-        if(buyPageData.containsKey(buyPageNumbers.get(player)[0])) {
-            displayBuyOptions(inv, player);
-        } else {
-            buyPageNumbers.get(player)[0]--;
-        }     
+    public void nextBuyPage() {
+        buyPageData.nextPage(() -> displayBuyOptions());
     }
 
-    public void prevBuyPage(Inventory inv, Player player) {
-        buyPageNumbers.get(player)[0]--;
-        if(buyPageNumbers.get(player)[0] > 0) {
-            displayBuyOptions(inv, player);
-        } else {
-            buyPageNumbers.get(player)[0]++;
-        }
+    public void prevBuyPage() {
+        buyPageData.prevPage(() -> displayBuyOptions());
     }
 
-    public void nextSellPage(Inventory inv, Player player) {
-        sellPageNumbers.get(player)[0]++;
-            if(sellPageData.containsKey(sellPageNumbers.get(player)[0])) {
-                displayBuyOptions(inv, player);
-            } else {
-                sellPageNumbers.get(player)[0]--;
-            }     
-        }
-
-    public void prevSellPage(Inventory inv, Player player) {
-        sellPageNumbers.get(player)[0]--;
-        if(sellPageNumbers.get(player)[0] > 0) {
-            displayBuyOptions(inv, player);
-        } else {
-            sellPageNumbers.get(player)[0]++;
-        }
+    public void nextSellPage() {
+        sellPageData.nextPage(() -> displaySellOptions());
     }
 
-    public void onClose(Player player) {
-        buyPageNumbers.remove(player);
-        sellPageNumbers.remove(player);
+    public void prevSellPage() {
+        sellPageData.prevPage(() -> displaySellOptions());
     }
 
-    private void border(Inventory inv) {
-        ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
-        shopMenu.fillRectangleArea(inv, new int[]{1,2}, 1, 7, borderItem);
-        shopMenu.fillRectangleArea(inv, new int[]{3,0}, 2, 3, borderItem);
+    private void border() {
+        ItemStack borderItem = createSlotItem(Material.BLACK_STAINED_GLASS_PANE, getUnavailableComponent());
+        fillRectangleArea(new int[]{1,2}, 1, 7, borderItem);
+        fillRectangleArea(new int[]{3,0}, 2, 3, borderItem);
     }
 
-    private void displayItem(Inventory inv) {
-        shopMenu.setItem(inv, itemSlot, item.getIcon().clone());
+    private void displayItem() {
+        setItem(itemSlot, item.getIcon().clone());
     }
 
-    private void buttons(Inventory inv) {
-        shopMenu.setItem(inv, prevBuyOrdersButton, shopMenu.getPrevPage());
-        shopMenu.setItem(inv, nextBuyOrdersButton, shopMenu.getNextPage());
-        shopMenu.setItem(inv, prevSellOrdersButton, shopMenu.getPrevPage());
-        shopMenu.setItem(inv, nextSellOrdersButton, shopMenu.getNextPage());
-        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
-        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
-        shopMenu.setItem(inv, refreshButton, shopMenu.getReload());
-        shopMenu.setItem(inv, createBuyOrderButton, shopMenu.createSlotItem(Material.WRITABLE_BOOK, Component.text("Create Buy Order", NamedTextColor.LIGHT_PURPLE)));
-        shopMenu.setItem(inv, createSellOrderButton, shopMenu.createSlotItem(Material.WRITABLE_BOOK, Component.text("Create Sell Order", NamedTextColor.LIGHT_PURPLE)));
+    private void buttons() {
+        setItem(prevBuyOrdersButton, getPrevPageIcon());
+        setItem(nextBuyOrdersButton, getNextPageIcon());
+        setItem(prevSellOrdersButton, getPrevPageIcon());
+        setItem(nextSellOrdersButton, getNextPageIcon());
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
+        setItem(refreshButton, getReloadIcon());
+        setItem(createBuyOrderButton, createSlotItem(Material.WRITABLE_BOOK, Component.text("Create Buy Order", NamedTextColor.LIGHT_PURPLE)));
+        setItem(createSellOrderButton, createSlotItem(Material.WRITABLE_BOOK, Component.text("Create Sell Order", NamedTextColor.LIGHT_PURPLE)));
     }
 
     private void fetchBuyOptions() {
-        buyPageData.clear();
         Map<String, List<ShopOrderEntity>> buyOrders = item.getBuyOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
         for(Map.Entry<String, List<ShopOrderEntity>> entry : buyOrders.entrySet()) {
             String currencyName = entry.getKey();
             List<ShopOrderEntity> orders = buyOrders.get(currencyName);
-            ItemStack icon =  shopMenu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
+            ItemStack icon =  menu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
             OrderOption option = new OrderOption(icon, orders);
             temp.offer(option);
         }
@@ -181,13 +150,12 @@ public class OrderMenuController {
     }
 
     private void fetchSellOptions() {
-        sellPageData.clear();
         Map<String, List<ShopOrderEntity>> sellOrders = item.getSellOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
         for(Map.Entry<String, List<ShopOrderEntity>> entry : sellOrders.entrySet()) {
             String currencyName = entry.getKey();
             List<ShopOrderEntity> orders = sellOrders.get(currencyName);
-            ItemStack icon =  shopMenu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
+            ItemStack icon =  menu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
             OrderOption option = new OrderOption(icon, orders);
             temp.offer(option);
         }
@@ -207,13 +175,13 @@ public class OrderMenuController {
     }
 
 
-    private void displayBuyOptions(Inventory inv, Player player) {
-        Map<List<Integer>, OrderOption> currencyOptions = buyPageData.getOrDefault(buyPageNumbers.get(player)[0], Collections.emptyMap());
+    private void displayBuyOptions() {
+        Map<List<Integer>, OrderOption> currencyOptions = buyPageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, OrderOption> entry : currencyOptions.entrySet()) {
             List<Integer> coords = entry.getKey();
             OrderOption option = entry.getValue();
             if(option == null) {
-                shopMenu.setItem(inv, coords, shopMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack item = option.getIcon().clone(); 
                 List<Component> topOrders = new ArrayList<>();
@@ -243,21 +211,21 @@ public class OrderMenuController {
                 }
                 item.setItemMeta(meta);
                 if(valid > 0) {
-                    shopMenu.setItem(inv, coords, item);
+                    setItem(coords, item);
                 } else {
-                    shopMenu.setItem(inv, coords, shopMenu.getLoading());
+                    setItem(coords, getLoadingIcon());
                 }
             }
         }
     }
 
-    private void displaySellOptions(Inventory inv, Player player) {
-        Map<List<Integer>, OrderOption> currencyOptions = sellPageData.getOrDefault(sellPageNumbers.get(player)[0], Collections.emptyMap());
+    private void displaySellOptions() {
+        Map<List<Integer>, OrderOption> currencyOptions = sellPageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, OrderOption> entry : currencyOptions.entrySet()) {
             List<Integer> coords = entry.getKey();
             OrderOption option = entry.getValue();
             if(option == null) {
-                shopMenu.setItem(inv, coords, shopMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack item = option.getIcon().clone(); 
                 List<Component> topOrders = new ArrayList<>();
@@ -287,9 +255,9 @@ public class OrderMenuController {
                 }
                 item.setItemMeta(meta);
                 if(valid > 0) {
-                    shopMenu.setItem(inv, coords, item);
+                    setItem(coords, item);
                 } else {
-                    shopMenu.setItem(inv, coords, shopMenu.getLoading());
+                    setItem(coords, getLoadingIcon());
                 }
             }
         }

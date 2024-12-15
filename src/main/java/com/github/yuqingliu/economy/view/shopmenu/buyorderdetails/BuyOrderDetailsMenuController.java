@@ -3,8 +3,6 @@ package com.github.yuqingliu.economy.view.shopmenu.buyorderdetails;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -18,6 +16,7 @@ import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
+import com.github.yuqingliu.economy.view.shopmenu.buyordersmenu.BuyOrdersMenuController;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -56,7 +55,7 @@ public class BuyOrderDetailsMenuController extends AbstractPlayerInventoryContro
     public void cancelOrder() {
         Scheduler.runAsync((task) -> {
             if(menu.getShopService().cancelBuyOrder(order, player)) {
-                menu.getBuyOrdersMenu().getController().openBuyOrdersMenu();
+                menu.getBuyOrdersMenu().getControllers().getPlayerInventoryController(player, new BuyOrdersMenuController(player, inventory, menu));
                 return;
             }
             reload();
@@ -66,7 +65,7 @@ public class BuyOrderDetailsMenuController extends AbstractPlayerInventoryContro
     public void claimOrder() {
         Scheduler.runAsync((task) -> {
             if(menu.getShopService().claimBuyOrder(order, player)) {
-                menu.getBuyOrdersMenu().getController().openBuyOrdersMenu();
+                menu.getBuyOrdersMenu().getControllers().getPlayerInventoryController(player, new BuyOrdersMenuController(player, inventory, menu));
                 return;
             } 
             reload();

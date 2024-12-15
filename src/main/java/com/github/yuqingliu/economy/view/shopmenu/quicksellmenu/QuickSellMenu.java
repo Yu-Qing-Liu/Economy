@@ -10,19 +10,20 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
+import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenuController;
 
 import lombok.Getter;
 
 @Getter
 public class QuickSellMenu implements Listener {
     private final ShopMenu shopMenu;
-    private final QuickSellMenuController controller;
+    private PlayerInventoryControllerFactory<QuickSellMenuController> controllers = new PlayerInventoryControllerFactory<>();
 
     public QuickSellMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
-        this.controller = new QuickSellMenuController(shopMenu);
         shopMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
@@ -31,6 +32,7 @@ public class QuickSellMenu implements Listener {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
         ItemStack currentItem = event.getCurrentItem();
+        QuickSellMenuController controller = controllers.getPlayerInventoryController(player, new QuickSellMenuController(player, clickedInventory, shopMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(shopMenu.getDisplayName())) {
             return;
@@ -39,24 +41,24 @@ public class QuickSellMenu implements Listener {
         event.setCancelled(true);
 
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.QuickSellMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int[] slot = shopMenu.toCoords(event.getSlot());
-            if(shopMenu.isUnavailable(currentItem)) {
+            int[] slot = controller.toCoords(event.getSlot());
+            if(controller.isUnavailable(currentItem)) {
                 return;
             }
-            if(shopMenu.rectangleContains(slot, controller.getSellOptions())) {
-                int index = shopMenu.rectangleIndex(slot, controller.getSellOptions());
+            if(controller.rectangleContains(slot, controller.getSellOptions())) {
+                int index = controller.rectangleIndex(slot, controller.getSellOptions());
                 int amount = controller.getQuantities()[index];
-                controller.quickSell(amount, player);
+                controller.quickSell(amount);
                 return;
             }
             if(Arrays.equals(slot, controller.getSellInventoryButton())) {
                 int amount = shopMenu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
-                controller.quickSell(amount, player);
+                controller.quickSell(amount);
                 return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                controller.onClose(player);
-                shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                controller.onClose();
+                shopMenu.getOrderMenu().getControllers().getPlayerInventoryController(player, new OrderMenuController(player, clickedInventory, shopMenu)).openMenu(controller.getItem());
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
@@ -68,7 +70,8 @@ public class QuickSellMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(shopMenu.getDisplayName())) {
-            controller.onClose((Player) event.getPlayer());
+            controllers.getPlayerInventoryController((Player) event.getPlayer(), null).onClose();
+            controllers.removePlayerInventoryController((Player) event.getPlayer());
         }
     }
 }

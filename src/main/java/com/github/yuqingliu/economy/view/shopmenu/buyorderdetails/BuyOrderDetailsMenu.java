@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
+import com.github.yuqingliu.economy.view.shopmenu.buyordersmenu.BuyOrdersMenuController;
 
 import lombok.Getter;
 
@@ -42,7 +43,7 @@ public class BuyOrderDetailsMenu implements Listener {
         if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.BuyOrderDetailsMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
             int[] slot = controller.toCoords(event.getSlot());
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                shopMenu.getBuyOrdersMenu().getController().openBuyOrdersMenu(clickedInventory, player);
+                shopMenu.getBuyOrdersMenu().getControllers().getPlayerInventoryController(player, new BuyOrdersMenuController(player, clickedInventory, shopMenu)).openMenu();
                 return;
             }
             if(Arrays.equals(slot, controller.getCancelOrderButton())) {

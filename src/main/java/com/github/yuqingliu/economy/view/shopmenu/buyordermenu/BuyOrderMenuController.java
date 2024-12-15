@@ -4,8 +4,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import org.bukkit.Material;
@@ -23,9 +21,11 @@ import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
+import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenuController;
 import com.github.yuqingliu.economy.view.textmenu.TextMenu;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -42,15 +42,15 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
     private final int[] quantitySlot = new int[]{3,4};
     private final int[] priceSlot = new int[]{5,4};
     private final int[] confirmOrderButton = new int[]{7,4};
-    private final Map<Player, PlayerData> playersData = new ConcurrentHashMap<>();
-    private final Map<Player, BukkitTask> tasks = new ConcurrentHashMap<>();
+    @Setter private PlayerData playerData = new PlayerData();
+    private BukkitTask task;
     private ShopItemEntity item;
     
     public BuyOrderMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
         super(player, inventory, shopMenu);
     }
 
-    public void openBuyOrderMenu(ShopItemEntity item) {
+    public void openMenu(ShopItemEntity item) {
         this.item = item;
         Scheduler.runLaterAsync((task) -> {
             menu.getPlayerMenuTypes().put(player, MenuType.BuyOrderMenu);
@@ -59,11 +59,10 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
         border();
         buttons();
         displayItem();
-        BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
+        task = Scheduler.runTimerAsync((task) -> {
             orderInfo();
             results();
         }, Duration.ofSeconds(1), Duration.ofSeconds(0));
-        tasks.put(player, refreshTask);
     }
 
     public void setCurrencyType() {
@@ -73,21 +72,16 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
 
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = shop.load(player);
-            menu.getBuyOrderMenu().getControllers().getPlayerInventoryController(player, new BuyOrderMenuController(player, inventory, menu)).openBuyOrderMenu(item);
+            BuyOrderMenuController controller = menu.getBuyOrderMenu().getControllers().getPlayerInventoryController(player, new BuyOrderMenuController(player, inventory, menu));
+            controller.openMenu(item);
             Scheduler.runAsync((task) -> {
                 CurrencyEntity curr = menu.getCurrencyService().getCurrencyByName(userInput);
                 if (curr != null) {
                     ItemStack icon = curr.getIcon().clone();
-                    if(playersData.containsKey(player)) {
-                        playersData.get(player).setCurrencyTypeInput(userInput);
-                        playersData.get(player).setCurrencyTypeIcon(icon);
-                    } else {
-                        PlayerData data = new PlayerData();
-                        data.setCurrencyTypeIcon(icon);
-                        data.setCurrencyTypeInput(userInput);
-                        playersData.put(player, data);
-                    }
-                    setItem(currencySlot, icon);
+                    controller.setPlayerData(playerData);
+                    controller.getPlayerData().setCurrencyTypeInput(userInput);
+                    controller.getPlayerData().setCurrencyTypeIcon(icon);
+                    controller.setItem(currencySlot, icon);
                 }
             });
         };        
@@ -105,7 +99,8 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
 
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = shop.load(player);
-            menu.getBuyOrderMenu().getControllers().getPlayerInventoryController(player, new BuyOrderMenuController(player, inventory, menu)).openBuyOrderMenu(item);
+            BuyOrderMenuController controller = menu.getBuyOrderMenu().getControllers().getPlayerInventoryController(player, new BuyOrderMenuController(player, inventory, menu));
+            controller.openMenu(item);
             try {
                 int quantityInput = Integer.parseInt(userInput);
                 ItemStack quantityIcon = new ItemStack(Material.PAPER);
@@ -114,16 +109,10 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
                     meta.displayName(Component.text(String.format("%sx", userInput), NamedTextColor.DARK_GREEN));
                 }
                 quantityIcon.setItemMeta(meta);
+                controller.setPlayerData(playerData);
+                controller.getPlayerData().setQuantityIcon(quantityIcon);
+                controller.getPlayerData().setQuantityInput(quantityInput);
                 setItem(quantitySlot, quantityIcon);
-                if(playersData.containsKey(player)) {
-                    playersData.get(player).setQuantityIcon(quantityIcon);
-                    playersData.get(player).setQuantityInput(quantityInput);
-                } else {
-                    PlayerData data = new PlayerData();
-                    data.setQuantityIcon(quantityIcon);
-                    data.setQuantityInput(quantityInput);
-                    playersData.put(player, data);
-                }
             } catch (Exception e) {}
         };        
 
@@ -140,7 +129,8 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
 
         Consumer<String> callback = (userInput) -> {
             Inventory inventory = shop.load(player);
-            menu.getBuyOrderMenu().getControllers().getPlayerInventoryController(player, new BuyOrderMenuController(player, inventory, menu)).openBuyOrderMenu(item);
+            BuyOrderMenuController controller = menu.getBuyOrderMenu().getControllers().getPlayerInventoryController(player, new BuyOrderMenuController(player, inventory, menu));
+            controller.openMenu(item);
             try {
                 double unitPriceInput = Double.parseDouble(userInput);
                 ItemStack unitPriceIcon = new ItemStack(Material.PAPER);
@@ -149,16 +139,10 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
                     meta.displayName(Component.text(String.format("%s $/unit", userInput), NamedTextColor.DARK_GREEN));
                 }
                 unitPriceIcon.setItemMeta(meta);
+                controller.setPlayerData(playerData);
+                controller.getPlayerData().setUnitPriceIcon(unitPriceIcon);
+                controller.getPlayerData().setUnitPriceInput(unitPriceInput);
                 setItem(priceSlot, unitPriceIcon);
-                if(playersData.containsKey(player)) {
-                    playersData.get(player).setUnitPriceIcon(unitPriceIcon);
-                    playersData.get(player).setUnitPriceInput(unitPriceInput);
-                } else {
-                    PlayerData data = new PlayerData();
-                    data.setUnitPriceIcon(unitPriceIcon);
-                    data.setUnitPriceInput(unitPriceInput);
-                    playersData.put(player, data);
-                }
             } catch (Exception e) {}
         };        
 
@@ -169,19 +153,17 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
     }
 
     public void confirmOrder() {
-        PlayerData data = playersData.get(player);
         Scheduler.runAsync((task) -> {
-            if(menu.getShopService().createBuyOrder(player, item, data.getQuantityInput(), data.getUnitPriceInput(), data.getCurrencyTypeInput())) {
+            if(menu.getShopService().createBuyOrder(player, item, playerData.getQuantityInput(), playerData.getUnitPriceInput(), playerData.getCurrencyTypeInput())) {
                 onClose();
-                menu.getOrderMenu().getController().openOrderMenu(inv, item, player);
+                menu.getOrderMenu().getControllers().getPlayerInventoryController(player, new OrderMenuController(player, inventory, menu)).openMenu(item);
             }
         });
     }
 
     public void onClose() {
-        if(tasks.containsKey(player)) {
-            tasks.get(player).cancel();
-            tasks.remove(player);
+        if(task != null) {
+            task.cancel();
         }
     }
 
@@ -196,29 +178,28 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
     }
 
     private void results() {
-        PlayerData data = playersData.get(player);
-        if(data != null && data.getCurrencyTypeIcon() != null) {
-            setItem(currencySlot, data.getCurrencyTypeIcon());
+        if(playerData != null && playerData.getCurrencyTypeIcon() != null) {
+            setItem(currencySlot, playerData.getCurrencyTypeIcon());
         } else {
             setItem(currencySlot, getUnavailableIcon());
         }
-        if(data != null && data.getQuantityIcon() != null) {
-            setItem(quantitySlot, data.getQuantityIcon());
+        if(playerData != null && playerData.getQuantityIcon() != null) {
+            setItem(quantitySlot, playerData.getQuantityIcon());
         } else {
             setItem(quantitySlot, getUnavailableIcon());
         }
-        if(data != null && data.getUnitPriceIcon() != null) {
-            setItem(priceSlot, data.getUnitPriceIcon());
+        if(playerData != null && playerData.getUnitPriceIcon() != null) {
+            setItem(priceSlot, playerData.getUnitPriceIcon());
         } else {
             setItem(priceSlot, getUnavailableIcon());
         }
-        if(data != null && data.getUnitPriceIcon() != null && data.getQuantityIcon() != null && data.getCurrencyTypeIcon() != null) {
-            double totalProfit = data.getQuantityInput() * data.getUnitPriceInput();
+        if(playerData != null && playerData.getUnitPriceIcon() != null && playerData.getQuantityIcon() != null && playerData.getCurrencyTypeIcon() != null) {
+            double totalProfit = playerData.getQuantityInput() * playerData.getUnitPriceInput();
             ItemStack confirmButton = new ItemStack(Material.GREEN_WOOL);
             ItemMeta m = confirmButton.getItemMeta();
             if(m != null) {
                 m.displayName(Component.text("CONFIRM", NamedTextColor.GREEN));
-                m.lore(Arrays.asList(Component.text("TOTAL COST: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(data.getCurrencyTypeIcon().displayName()))));
+                m.lore(Arrays.asList(Component.text("TOTAL COST: ", NamedTextColor.RED).append(Component.text(totalProfit, NamedTextColor.DARK_GREEN).append(playerData.getCurrencyTypeIcon().displayName()))));
             }
             confirmButton.setItemMeta(m);
             setItem(confirmOrderButton, confirmButton);
@@ -228,23 +209,22 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
     }
 
     private void orderInfo() {
-        PlayerData data = playersData.get(player);
         ItemStack order = new ItemStack(Material.CREEPER_BANNER_PATTERN);
         ItemMeta orderMeta = order.getItemMeta();
-        if(orderMeta != null && data != null) {
+        if(orderMeta != null && playerData != null) {
             orderMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             orderMeta.displayName(Component.text("BUY ORDER:", NamedTextColor.GOLD));
             List<Component> components = new ArrayList<>();
-            if(data.getCurrencyTypeIcon() != null) {
-                Component currencyComponent = Component.text("Currency: ", NamedTextColor.BLUE).append(Component.text(data.getCurrencyTypeInput(), NamedTextColor.GOLD));
+            if(playerData.getCurrencyTypeIcon() != null) {
+                Component currencyComponent = Component.text("Currency: ", NamedTextColor.BLUE).append(Component.text(playerData.getCurrencyTypeInput(), NamedTextColor.GOLD));
                 components.add(currencyComponent);
             }
-            if(data.getQuantityIcon() != null) {
-                Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(data.getQuantityInput() + "x", NamedTextColor.GOLD));
+            if(playerData.getQuantityIcon() != null) {
+                Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(playerData.getQuantityInput() + "x", NamedTextColor.GOLD));
                 components.add(quantityComponent);
             }
-            if(data.getUnitPriceIcon() != null) {
-                Component priceComponent = Component.text("Unit Price: ", NamedTextColor.BLUE).append(Component.text(data.getUnitPriceInput() + "$/unit", NamedTextColor.GOLD));
+            if(playerData.getUnitPriceIcon() != null) {
+                Component priceComponent = Component.text("Unit Price: ", NamedTextColor.BLUE).append(Component.text(playerData.getUnitPriceInput() + "$/unit", NamedTextColor.GOLD));
                 components.add(priceComponent);
             }
             orderMeta.lore(components);
