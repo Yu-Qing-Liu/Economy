@@ -31,12 +31,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
 public class MainMenuController extends AbstractPlayerInventoryController<ShopMenu> {
-    private final int[] prevSectionsButton = new int[]{0,0};
-    private final int[] nextSectionsButton = new int[]{0,5};
-    private final int[] prevItemsButton = new int[]{2,0};
-    private final int[] nextItemsButton = new int[]{2,5};
-    private final int[] prevMenuButton = new int[]{1,0};
-    private final int[] exitMenuButton = new int[]{1,5};
+    private final int[] prevSectionsButton = new int[]{1,0};
+    private final int[] nextSectionsButton = new int[]{1,5};
+    private final int[] prevItemsButton = new int[]{7,0};
+    private final int[] nextItemsButton = new int[]{6,0};
+    private final int[] exitMenuButton = new int[]{4,0};
     private final int[] buyOrdersMenuButton = new int[]{4,5};
     private final int[] sellOrdersMenuButton = new int[]{6,5};
     private final int sectionsLength = 1;
@@ -91,21 +90,26 @@ public class MainMenuController extends AbstractPlayerInventoryController<ShopMe
         itemPageData.prevPage(() -> displayItems());
     }
 
-    private void border() {
-        ItemStack borderItem = createSlotItem(Material.CHAIN, getUnavailableComponent());
-        fillRectangleArea(new int[]{2,1}, 4, 1, borderItem);
-        fillRectangleArea(new int[]{0,1}, 4, 1, borderItem);
-    }
-
     private void buttons() {
         setItem(prevSectionsButton, getPrevPageIcon());
         setItem(nextSectionsButton, getNextPageIcon());
         setItem(prevItemsButton, getPrevPageIcon());
         setItem(nextItemsButton, getNextPageIcon());
-        setItem(prevMenuButton, getPrevMenuIcon());
         setItem(exitMenuButton, getExitMenuIcon());
         setItem(buyOrdersMenuButton, createSlotItem(Material.ENDER_CHEST, Component.text("Buy Orders", NamedTextColor.LIGHT_PURPLE)));
         setItem(sellOrdersMenuButton, createSlotItem(Material.ENDER_CHEST, Component.text("Sell Orders", NamedTextColor.LIGHT_PURPLE)));
+    }
+
+    private void border() {
+        fillRectangleArea(new int[]{0,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        fillRectangleArea(new int[]{2,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        fillRectangleArea(new int[]{8,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        setItem(new int[] {0,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {2,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {0,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {2,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {8,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {8,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
     }
 
     private void fetchSections() {

@@ -72,9 +72,6 @@ public class MainMenu implements Listener {
                 controller.prevItemPage();
                 return;
             }
-            if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                return;
-            }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
                 clickedInventory.close();
             }

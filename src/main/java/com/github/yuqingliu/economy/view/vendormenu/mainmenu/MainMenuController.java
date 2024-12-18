@@ -31,12 +31,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
 public class MainMenuController extends AbstractPlayerInventoryController<VendorMenu> {
-    private final int[] prevSectionsButton = new int[]{0,0};
-    private final int[] nextSectionsButton = new int[]{0,5};
-    private final int[] prevItemsButton = new int[]{2,0};
-    private final int[] nextItemsButton = new int[]{2,5};
-    private final int[] prevMenuButton = new int[]{1,0};
-    private final int[] exitMenuButton = new int[]{1,5};
+    private final int[] prevSectionsButton = new int[]{1,0};
+    private final int[] nextSectionsButton = new int[]{1,5};
+    private final int[] prevItemsButton = new int[]{7,0};
+    private final int[] nextItemsButton = new int[]{6,5};
+    private final int[] exitMenuButton = new int[]{4,0};
     private final int sectionsLength = 1;
     private final int sectionsWidth = 4;
     private final int itemsLength = 5;
@@ -90,9 +89,15 @@ public class MainMenuController extends AbstractPlayerInventoryController<Vendor
     }
 
     private void border() {
-        ItemStack borderItem = createSlotItem(Material.CHAIN, getUnavailableComponent());
-        fillRectangleArea(new int[]{2,1}, 4, 1, borderItem);
-        fillRectangleArea(new int[]{0,1}, 4, 1, borderItem);
+        fillRectangleArea(new int[]{0,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        fillRectangleArea(new int[]{2,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        fillRectangleArea(new int[]{8,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        setItem(new int[] {0,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {2,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {0,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {2,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {8,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {8,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
     }
 
     private void buttons() {
@@ -100,7 +105,6 @@ public class MainMenuController extends AbstractPlayerInventoryController<Vendor
         setItem(nextSectionsButton, getNextPageIcon());
         setItem(prevItemsButton, getPrevPageIcon());
         setItem(nextItemsButton, getNextPageIcon());
-        setItem(prevMenuButton, getPrevMenuIcon());
         setItem(exitMenuButton, getExitMenuIcon());
     }
 
