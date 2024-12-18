@@ -53,6 +53,7 @@ public class Hibernate {
         sources.addAnnotatedClass(VendorEntity.class);
         sources.addAnnotatedClass(VendorSectionEntity.class);
         sources.addAnnotatedClass(VendorItemEntity.class);
+        sources.addAnnotatedClass(AuctionEntity.class);
 
         Metadata metadata = sources.getMetadataBuilder().build();
         return metadata.getSessionFactoryBuilder().build();

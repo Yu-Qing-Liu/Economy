@@ -1,7 +1,7 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -34,9 +34,13 @@ public class PlayerEntity {
     @OrderBy("accountName ASC")
     private Set<AccountEntity> accounts = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OrderBy("displayName ASC")
+    private Set<AuctionEntity> auctions = new LinkedHashSet<>();
+
     public void setPurse(PurseEntity purse) {
         if (purse != null) {
-            purse.setPlayer(this); // Ensure bidirectional consistency
+            purse.setPlayer(this);
         }
         this.purse = purse;
     }
