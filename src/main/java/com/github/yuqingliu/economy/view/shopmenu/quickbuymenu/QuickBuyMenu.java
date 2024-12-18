@@ -31,16 +31,17 @@ public class QuickBuyMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
-        QuickBuyMenuController controller = controllers.getPlayerInventoryController(player, new QuickBuyMenuController(player, clickedInventory, shopMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(shopMenu.getDisplayName())) {
             return;
         }
 
+        QuickBuyMenuController controller = controllers.getPlayerInventoryController(player, new QuickBuyMenuController(player, inventory, shopMenu));
         event.setCancelled(true);
 
-        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.QuickBuyMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.QuickBuyMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
                 return;
@@ -70,8 +71,10 @@ public class QuickBuyMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(shopMenu.getDisplayName())) {
-            controllers.getPlayerInventoryController((Player) event.getPlayer(), null).onClose();
-            controllers.removePlayerInventoryController((Player) event.getPlayer());
+            Player player = (Player) event.getPlayer();
+            Inventory inventory = player.getOpenInventory().getTopInventory();
+            controllers.getPlayerInventoryController(player, new QuickBuyMenuController(player, inventory, shopMenu)).onClose();
+            controllers.removePlayerInventoryController(player);
         }
     }
 }

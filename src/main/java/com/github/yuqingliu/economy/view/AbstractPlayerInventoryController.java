@@ -42,7 +42,7 @@ public abstract class AbstractPlayerInventoryController<T> {
     protected ItemStack loadingIcon = createSlotItem(Material.BARRIER, loadingComponent);
 
     public boolean isUnavailable(ItemStack item) {
-        return item.displayName().equals(unavailableComponent) || item.displayName().equals(loadingComponent);
+        return item.isSimilar(unavailableIcon) || item.isSimilar(loadingIcon) || item.isSimilar(getBackgroundTile(item.getType()));
     }
 
     public ItemStack createSlotItem(Material material, Component displayName, List<Component> lore) {

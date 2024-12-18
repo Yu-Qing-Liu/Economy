@@ -33,16 +33,17 @@ public class AccountMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
-        AccountMenuController controller = controllers.getPlayerInventoryController(player, new AccountMenuController(player, clickedInventory, bankMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(bankMenu.getDisplayName())) {
             return;
         }
 
+        AccountMenuController controller = controllers.getPlayerInventoryController(player, new AccountMenuController(player, inventory, bankMenu));
         event.setCancelled(true);
 
-        if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.AccountMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.AccountMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
                 return;

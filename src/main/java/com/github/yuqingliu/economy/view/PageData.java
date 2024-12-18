@@ -37,10 +37,10 @@ public class PageData<T> {
         if(!pageData.containsKey(pageNumber)) {
             return null;
         }
-        if(!pageData.get(pageNumber).containsKey(Arrays.asList(coords[1], coords[2]))) {
+        if(!pageData.get(pageNumber).containsKey(Arrays.asList(coords[0], coords[1]))) {
             return null;
         }
-        return pageData.get(pageNumber).get(Arrays.asList(coords[1], coords[2]));
+        return pageData.get(pageNumber).get(Arrays.asList(coords[0], coords[1]));
     }
 
     public Map<List<Integer>, T> getCurrentPageData() {

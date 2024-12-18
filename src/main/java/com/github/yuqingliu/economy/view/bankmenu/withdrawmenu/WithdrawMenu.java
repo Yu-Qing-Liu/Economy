@@ -31,16 +31,17 @@ public class WithdrawMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
-        WithdrawMenuController controller = controllers.getPlayerInventoryController(player, new WithdrawMenuController(player, clickedInventory, bankMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(bankMenu.getDisplayName())) {
             return;
         }
 
+        WithdrawMenuController controller = controllers.getPlayerInventoryController(player, new WithdrawMenuController(player, inventory, bankMenu));
         event.setCancelled(true);
 
-        if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.WithdrawMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.WithdrawMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
                 return;

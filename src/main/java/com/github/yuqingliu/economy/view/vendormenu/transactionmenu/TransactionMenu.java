@@ -32,16 +32,17 @@ public class TransactionMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
-        TransactionMenuController controller = controllers.getPlayerInventoryController(player, new TransactionMenuController(player, clickedInventory, vendorMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(vendorMenu.getDisplayName())) {
             return;
         }
 
+        TransactionMenuController controller = controllers.getPlayerInventoryController(player, new TransactionMenuController(player, inventory, vendorMenu));
         event.setCancelled(true);
 
-        if(vendorMenu.getPlayerMenuTypes().get(player) == MenuType.TransactionMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(vendorMenu.getPlayerMenuTypes().get(player) == MenuType.TransactionMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
                 return;

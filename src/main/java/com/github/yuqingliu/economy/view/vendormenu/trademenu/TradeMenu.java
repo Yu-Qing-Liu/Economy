@@ -31,16 +31,17 @@ public class TradeMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
-        TradeMenuController controller = controllers.getPlayerInventoryController(player, new TradeMenuController(player, clickedInventory, vendorMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(vendorMenu.getDisplayName())) {
             return;
         }
 
+        TradeMenuController controller = controllers.getPlayerInventoryController(player, new TradeMenuController(player, inventory, vendorMenu));
         event.setCancelled(true);
 
-        if(vendorMenu.getPlayerMenuTypes().get(player) == MenuType.TradeMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(vendorMenu.getPlayerMenuTypes().get(player) == MenuType.TradeMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
                 return;
@@ -79,8 +80,10 @@ public class TradeMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(vendorMenu.getDisplayName())) {
-            controllers.getPlayerInventoryController((Player) event.getPlayer(), null).onClose();
-            controllers.removePlayerInventoryController((Player) event.getPlayer());
+            Player player = (Player) event.getPlayer();
+            Inventory inventory = player.getOpenInventory().getTopInventory();
+            controllers.getPlayerInventoryController(player, new TradeMenuController(player, inventory, vendorMenu)).onClose();
+            controllers.removePlayerInventoryController(player);
         }
     }
 }

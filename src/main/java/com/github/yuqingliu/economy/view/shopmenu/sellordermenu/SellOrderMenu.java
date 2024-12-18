@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -30,16 +31,17 @@ public class SellOrderMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
-        SellOrderMenuController controller = controllers.getPlayerInventoryController(player, new SellOrderMenuController(player, clickedInventory, shopMenu));
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(shopMenu.getDisplayName())) {
             return;
         }
 
+        SellOrderMenuController controller = controllers.getPlayerInventoryController(player, new SellOrderMenuController(player, inventory, shopMenu));
         event.setCancelled(true);
 
-        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.SellOrderMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
+        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.SellOrderMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
                 return;
@@ -68,6 +70,16 @@ public class SellOrderMenu implements Listener {
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
                 clickedInventory.close();
             }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (event.getView().title().equals(shopMenu.getDisplayName())) {
+            Player player = (Player) event.getPlayer();
+            Inventory inventory = player.getOpenInventory().getTopInventory();
+            controllers.getPlayerInventoryController(player, new SellOrderMenuController(player, inventory, shopMenu)).onClose();
+            controllers.removePlayerInventoryController(player);
         }
     }
 }
