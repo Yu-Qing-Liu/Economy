@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -21,6 +20,8 @@ import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.VendorEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.VendorSectionEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
+import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
 
@@ -29,14 +30,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class MainMenuController {
-    private final VendorMenu vendorMenu;
-    private final int[] prevSectionsButton = new int[]{0,0};
-    private final int[] nextSectionsButton = new int[]{0,5};
-    private final int[] prevItemsButton = new int[]{2,0};
-    private final int[] nextItemsButton = new int[]{2,5};
-    private final int[] prevMenuButton = new int[]{1,0};
-    private final int[] exitMenuButton = new int[]{1,5};
+public class MainMenuController extends AbstractPlayerInventoryController<VendorMenu> {
+    private final int[] prevSectionsButton = new int[]{1,0};
+    private final int[] nextSectionsButton = new int[]{1,5};
+    private final int[] prevItemsButton = new int[]{7,0};
+    private final int[] nextItemsButton = new int[]{6,5};
+    private final int[] exitMenuButton = new int[]{4,0};
     private final int sectionsLength = 1;
     private final int sectionsWidth = 4;
     private final int itemsLength = 5;
@@ -47,95 +46,70 @@ public class MainMenuController {
     private final int[] itemsStart = new int[]{3,1};
     private final List<int[]> sectionsOptions;
     private final List<int[]> itemsOptions;
-    private Map<Integer, Map<List<Integer>, VendorSectionEntity>> pageSectionData = new ConcurrentHashMap<>();
-    private Map<Integer, Map<List<Integer>, VendorItemEntity>> pageItemData = new ConcurrentHashMap<>();
-    private Map<Player, int[]> sectionPageNumbers = new ConcurrentHashMap<>();
-    private Map<Player, int[]> itemPageNumbers = new ConcurrentHashMap<>();
+    private final PageData<VendorSectionEntity> sectionsPageData = new PageData<>();
+    private final PageData<VendorItemEntity> itemPageData = new PageData<>();
 
-    public MainMenuController(VendorMenu vendorMenu) {
-        this.vendorMenu = vendorMenu;
-        this.sectionsOptions = vendorMenu.rectangleArea(sectionsStart, sectionsWidth, sectionsLength);
-        this.itemsOptions = vendorMenu.rectangleArea(itemsStart, itemsWidth, itemsLength);
+    public MainMenuController(Player player, Inventory inventory, VendorMenu vendorMenu) {
+        super(player, inventory, vendorMenu);
+        this.sectionsOptions = rectangleArea(sectionsStart, sectionsWidth, sectionsLength);
+        this.itemsOptions = rectangleArea(itemsStart, itemsWidth, itemsLength);
     }
 
-    public void openMainMenu(Inventory inv, Player player) {
-        sectionPageNumbers.put(player, new int[]{1});
-        itemPageNumbers.put(player, new int[]{1});
+    public void openMenu() {
         Scheduler.runLaterAsync((task) -> {
-            vendorMenu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
         }, Duration.ofMillis(50));
-        vendorMenu.fill(inv, vendorMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
-        buttons(inv);
-        border(inv);
-        vendorMenu.rectangleAreaLoading(inv, sectionsStart, sectionsWidth, sectionsLength);
-        vendorMenu.rectangleAreaLoading(inv, itemsStart, itemsWidth, itemsLength);
+        fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
+        buttons();
+        border();
+        rectangleAreaLoading(sectionsStart, sectionsWidth, sectionsLength);
+        rectangleAreaLoading(itemsStart, itemsWidth, itemsLength);
         Scheduler.runAsync((task) -> {
             fetchSections();
-            displaySections(inv, player);
-            fetchItems(inv, player, sectionsStart);
-            displayItems(inv, player);
+            displaySections();
+            fetchItems(sectionsStart);
+            displayItems();
         });
     }
 
-    public void nextSectionPage(Inventory inv, Player player) {
-        sectionPageNumbers.get(player)[0]++;
-        if(pageSectionData.containsKey(sectionPageNumbers.get(player)[0])) {
-            displaySections(inv, player);
-        } else {
-            sectionPageNumbers.get(player)[0]--;
-        }     
+    public void nextSectionPage() {
+        sectionsPageData.nextPage(() -> displaySections());
     }
 
-    public void prevSectionPage(Inventory inv, Player player) {
-        sectionPageNumbers.get(player)[0]--;
-        if(sectionPageNumbers.get(player)[0] > 0) {
-            displaySections(inv, player);
-        } else {
-            sectionPageNumbers.get(player)[0]++;
-        }
+    public void prevSectionPage() {
+        sectionsPageData.prevPage(() -> displaySections());
     }
 
-    public void nextItemPage(Inventory inv, Player player) {
-        itemPageNumbers.get(player)[0]++;
-        if(pageItemData.containsKey(itemPageNumbers.get(player)[0])) {
-            displayItems(inv, player);
-        } else {
-            itemPageNumbers.get(player)[0]--;
-        }     
+    public void nextItemPage() {
+        itemPageData.nextPage(() -> displayItems());
     }
 
-    public void prevItemPage(Inventory inv, Player player) {
-        itemPageNumbers.get(player)[0]--;
-        if(itemPageNumbers.get(player)[0] > 0) {
-            displayItems(inv, player);
-        } else {
-            itemPageNumbers.get(player)[0]++;
-        }
+    public void prevItemPage() {
+        itemPageData.prevPage(() -> displayItems());
     }
 
-    public void onClose(Player player) {
-        sectionPageNumbers.remove(player);
-        itemPageNumbers.remove(player);
+    private void border() {
+        fillRectangleArea(new int[]{0,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        fillRectangleArea(new int[]{2,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        fillRectangleArea(new int[]{8,1}, 4, 1, getBackgroundTile(Material.CHAIN));
+        setItem(new int[] {0,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {2,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {0,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {2,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {8,0}, getBackgroundTile(Material.OAK_HANGING_SIGN));
+        setItem(new int[] {8,5}, getBackgroundTile(Material.OAK_HANGING_SIGN));
     }
 
-    private void border(Inventory inv) {
-        ItemStack borderItem = vendorMenu.createSlotItem(Material.CHAIN, vendorMenu.getUnavailableComponent());
-        vendorMenu.fillRectangleArea(inv, new int[]{2,1}, 4, 1, borderItem);
-        vendorMenu.fillRectangleArea(inv, new int[]{0,1}, 4, 1, borderItem);
-    }
-
-    private void buttons(Inventory inv) {
-        vendorMenu.setItem(inv, prevSectionsButton, vendorMenu.getPrevPage());
-        vendorMenu.setItem(inv, nextSectionsButton, vendorMenu.getNextPage());
-        vendorMenu.setItem(inv, prevItemsButton, vendorMenu.getPrevPage());
-        vendorMenu.setItem(inv, nextItemsButton, vendorMenu.getNextPage());
-        vendorMenu.setItem(inv, prevMenuButton, vendorMenu.getPrevMenu());
-        vendorMenu.setItem(inv, exitMenuButton, vendorMenu.getExitMenu());
+    private void buttons() {
+        setItem(prevSectionsButton, getPrevPageIcon());
+        setItem(nextSectionsButton, getNextPageIcon());
+        setItem(prevItemsButton, getPrevPageIcon());
+        setItem(nextItemsButton, getNextPageIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
     }
 
     private void fetchSections() {
-        pageSectionData.clear();
-        VendorEntity vendor = vendorMenu.getVendorService().getVendor(vendorMenu.getVendorName()); 
+        VendorEntity vendor = menu.getVendorService().getVendor(menu.getVendorName()); 
         if(vendor == null) {
             return;
         }
@@ -156,13 +130,12 @@ public class MainMenuController {
                     options.put(Arrays.asList(coords[0], coords[1]), temp.poll());
                 }
             }
-            pageSectionData.put(pageNum, options);
+            sectionsPageData.put(pageNum, options);
         }
     }
 
-    private void fetchItems(Inventory inv, Player player, int[] sectionCoords) {
-        pageItemData.clear();
-        Map<List<Integer>, VendorSectionEntity> sections = pageSectionData.getOrDefault(sectionPageNumbers.get(player)[0], Collections.emptyMap());
+    private void fetchItems(int[] sectionCoords) {
+        Map<List<Integer>, VendorSectionEntity> sections = sectionsPageData.getCurrentPageData();
         Set<VendorItemEntity> items = Collections.emptySet();
         if(sections.containsKey(Arrays.asList(sectionCoords[0], sectionCoords[1]))) {
             items = sections.get(Arrays.asList(sectionCoords[0], sectionCoords[1])).getItems();
@@ -183,17 +156,17 @@ public class MainMenuController {
                     options.put(Arrays.asList(coords[0], coords[1]), temp.poll());
                 }
             }
-            pageItemData.put(pageNum, options);
+            itemPageData.put(pageNum, options);
         }
     }
 
-    private void displaySections(Inventory inv, Player player) {
-        Map<List<Integer>, VendorSectionEntity> sections = pageSectionData.getOrDefault(sectionPageNumbers.get(player)[0], Collections.emptyMap());
+    private void displaySections() {
+        Map<List<Integer>, VendorSectionEntity> sections = sectionsPageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, VendorSectionEntity> entry : sections.entrySet()) {
             List<Integer> coords = entry.getKey();
             VendorSectionEntity section = entry.getValue();
             if(section == null) {
-                vendorMenu.setItem(inv, coords, vendorMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack item = section.getIcon().clone();
                 ItemMeta meta = item.getItemMeta();
@@ -202,39 +175,39 @@ public class MainMenuController {
                     meta.lore(Arrays.asList(description));
                     item.setItemMeta(meta);
                 }
-                vendorMenu.setItem(inv, coords, item);
+                setItem(coords, item);
             }
         }
     }
 
-    public void displayInitialItems(Inventory inv, Player player, int[] sectionCoords) {
-        vendorMenu.rectangleAreaLoading(inv, itemsStart, itemsWidth, itemsLength);
+    public void displayInitialItems(int[] sectionCoords) {
+        rectangleAreaLoading(itemsStart, itemsWidth, itemsLength);
         Scheduler.runAsync((task) -> {
-            fetchItems(inv, player, sectionCoords);
-            Map<List<Integer>, VendorItemEntity> items = pageItemData.getOrDefault(itemPageNumbers.get(player)[0], Collections.emptyMap());
+            fetchItems(sectionCoords);
+            Map<List<Integer>, VendorItemEntity> items = itemPageData.getCurrentPageData();
             for(Map.Entry<List<Integer>, VendorItemEntity> entry : items.entrySet()) {
                 List<Integer> coords = entry.getKey();
                 VendorItemEntity item = entry.getValue();
                 if(item == null) {
-                    vendorMenu.setItem(inv, coords, vendorMenu.getUnavailable());
+                    setItem(coords, getUnavailableIcon());
                 } else {
                     ItemStack icon = item.getIcon().clone();
-                    vendorMenu.setItem(inv, coords, icon);
+                    setItem(coords, icon);
                 }
             }
         });
     }
 
-    public void displayItems(Inventory inv, Player player) {
-        Map<List<Integer>, VendorItemEntity> items = pageItemData.getOrDefault(itemPageNumbers.get(player)[0], Collections.emptyMap());
+    public void displayItems() {
+        Map<List<Integer>, VendorItemEntity> items = itemPageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, VendorItemEntity> entry : items.entrySet()) {
             List<Integer> coords = entry.getKey();
             VendorItemEntity item = entry.getValue();
             if(item == null) {
-                vendorMenu.setItem(inv, coords, vendorMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack icon = item.getIcon().clone();
-                vendorMenu.setItem(inv, coords, icon);
+                setItem(coords, icon);
             }
         }
     }

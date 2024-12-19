@@ -3,12 +3,10 @@ package com.github.yuqingliu.economy.view.shopmenu.sellordersmenu;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,6 +17,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
+import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 
@@ -27,8 +27,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class SellOrdersMenuController {
-    private final ShopMenu shopMenu;
+public class SellOrdersMenuController extends AbstractPlayerInventoryController<ShopMenu> {
     private final int[] prevMenuButton = new int[]{1,2};
     private final int[] exitMenuButton = new int[]{1,3};
     private final int[] reloadButton = new int[]{1,4};
@@ -39,59 +38,41 @@ public class SellOrdersMenuController {
     private final int sellOrdersWidth = 4;
     private final int sellOrdersSize = sellOrdersLength * sellOrdersWidth;
     private final List<int[]> sellOrders;
-    private Map<Player, Map<Integer, Map<List<Integer>, ShopOrderEntity>>> pageData = new ConcurrentHashMap<>();
-    private Map<Player, int[]> pageNumbers = new ConcurrentHashMap<>();
+    private final PageData<ShopOrderEntity> pageData = new PageData<>();
     
-    public SellOrdersMenuController(ShopMenu shopMenu) {
-        this.shopMenu = shopMenu;
-        this.sellOrders = shopMenu.rectangleArea(sellOrdersStart, sellOrdersWidth, sellOrdersLength);
+    public SellOrdersMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
+        super(player, inventory, shopMenu);
+        this.sellOrders = rectangleArea(sellOrdersStart, sellOrdersWidth, sellOrdersLength);
     }
 
-    public void openSellOrdersMenu(Inventory inv, Player player) {
-        pageNumbers.put(player, new int[]{1});
-        pageData.put(player, new ConcurrentHashMap<>());
+    public void openMenu() {
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.SellOrdersMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.SellOrdersMenu);
         }, Duration.ofMillis(50));
-        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
-        border(inv);
-        buttons(inv);
-        reload(inv, player);
+        fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
+        border();
+        buttons();
+        reload();
     }
 
-    public void reload(Inventory inv, Player player) {
-        shopMenu.rectangleAreaLoading(inv, sellOrdersStart, sellOrdersWidth, sellOrdersLength);
+    public void reload() {
+        rectangleAreaLoading(sellOrdersStart, sellOrdersWidth, sellOrdersLength);
         Scheduler.runAsync((task) -> {
-            fetchSellOrders(player);
-            displaySellOrdersOptions(inv, player);
+            fetchSellOrders();
+            displaySellOrdersOptions();
         });
     }
 
-    public void nextSellOrdersPage(Inventory inv, Player player) {
-        pageNumbers.get(player)[0]++;
-        if(pageData.get(player).containsKey(pageNumbers.get(player)[0])) {
-            displaySellOrdersOptions(inv, player);
-        } else {
-            pageNumbers.get(player)[0]--;
-        }     
+    public void nextPage() {
+        pageData.nextPage(() -> displaySellOrdersOptions());    
     }
 
-    public void prevSellOrdersPage(Inventory inv, Player player) {
-        pageNumbers.get(player)[0]--;
-        if(pageNumbers.get(player)[0] > 0) {
-            displaySellOrdersOptions(inv, player);
-        } else {
-            pageNumbers.get(player)[0]++;
-        }
+    public void prevPage() {
+        pageData.prevPage(() -> displaySellOrdersOptions());    
     }
 
-    public void onClose(Player player) {
-        pageNumbers.remove(player);
-        pageData.remove(player);
-    }
-
-    private void fetchSellOrders(Player player) {
-        List<ShopOrderEntity> sellOrders = shopMenu.getShopService().getPlayerSellOrders(player);
+    private void fetchSellOrders() {
+        List<ShopOrderEntity> sellOrders = menu.getShopService().getPlayerSellOrders(player);
         Queue<ShopOrderEntity> tempSellOrders = new ArrayDeque<>();
         tempSellOrders.addAll(sellOrders);
         int maxSellOrdersPages = (int) Math.ceil((double) tempSellOrders.size() / (double) sellOrdersSize);
@@ -105,18 +86,17 @@ public class SellOrdersMenuController {
                     options.put(Arrays.asList(coords[0], coords[1]), tempSellOrders.poll());
                 }
             }
-            pageData.get(player).put(pageNum, options);
+            pageData.put(pageNum, options);
         }
     }
 
-    private void displaySellOrdersOptions(Inventory inv, Player player) {
-        Map<Integer, Map<List<Integer>, ShopOrderEntity>> playerData = pageData.get(player);
-        Map<List<Integer>, ShopOrderEntity> orders = playerData.getOrDefault(pageNumbers.get(player)[0], Collections.emptyMap());
+    private void displaySellOrdersOptions() {
+        Map<List<Integer>, ShopOrderEntity> orders = pageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, ShopOrderEntity> entry : orders.entrySet()) {
             List<Integer> coords = entry.getKey();
             ShopOrderEntity order = entry.getValue();
             if(order == null) {
-                shopMenu.setItem(inv, coords, shopMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack orderIcon = order.getShopItem().getIcon().clone();
                 ItemMeta meta = orderIcon.getItemMeta();
@@ -131,26 +111,26 @@ public class SellOrdersMenuController {
                     meta.lore(Arrays.asList(nameComponent, currencyComponent, priceComponent, quantityComponent, quantityBoughtComponent));
                 }
                 orderIcon.setItemMeta(meta);
-                shopMenu.setItem(inv, coords, orderIcon);
+                setItem(coords, orderIcon);
             }
         }
     }
 
-    private void border(Inventory inv) {
-        ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
+    private void border() {
+        ItemStack borderItem = createSlotItem(Material.BLACK_STAINED_GLASS_PANE, getUnavailableComponent());
         int[] b1 = new int[]{1,1};
         int[] b3 = new int[]{7,1};
         int[] b4 = new int[]{7,4};
-        shopMenu.setItem(inv, b1, borderItem);
-        shopMenu.setItem(inv, b3, borderItem);
-        shopMenu.setItem(inv, b4, borderItem);
+        setItem(b1, borderItem);
+        setItem(b3, borderItem);
+        setItem(b4, borderItem);
     }
 
-    private void buttons(Inventory inv) {
-        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
-        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
-        shopMenu.setItem(inv, nextSellOrdersButton, shopMenu.getNextPage());
-        shopMenu.setItem(inv, prevSellOrdersButton, shopMenu.getPrevPage());
-        shopMenu.setItem(inv, reloadButton, shopMenu.getReload());
+    private void buttons() {
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
+        setItem(nextSellOrdersButton, getNextPageIcon());
+        setItem(prevSellOrdersButton, getPrevPageIcon());
+        setItem(reloadButton, getReloadIcon());
     }
 }

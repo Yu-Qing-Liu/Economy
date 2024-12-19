@@ -18,6 +18,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
+import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu;
 import com.github.yuqingliu.economy.view.vendormenu.VendorMenu.MenuType;
 
@@ -26,8 +28,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class TransactionMenuController {
-    private final VendorMenu vendorMenu;
+public class TransactionMenuController extends AbstractPlayerInventoryController<VendorMenu> {
     private final int[] prevOptionsButton = new int[]{1,3};
     private final int[] nextOptionsButton = new int[]{1,4};
     private final int[] prevMenuButton = new int[]{7,3};
@@ -38,77 +39,59 @@ public class TransactionMenuController {
     private final int optionsSize = optionsLength * optionsWidth;
     private final int[] optionsStart = new int[]{2,3};
     private final List<int[]> currencyOptions;
-    private Map<Integer, Map<List<Integer>, CurrencyOption>> pageData = new ConcurrentHashMap<>();
-    private Map<Player, int[]> pageNumbers = new ConcurrentHashMap<>();
+    private final PageData<CurrencyOption> pageData = new PageData<>();
     private VendorItemEntity item;
     
-    public TransactionMenuController(VendorMenu vendorMenu) {
-        this.vendorMenu = vendorMenu;
-        this.currencyOptions = vendorMenu.rectangleArea(optionsStart, optionsWidth, optionsLength);
+    public TransactionMenuController(Player player, Inventory inventory, VendorMenu vendorMenu) {
+        super(player, inventory, vendorMenu);
+        this.currencyOptions = rectangleArea(optionsStart, optionsWidth, optionsLength);
     }
 
-    public void openTransactionMenu(Inventory inv, VendorItemEntity item, Player player) {
+    public void openMenu(VendorItemEntity item) {
         this.item = item;
-        pageNumbers.put(player, new int[]{1});
         Scheduler.runLaterAsync((task) -> {
-            vendorMenu.getPlayerMenuTypes().put(player, MenuType.TransactionMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.TransactionMenu);
         }, Duration.ofMillis(50));
-        vendorMenu.clear(inv);
-        vendorMenu.fill(inv, vendorMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
-        border(inv);
-        buttons(inv);
-        displayItem(inv);
-        vendorMenu.rectangleAreaLoading(inv, optionsStart, optionsWidth, optionsLength);
+        fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
+        border();
+        buttons();
+        displayItem();
+        rectangleAreaLoading(optionsStart, optionsWidth, optionsLength);
         Scheduler.runAsync((task) -> {
             fetchOptions();
-            displayOptions(inv, player);
+            displayOptions();
         });
     }
 
-    public void nextPage(Inventory inv, Player player) {
-        pageNumbers.get(player)[0]++;
-        if(pageData.containsKey(pageNumbers.get(player)[0])) {
-            displayOptions(inv, player);
-        } else {
-            pageNumbers.get(player)[0]--;
-        }     
+    public void nextPage() {
+        pageData.nextPage(() -> displayOptions());
     }
 
-    public void prevPage(Inventory inv, Player player) {
-        pageNumbers.get(player)[0]--;
-        if(pageNumbers.get(player)[0] > 0) {
-            displayOptions(inv, player);
-        } else {
-            pageNumbers.get(player)[0]++;
-        }
+    public void prevPage() {
+        pageData.prevPage(() -> displayOptions());
     }
 
-    public void onClose(Player player) {
-        pageNumbers.remove(player);
+    private void displayItem() {
+        setItem(itemSlot, item.getIcon().clone());
     }
 
-    private void displayItem(Inventory inv) {
-        vendorMenu.setItem(inv, itemSlot, item.getIcon().clone());
+    private void border() {
+        ItemStack borderItem = createSlotItem(Material.BLACK_STAINED_GLASS_PANE, getUnavailableComponent());
+        fillRectangleArea(new int[]{1,0}, 1, 7, borderItem);
+        fillRectangleArea(new int[]{1,1}, 1, 3, borderItem);
+        fillRectangleArea(new int[]{5,1}, 1, 3, borderItem);
+        fillRectangleArea(new int[]{1,2}, 1, 7, borderItem);
+        fillRectangleArea(new int[]{1,5}, 1, 7, borderItem);
     }
 
-    private void border(Inventory inv) {
-        ItemStack borderItem = vendorMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, vendorMenu.getUnavailableComponent());
-        vendorMenu.fillRectangleArea(inv, new int[]{1,0}, 1, 7, borderItem);
-        vendorMenu.fillRectangleArea(inv, new int[]{1,1}, 1, 3, borderItem);
-        vendorMenu.fillRectangleArea(inv, new int[]{5,1}, 1, 3, borderItem);
-        vendorMenu.fillRectangleArea(inv, new int[]{1,2}, 1, 7, borderItem);
-        vendorMenu.fillRectangleArea(inv, new int[]{1,5}, 1, 7, borderItem);
-    }
-
-    private void buttons(Inventory inv) {
-        vendorMenu.setItem(inv, prevOptionsButton, vendorMenu.getPrevPage());
-        vendorMenu.setItem(inv, nextOptionsButton, vendorMenu.getNextPage());
-        vendorMenu.setItem(inv, prevMenuButton, vendorMenu.getPrevMenu());
-        vendorMenu.setItem(inv, exitMenuButton, vendorMenu.getExitMenu());
+    private void buttons() {
+        setItem(prevOptionsButton, getPrevPageIcon());
+        setItem(nextOptionsButton, getNextPageIcon());
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
     }
 
     private void fetchOptions() {
-        pageData.clear();
         Map<String, Double> buyPrices = item.getBuyPrices();
         Map<String, Double> sellPrices = item.getSellPrices();
         Queue<CurrencyOption> temp = new ArrayDeque<>();
@@ -116,7 +99,7 @@ public class TransactionMenuController {
             String currencyName = entry.getKey();
             double buyPrice = entry.getValue();
             double sellPrice = sellPrices.get(currencyName);
-            ItemStack icon =  vendorMenu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
+            ItemStack icon =  menu.getCurrencyService().getCurrencyByName(currencyName).getIcon().clone();
             CurrencyOption option = new CurrencyOption(icon, buyPrice, sellPrice);
             temp.offer(option);
         }
@@ -135,13 +118,13 @@ public class TransactionMenuController {
         }
     }
 
-    private void displayOptions(Inventory inv, Player player) {
-        Map<List<Integer>, CurrencyOption> options = pageData.getOrDefault(pageNumbers.get(player)[0], Collections.emptyMap());
+    private void displayOptions() {
+        Map<List<Integer>, CurrencyOption> options = pageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, CurrencyOption> entry : options.entrySet()) {
             List<Integer> coords = entry.getKey();
             CurrencyOption option = entry.getValue();
             if(option == null) {
-                vendorMenu.setItem(inv, coords, vendorMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack item = option.getIcon().clone();
                 ItemMeta itemMeta = item.getItemMeta();
@@ -149,7 +132,7 @@ public class TransactionMenuController {
                 Component sellPrice = Component.text("UNIT SELL PRICE: ", NamedTextColor.DARK_AQUA).append(Component.text(option.getSellPrice() +"$ ", NamedTextColor.DARK_GREEN));
                 itemMeta.lore(Arrays.asList(buyPrice, sellPrice));
                 item.setItemMeta(itemMeta);
-                vendorMenu.setItem(inv, coords, item);
+                setItem(coords, item);
             }
         }
     }

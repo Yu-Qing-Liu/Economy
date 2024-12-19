@@ -3,8 +3,6 @@ package com.github.yuqingliu.economy.view.bankmenu.accountmenu;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,6 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 
@@ -23,35 +22,29 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class AccountMenuController {
-    private final BankMenu bankMenu;
+public class AccountMenuController extends AbstractPlayerInventoryController<BankMenu> {
     private final int[] prevMenuButton = new int[]{1,1};
     private final int[] exitMenuButton = new int[]{2,1};
     private final int[] accountInfo = new int[]{3,1};
     private final int[] depositButton = new int[]{5,1};
     private final int[] withdrawButton = new int[]{7,1};
-    private Map<Player, AccountEntity> accounts = new ConcurrentHashMap<>();
+    private AccountEntity account;
 
-    public AccountMenuController(BankMenu bankMenu) {
-        this.bankMenu = bankMenu;
+    public AccountMenuController(Player player, Inventory inventory, BankMenu bankMenu) {
+        super(player, inventory, bankMenu);
     }
     
-    public void openAccountMenu(Player player, Inventory inv, AccountEntity account) {
-        this.accounts.put(player, account);
+    public void openMenu(AccountEntity account) {
+        this.account = account;
         Scheduler.runLaterAsync((task) -> {
-            bankMenu.getPlayerMenuTypes().put(player, MenuType.AccountMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.AccountMenu);
         }, Duration.ofMillis(50));
-        bankMenu.fill(inv, bankMenu.getBackgroundItems().get(Material.ORANGE_STAINED_GLASS_PANE));
-        accountDetails(inv, player);
-        buttons(inv);
+        fill(getBackgroundTile(Material.ORANGE_STAINED_GLASS_PANE));
+        accountDetails();
+        buttons();
     }
 
-    public void onClose(Player player) {
-        accounts.remove(player);
-    }
-
-    private void accountDetails(Inventory inv, Player player) {
-        AccountEntity account = accounts.get(player);
+    private void accountDetails() {
         ItemStack icon = account.getIcon().clone();
         ItemMeta meta = icon.getItemMeta();
         if(meta != null) {
@@ -64,13 +57,13 @@ public class AccountMenuController {
             meta.lore(lore);
         }
         icon.setItemMeta(meta);
-        bankMenu.setItem(inv, accountInfo, icon);
+        setItem(accountInfo, icon);
     }
 
-    private void buttons(Inventory inv) {
-        bankMenu.setItem(inv, prevMenuButton, bankMenu.getPrevMenu());       
-        bankMenu.setItem(inv, exitMenuButton, bankMenu.getExitMenu());       
-        bankMenu.setItem(inv, depositButton, bankMenu.createSlotItem(Material.ENDER_CHEST, Component.text("Deposit", NamedTextColor.GOLD)));
-        bankMenu.setItem(inv, withdrawButton, bankMenu.createSlotItem(Material.CHEST, Component.text("Withdraw", NamedTextColor.RED)));
+    private void buttons() {
+        setItem(prevMenuButton, getPrevMenuIcon());       
+        setItem(exitMenuButton, getExitMenuIcon());       
+        setItem(depositButton, createSlotItem(Material.ENDER_CHEST, Component.text("Deposit", NamedTextColor.GOLD)));
+        setItem(withdrawButton, createSlotItem(Material.CHEST, Component.text("Withdraw", NamedTextColor.RED)));
     }
 }

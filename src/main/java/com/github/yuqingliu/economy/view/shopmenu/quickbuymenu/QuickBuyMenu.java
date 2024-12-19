@@ -10,19 +10,20 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
+import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderMenuController;
 
 import lombok.Getter;
 
 @Getter
 public class QuickBuyMenu implements Listener {
     private final ShopMenu shopMenu;
-    private final QuickBuyMenuController controller;
+    private final PlayerInventoryControllerFactory<QuickBuyMenuController> controllers = new PlayerInventoryControllerFactory<>();
 
     public QuickBuyMenu(ShopMenu shopMenu) {
         this.shopMenu = shopMenu;
-        this.controller = new QuickBuyMenuController(shopMenu);
         shopMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
@@ -30,33 +31,35 @@ public class QuickBuyMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(shopMenu.getDisplayName())) {
             return;
         }
 
+        QuickBuyMenuController controller = controllers.getPlayerInventoryController(player, new QuickBuyMenuController(player, inventory, shopMenu));
         event.setCancelled(true);
 
-        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.QuickBuyMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int[] slot = shopMenu.toCoords(event.getSlot());
-            if(shopMenu.isUnavailable(currentItem)) {
+        if(shopMenu.getPlayerMenuTypes().get(player) == MenuType.QuickBuyMenu && clickedInventory.equals(inventory)) {
+            int[] slot = controller.toCoords(event.getSlot());
+            if(controller.isUnavailable(currentItem)) {
                 return;
             }
-            if(shopMenu.rectangleContains(slot, controller.getBuyOptions())) {
-                int index = shopMenu.rectangleIndex(slot, controller.getBuyOptions());
+            if(controller.rectangleContains(slot, controller.getBuyOptions())) {
+                int index = controller.rectangleIndex(slot, controller.getBuyOptions());
                 int amount = controller.getQuantities()[index];
-                controller.quickBuy(amount, player);
+                controller.quickBuy(amount);
                 return;
             }
             if(Arrays.equals(slot, controller.getBuyInventoryButton())) {
                 int amount = shopMenu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, controller.getItem().getIcon().getType());
-                controller.quickBuy(amount, player);
+                controller.quickBuy(amount);
                 return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                controller.onClose(player);
-                shopMenu.getOrderMenu().getController().openOrderMenu(clickedInventory, controller.getItem(), player);
+                controller.onClose();
+                shopMenu.getOrderMenu().getControllers().getPlayerInventoryController(player, new OrderMenuController(player, clickedInventory, shopMenu)).openMenu(controller.getItem());
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
@@ -68,7 +71,10 @@ public class QuickBuyMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(shopMenu.getDisplayName())) {
-            controller.onClose((Player) event.getPlayer());
+            Player player = (Player) event.getPlayer();
+            Inventory inventory = player.getOpenInventory().getTopInventory();
+            controllers.getPlayerInventoryController(player, new QuickBuyMenuController(player, inventory, shopMenu)).onClose();
+            controllers.removePlayerInventoryController(player);
         }
     }
 }

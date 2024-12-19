@@ -3,8 +3,6 @@ package com.github.yuqingliu.economy.view.shopmenu.quicksellmenu;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,6 +13,7 @@ import org.bukkit.scheduler.BukkitTask;
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderOption;
@@ -24,8 +23,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class QuickSellMenuController {
-    private final ShopMenu shopMenu;
+public class QuickSellMenuController extends AbstractPlayerInventoryController<ShopMenu> {
     private final int[] quantities = new int[] {1, 4, 8, 16, 32, 64};
     private final int[] sellOptionsStart = new int[]{1,4};
     private final int sellOptionsWidth = 1;
@@ -37,54 +35,53 @@ public class QuickSellMenuController {
     private final List<int[]> sellOptions;
     private ShopItemEntity item;
     private OrderOption orderOption;
-    private Map<Player, BukkitTask> tasks = new ConcurrentHashMap<>();
+    private BukkitTask task;
     
-    public QuickSellMenuController(ShopMenu shopMenu) {
-        this.shopMenu = shopMenu;
-        this.sellOptions = shopMenu.rectangleArea(sellOptionsStart, sellOptionsWidth, sellOptionsLength);
+    public QuickSellMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
+        super(player, inventory, shopMenu);
+        this.sellOptions = rectangleArea(sellOptionsStart, sellOptionsWidth, sellOptionsLength);
     }   
 
-    public void openQuickSellMenu(Inventory inv, ShopItemEntity item, OrderOption orderOption, Player player) {
+    public void openMenu(ShopItemEntity item, OrderOption orderOption) {
         this.item = item;
         this.orderOption = orderOption;
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.QuickSellMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.QuickSellMenu);
         }, Duration.ofMillis(50));
-        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
-        border(inv);
-        buttons(inv, player);
-        displayItem(inv);
-        displaySellOptions(inv, player);
+        fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
+        border();
+        buttons();
+        displayItem();
+        displaySellOptions();
     }
 
-    public void onClose(Player player) {
-        if(tasks.containsKey(player)) {
-            tasks.get(player).cancel();
-            tasks.remove(player);
+    public void onClose() {
+        if(task != null) {
+            task.cancel();
         }
     }
 
-    public void quickSell(int amount, Player player) {
+    public void quickSell(int amount) {
         Scheduler.runAsync((task) -> {
-            int[] data = shopMenu.getShopService().quickSell(item, amount, orderOption.getCurrencyName(), player);
+            int[] data = menu.getShopService().quickSell(item, amount, orderOption.getCurrencyName(), player);
             int filled = amount - data[0];
             double profit = data[1];
             if(profit > 0) {
-                shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d items for %.2f %s", filled, profit, orderOption.getCurrencyName()));
+                menu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d items for %.2f %s", filled, profit, orderOption.getCurrencyName()));
             } else {
-                shopMenu.getLogger().sendPlayerErrorMessage(player, "No more offers.");
+                menu.getLogger().sendPlayerErrorMessage(player, "No more offers.");
             }
         });
     }
 
-    private void displayItem(Inventory inv) {
-        shopMenu.setItem(inv, itemSlot, item.getIcon().clone());
+    private void displayItem() {
+        setItem(itemSlot, item.getIcon().clone());
     }
 
-    private void displaySellOptions(Inventory inv, Player player) {
+    private void displaySellOptions() {
         int index = 0;
         for(int[] coords : sellOptions) {
-            int max = shopMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
+            int max = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
             int total = Math.min(max, quantities[index]);
             double profit = 0;
             int qty = total;
@@ -107,25 +104,25 @@ public class QuickSellMenuController {
             }
             Component sell = Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
             Component profitComponent = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
-            ItemStack option = shopMenu.createSlotItem(Material.RED_STAINED_GLASS, sell, profitComponent);
+            ItemStack option = createSlotItem(Material.RED_STAINED_GLASS, sell, profitComponent);
             option.setAmount(leftover);
-            shopMenu.setItem(inv, coords, option);
+            setItem(coords, option);
             if(leftover == 0) {
-                shopMenu.setItem(inv, coords, shopMenu.createSlotItem(Material.BARRIER, sell, profitComponent));
+                setItem(coords, createSlotItem(Material.BARRIER, sell, profitComponent));
             }
             index++;
         }
     }
 
-    private void border(Inventory inv) {
-        ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
-        shopMenu.fillRectangleArea(inv, new int[]{3,0}, 3, 3, borderItem);
+    private void border() {
+        ItemStack borderItem = createSlotItem(Material.BLACK_STAINED_GLASS_PANE, getUnavailableComponent());
+        fillRectangleArea(new int[]{3,0}, 3, 3, borderItem);
     }
 
-    private void buttons(Inventory inv, Player player) {
-        BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
-            displaySellOptions(inv, player);
-            int total = shopMenu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
+    private void buttons() {
+        task = Scheduler.runTimerAsync((task) -> {
+            displaySellOptions();
+            int total = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
             double profit = 0;
             int qty = total;
             for(ShopOrderEntity order : orderOption.getOrders()) {
@@ -149,11 +146,10 @@ public class QuickSellMenuController {
                 Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
                 Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
             );
-            ItemStack sellButton = shopMenu.createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), fillLore);
-            shopMenu.setItem(inv, sellInventoryButton, sellButton);
+            ItemStack sellButton = createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), fillLore);
+            setItem(sellInventoryButton, sellButton);
         }, Duration.ofSeconds(2),Duration.ofSeconds(0));
-        tasks.put(player, refreshTask);
-        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
-        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
     }
 }

@@ -4,13 +4,11 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import org.bukkit.Material;
@@ -23,6 +21,8 @@ import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
+import com.github.yuqingliu.economy.view.PageData;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 import com.github.yuqingliu.economy.view.textmenu.TextMenu;
@@ -32,92 +32,73 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class DepositMenuController {
-    private final BankMenu bankMenu;
+public class DepositMenuController extends AbstractPlayerInventoryController<BankMenu> {
     private final int[] prevMenuButton = new int[]{1,1};
     private final int[] exitMenuButton = new int[]{2,1};
-    private final int[] prevPage = new int[]{3,1};
-    private final int[] nextPage = new int[]{7,1};
+    private final int[] prevPageButton = new int[]{3,1};
+    private final int[] nextPageButton = new int[]{7,1};
     private final int[] currenciesStart = new int[]{4,1};
     private final int currenciesLength = 3;
     private final int currenciesWidth = 1;
     private final int currenciesSize = currenciesLength * currenciesWidth;
     private final List<int[]> currencies;
-    private Map<Player, AccountEntity> accounts = new ConcurrentHashMap<>();
-    private Map<Integer, Map<List<Integer>, CurrencyEntity>> pageData = new ConcurrentHashMap<>();
-    private Map<Player, int[]> pageNumbers = new ConcurrentHashMap<>();
+    private final PageData<CurrencyEntity> pageData = new PageData<>();
+    private AccountEntity account;
 
-    public DepositMenuController(BankMenu bankMenu) {
-        this.bankMenu = bankMenu;
-        this.currencies = bankMenu.rectangleArea(currenciesStart, currenciesWidth, currenciesLength);
+    public DepositMenuController(Player player, Inventory inventory, BankMenu bankMenu) {
+        super(player, inventory, bankMenu);
+        this.currencies = rectangleArea(currenciesStart, currenciesWidth, currenciesLength);
     }
     
-    public void openDepositMenu(Player player, Inventory inv, AccountEntity account) {
-        this.accounts.put(player, account);
-        this.pageNumbers.put(player, new int[]{1});
+    public void openMenu(AccountEntity account) {
+        this.account = account;
         Scheduler.runLaterAsync((task) -> {
-            bankMenu.getPlayerMenuTypes().put(player, MenuType.DepositMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.DepositMenu);
         }, Duration.ofMillis(50));
-        bankMenu.fill(inv, bankMenu.getBackgroundItems().get(Material.ORANGE_STAINED_GLASS_PANE));
-        buttons(inv);
-        reload(inv, player);
+        fill(getBackgroundTile(Material.ORANGE_STAINED_GLASS_PANE));
+        buttons();
+        reload();
     }
 
-    public void reload(Inventory inv, Player player) {
-        fetchCurrencies(inv, player);
-        displayCurrencies(inv, player);
+    public void reload() {
+        fetchCurrencies();
+        displayCurrencies();
     }
 
-    public void nextPage(Player player, Inventory inv) {
-        pageNumbers.get(player)[0]++;
-        if(pageData.containsKey(pageNumbers.get(player)[0])) {
-            displayCurrencies(inv, player); 
-        } else {
-            pageNumbers.get(player)[0]--;
-        }     
+    public void nextPage() {
+        pageData.nextPage(() -> displayCurrencies());
     }
 
-    public void prevPage(Player player, Inventory inv) {
-        pageNumbers.get(player)[0]--;
-        if(pageNumbers.get(player)[0] > 0) {
-            displayCurrencies(inv, player);
-        } else {
-            pageNumbers.get(player)[0]++;
-        }
+    public void prevPage() {
+        pageData.prevPage(() -> displayCurrencies());
     }
 
-    public void onClose(Player player) {
-        accounts.remove(player);
-        pageNumbers.remove(player);
-    }
-
-    public void deposit(Inventory inv, Player player, CurrencyEntity currency) {
-        AccountEntity account = accounts.get(player);
-        inv.close();
-        PlayerInventory bank = bankMenu.getPluginManager().getInventoryManager().getInventory(BankMenu.class.getSimpleName());
+    public void deposit(int[] slot) {
+        inventory.close();
+        CurrencyEntity currency = pageData.get(slot);
+        PlayerInventory bank = menu.getPluginManager().getInventoryManager().getInventory(BankMenu.class.getSimpleName());
         bank.setDisplayName(Component.text(account.getBank().getBankName(), NamedTextColor.DARK_GRAY));
 
         Consumer<String> callback = (userInput) -> {
-            Inventory inventory = bank.load(player);
+            inventory = bank.load(player);
             Scheduler.runAsync((task) -> {
                 try {
-                    bankMenu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
+                    menu.getBankService().depositPlayerAccount(account, player, Double.parseDouble(userInput), currency.getCurrencyName());
                 } catch (Exception e) {
-                    bankMenu.getLogger().sendPlayerErrorMessage(player, "Invalid amount");
+                    menu.getLogger().sendPlayerErrorMessage(player, "Invalid amount");
                 }
-                bankMenu.getDepositMenu().getController().openDepositMenu(player, inventory, account);
+                menu.getDepositMenu().getControllers().getPlayerInventoryController(player, this).openMenu(account);
             });
         };        
 
-        TextMenu scanner = (TextMenu) bankMenu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
         scanner.setDisplayName(Component.text("deposit amount", NamedTextColor.RED));
         scanner.open(player);
     }
 
-    private void fetchCurrencies(Inventory inv, Player player) {
-        AccountEntity account = bankMenu.getBankService().getAccount(accounts.get(player).getAccountId());
-        accounts.put(player, account);
+    private void fetchCurrencies() {
+        account = menu.getBankService().getAccount(account.getAccountId());
         Set<CurrencyEntity> currencies = account.getCurrencies();
         if(currencies.isEmpty()) {
             return;
@@ -139,13 +120,13 @@ public class DepositMenuController {
         }
     }
 
-    private void displayCurrencies(Inventory inv, Player player) {
-        Map<List<Integer>, CurrencyEntity> options = pageData.getOrDefault(pageNumbers.get(player)[0], Collections.emptyMap());
+    private void displayCurrencies() {
+        Map<List<Integer>, CurrencyEntity> options = pageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, CurrencyEntity> entry : options.entrySet()) {
             List<Integer> coords = entry.getKey();
             CurrencyEntity currency = entry.getValue();
             if(currency == null) {
-                bankMenu.setItem(inv, coords, bankMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 double amount = currency.getAmount();
                 ItemStack item = currency.getIcon().clone();
@@ -157,16 +138,15 @@ public class DepositMenuController {
                     meta.lore(lore);
                     item.setItemMeta(meta);
                 }
-                bankMenu.setItem(inv, coords, item);
+                setItem(coords, item);
             }
         }
-
     }
 
-    private void buttons(Inventory inv) {
-        bankMenu.setItem(inv, prevMenuButton, bankMenu.getPrevMenu());       
-        bankMenu.setItem(inv, exitMenuButton, bankMenu.getExitMenu());       
-        bankMenu.setItem(inv, nextPage, bankMenu.getNextPage());
-        bankMenu.setItem(inv, prevPage, bankMenu.getPrevPage());
+    private void buttons() {
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
+        setItem(nextPageButton, getNextPageIcon());
+        setItem(prevPageButton, getPrevPageIcon());
     }
 }

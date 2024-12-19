@@ -4,12 +4,10 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,16 +17,18 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
+import com.github.yuqingliu.economy.view.PageData;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
+import com.github.yuqingliu.economy.view.bankmenu.accountmenu.AccountMenuController;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class MainMenuController {
-    private final BankMenu bankMenu;
+public class MainMenuController extends AbstractPlayerInventoryController<BankMenu> {
     private final int[] prevPageButton = new int[]{1,1};
     private final int[] nextPageButton = new int[]{7,1};
     private final int[] accountsStart = new int[]{2,1};
@@ -36,67 +36,51 @@ public class MainMenuController {
     private final int accountsWidth = 1;
     private final int accountsSize = accountsWidth * accountsLength;
     private final List<int[]> accounts;
-    private Map<Integer, Map<List<Integer>, AccountEntity>> pageData = new ConcurrentHashMap<>();
-    private Map<Player, int[]> pageNumbers = new ConcurrentHashMap<>();
+    private final PageData<AccountEntity> pageData = new PageData<>();
 
-    public MainMenuController(BankMenu bankMenu) {
-        this.bankMenu = bankMenu;
-        this.accounts = bankMenu.rectangleArea(accountsStart, accountsWidth, accountsLength);
+    public MainMenuController(Player player, Inventory inventory, BankMenu bankMenu) {
+        super(player, inventory, bankMenu);
+        this.accounts = rectangleArea(accountsStart, accountsWidth, accountsLength);
     }
     
-    public void openMainMenu(Player player, Inventory inv) {
-        pageNumbers.put(player, new int[]{1});
+    public void openMenu() {
         Scheduler.runLaterAsync((task) -> {
-            bankMenu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.MainMenu);
         }, Duration.ofMillis(50));
-        bankMenu.fill(inv, bankMenu.getBackgroundItems().get(Material.ORANGE_STAINED_GLASS_PANE));
-        buttons(inv);
-        bankMenu.rectangleAreaLoading(inv, accountsStart, accountsWidth, accountsLength);
+        fill(getBackgroundTile(Material.ORANGE_STAINED_GLASS_PANE));
+        buttons();
+        rectangleAreaLoading(accountsStart, accountsWidth, accountsLength);
         Scheduler.runAsync((task) -> {
-            fetchAccounts(player);
-            displayAccounts(player, inv);
+            fetchAccounts();
+            displayAccounts();
         });
     }
 
-    public void nextPage(Player player, Inventory inv) {
-        pageNumbers.get(player)[0]++;
-        if(pageData.containsKey(pageNumbers.get(player)[0])) {
-            displayAccounts(player, inv); 
-        } else {
-            pageNumbers.get(player)[0]--;
-        }     
+    public void nextPage() {
+        pageData.nextPage(() -> displayAccounts());
     }
 
-    public void prevPage(Player player, Inventory inv) {
-        pageNumbers.get(player)[0]--;
-        if(pageNumbers.get(player)[0] > 0) {
-            displayAccounts(player, inv);
-        } else {
-            pageNumbers.get(player)[0]++;
-        }
+    public void prevPage() {
+        pageData.prevPage(() -> displayAccounts());
     }
 
-    public void onClose(Player player) {
-        pageNumbers.remove(player);
-    }
-
-    public boolean unlockAccount(AccountEntity account, Player player) {
+    public void unlockAccount(int[] slot) {
+        AccountEntity account = pageData.get(slot);
         if(account.isUnlocked()) {
-            return true;
+            return;
         } else {
-            if(!bankMenu.getBankService().unlockAccount(account, player)) {
-                bankMenu.getLogger().sendPlayerErrorMessage(player, "Could not unlock the account.");
-                return false;
+            if(!menu.getBankService().unlockAccount(account, player)) {
+                menu.getLogger().sendPlayerErrorMessage(player, "Could not unlock the account.");
+                return;
             }
-            bankMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Sucessfully unlocked account for %.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType()));
-            bankMenu.getPluginManager().getSoundManager().playTransactionSound(player);
-            return true;
+            menu.getLogger().sendPlayerNotificationMessage(player, String.format("Sucessfully unlocked account for %.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType()));
+            menu.getPluginManager().getSoundManager().playTransactionSound(player);
+            menu.getAccountMenu().getControllers().getPlayerInventoryController(player, new AccountMenuController(player, inventory, menu)).openMenu(account);
         }
     }
 
-    private void fetchAccounts(Player player) {
-        pageData.clear();
-        List<AccountEntity> accounts = bankMenu.getBankService().getPlayerAccountsByBank(bankMenu.getBankName(), player);
+    private void fetchAccounts() {
+        List<AccountEntity> accounts = menu.getBankService().getPlayerAccountsByBank(menu.getBankName(), player);
         if(accounts.isEmpty()) {
             return;
         }
@@ -117,13 +101,13 @@ public class MainMenuController {
         }
     }
 
-    private void displayAccounts(Player player, Inventory inv) {
-        Map<List<Integer>, AccountEntity> options = pageData.getOrDefault(pageNumbers.get(player)[0], Collections.emptyMap());
+    private void displayAccounts() {
+        Map<List<Integer>, AccountEntity> options = pageData.getCurrentPageData();
         for(Map.Entry<List<Integer>, AccountEntity> entry : options.entrySet()) {
             List<Integer> coords = entry.getKey();
             AccountEntity account = entry.getValue();
             if(account == null) {
-                bankMenu.setItem(inv, coords, bankMenu.getUnavailable());
+                setItem(coords, getUnavailableIcon());
             } else {
                 ItemStack item = account.getIcon().clone();
                 ItemMeta meta = item.getItemMeta();
@@ -137,13 +121,13 @@ public class MainMenuController {
                     meta.lore(lore);
                 }
                 item.setItemMeta(meta);
-                bankMenu.setItem(inv, coords, item);
+                setItem(coords, item);
             }
         }
     }
 
-    private void buttons(Inventory inv) {
-        bankMenu.setItem(inv, nextPageButton, bankMenu.getNextPage());
-        bankMenu.setItem(inv, prevPageButton, bankMenu.getPrevPage());
+    private void buttons() {
+        setItem(nextPageButton, getNextPageIcon());
+        setItem(prevPageButton, getPrevPageIcon());
     }
 }

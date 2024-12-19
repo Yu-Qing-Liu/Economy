@@ -10,7 +10,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
+import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu.MenuType;
 
@@ -19,11 +19,10 @@ import lombok.Getter;
 @Getter
 public class MainMenu implements Listener {
     private final BankMenu bankMenu;
-    private final MainMenuController controller;
+    private final PlayerInventoryControllerFactory<MainMenuController> controllers = new PlayerInventoryControllerFactory<>();
     
     public MainMenu(BankMenu bankMenu) {
         this.bankMenu = bankMenu;
-        this.controller = new MainMenuController(bankMenu);
         bankMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
@@ -31,33 +30,31 @@ public class MainMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(bankMenu.getDisplayName())) {
             return;
         }
 
+        MainMenuController controller = controllers.getPlayerInventoryController(player, new MainMenuController(player, inventory, bankMenu));
         event.setCancelled(true);
 
-        if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int[] slot = bankMenu.toCoords(event.getSlot());
-            if(bankMenu.isUnavailable(currentItem)) {
+        if(bankMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(inventory)) {
+            int[] slot = controller.toCoords(event.getSlot());
+            if(controller.isUnavailable(currentItem)) {
                 return;
             }
-            if(bankMenu.rectangleContains(slot, controller.getAccounts())) {
-                int pageNumber = controller.getPageNumbers().get(player)[0];
-                AccountEntity account = controller.getPageData().get(pageNumber).get(Arrays.asList(slot[0], slot[1]));
-                if(controller.unlockAccount(account, player)) {
-                    bankMenu.getAccountMenu().getController().openAccountMenu(player, clickedInventory, account);
-                }
+            if(controller.rectangleContains(slot, controller.getAccounts())) {
+                controller.unlockAccount(slot);
                 return;
             }
             if(Arrays.equals(slot, controller.getNextPageButton())) {
-                controller.nextPage(player, clickedInventory);
+                controller.nextPage();
                 return;
             } 
             if(Arrays.equals(slot, controller.getPrevPageButton())) {
-                controller.prevPage(player, clickedInventory);
+                controller.prevPage();
                 return;
             }
         }
@@ -66,7 +63,7 @@ public class MainMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(bankMenu.getDisplayName())) {
-            controller.onClose((Player) event.getPlayer());
+            controllers.removePlayerInventoryController((Player) event.getPlayer());
         }
     }
 }

@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 import com.github.yuqingliu.economy.view.pursemenu.mainmenu.MainMenu;
+import com.github.yuqingliu.economy.view.pursemenu.mainmenu.MainMenuController;
 import com.google.inject.Inject;
 
 import lombok.Getter;
@@ -53,6 +54,6 @@ public class PurseMenu extends AbstractPlayerInventory {
     public void open(Player player) {
         Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
-        mainMenu.getController().openMainMenu(player, inventory);
+        mainMenu.getControllers().getPlayerInventoryController(player, new MainMenuController(player, inventory, this)).openMenu();
     }
 }

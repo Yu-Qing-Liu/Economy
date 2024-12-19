@@ -3,8 +3,6 @@ package com.github.yuqingliu.economy.view.shopmenu.quickbuymenu;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,6 +13,7 @@ import org.bukkit.scheduler.BukkitTask;
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
 import com.github.yuqingliu.economy.persistence.entities.ShopOrderEntity;
+import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu.MenuType;
 import com.github.yuqingliu.economy.view.shopmenu.ordermenu.OrderOption;
@@ -24,8 +23,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @Getter
-public class QuickBuyMenuController {
-    private final ShopMenu shopMenu;
+public class QuickBuyMenuController extends AbstractPlayerInventoryController<ShopMenu> {
     private final int[] quantities = new int[] {1, 4, 8, 16, 32, 64};
     private final int[] buyOptionsStart = new int[]{1,4};
     private final int buyOptionsWidth = 1;
@@ -37,51 +35,50 @@ public class QuickBuyMenuController {
     private final List<int[]> buyOptions;
     private ShopItemEntity item;
     private OrderOption orderOption;
-    private Map<Player, BukkitTask> tasks = new ConcurrentHashMap<>();
+    private BukkitTask task;
     
-    public QuickBuyMenuController(ShopMenu shopMenu) {
-        this.shopMenu = shopMenu;
-        this.buyOptions = shopMenu.rectangleArea(buyOptionsStart, buyOptionsWidth, buyOptionsLength);
+    public QuickBuyMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
+        super(player, inventory, shopMenu);
+        this.buyOptions = rectangleArea(buyOptionsStart, buyOptionsWidth, buyOptionsLength);
     }   
 
-    public void openQuickBuyMenu(Inventory inv, ShopItemEntity item, OrderOption orderOption, Player player) {
+    public void openMenu(ShopItemEntity item, OrderOption orderOption) {
         this.item = item;
         this.orderOption = orderOption;
         Scheduler.runLaterAsync((task) -> {
-            shopMenu.getPlayerMenuTypes().put(player, MenuType.QuickBuyMenu);
+            menu.getPlayerMenuTypes().put(player, MenuType.QuickBuyMenu);
         }, Duration.ofMillis(50));
-        shopMenu.fill(inv, shopMenu.getBackgroundItems().get(Material.BLUE_STAINED_GLASS_PANE));
-        border(inv);
-        buttons(inv, player);
-        displayItem(inv);
-        displayBuyOptions(inv);
+        fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
+        border();
+        buttons();
+        displayItem();
+        displayBuyOptions();
     }
 
-    public void onClose(Player player) {
-        if(tasks.containsKey(player)) {
-            tasks.get(player).cancel();
-            tasks.remove(player);
+    public void onClose() {
+        if(task != null) {
+            task.cancel();
         }
     }
 
-    public void quickBuy(int amount, Player player) {
+    public void quickBuy(int amount) {
         Scheduler.runAsync((task) -> {
-            int[] data = shopMenu.getShopService().quickBuy(item, amount, orderOption.getCurrencyName(), player);
+            int[] data = menu.getShopService().quickBuy(item, amount, orderOption.getCurrencyName(), player);
             int filled = amount - data[0];
             double cost = data[1];
             if(cost > 0) {
-                shopMenu.getLogger().sendPlayerNotificationMessage(player, String.format("Bought %d items for %.2f %s", filled, cost, orderOption.getCurrencyName()));
+                menu.getLogger().sendPlayerNotificationMessage(player, String.format("Bought %d items for %.2f %s", filled, cost, orderOption.getCurrencyName()));
             } else {
-                shopMenu.getLogger().sendPlayerErrorMessage(player, "No more offers");
+                menu.getLogger().sendPlayerErrorMessage(player, "No more offers");
             }
         });
     }
 
-    private void displayItem(Inventory inv) {
-        shopMenu.setItem(inv, itemSlot, item.getIcon().clone());
+    private void displayItem() {
+        setItem(itemSlot, item.getIcon().clone());
     }
 
-    private void displayBuyOptions(Inventory inv) {
+    private void displayBuyOptions() {
         int index = 0;
         for(int[] coords : buyOptions) {
             double cost = 0;
@@ -105,22 +102,22 @@ public class QuickBuyMenuController {
             }
             Component buy = Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
             Component costComponent = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
-            ItemStack option = shopMenu.createSlotItem(Material.LIME_STAINED_GLASS, buy, costComponent);
+            ItemStack option = createSlotItem(Material.LIME_STAINED_GLASS, buy, costComponent);
             option.setAmount(leftover);
-            shopMenu.setItem(inv, coords, option);
+            setItem(coords, option);
             index++;
         }
     }
 
-    private void border(Inventory inv) {
-        ItemStack borderItem = shopMenu.createSlotItem(Material.BLACK_STAINED_GLASS_PANE, shopMenu.getUnavailableComponent());
-        shopMenu.fillRectangleArea(inv, new int[]{3,0}, 3, 3, borderItem);
+    private void border() {
+        ItemStack borderItem = createSlotItem(Material.BLACK_STAINED_GLASS_PANE, getUnavailableComponent());
+        fillRectangleArea(new int[]{3,0}, 3, 3, borderItem);
     }
 
-    private void buttons(Inventory inv, Player player) {
-        BukkitTask refreshTask = Scheduler.runTimerAsync((task) -> {
-            displayBuyOptions(inv);
-            int freeSpace = shopMenu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
+    private void buttons() {
+        task = Scheduler.runTimerAsync((task) -> {
+            displayBuyOptions();
+            int freeSpace = menu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
             double cost = 0;
             int qty = freeSpace;
             for(ShopOrderEntity order : orderOption.getOrders()) {
@@ -143,11 +140,10 @@ public class QuickBuyMenuController {
                 Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
                 Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
             );
-            ItemStack fillButton = shopMenu.createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
-            shopMenu.setItem(inv, buyInventoryButton, fillButton);
+            ItemStack fillButton = createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
+            setItem(buyInventoryButton, fillButton);
         }, Duration.ofSeconds(2),Duration.ofSeconds(0));
-        tasks.put(player, refreshTask);
-        shopMenu.setItem(inv, prevMenuButton, shopMenu.getPrevMenu());
-        shopMenu.setItem(inv, exitMenuButton, shopMenu.getExitMenu());
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
     }
 }

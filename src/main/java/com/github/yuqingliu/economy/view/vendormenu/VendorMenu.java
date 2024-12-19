@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 import com.github.yuqingliu.economy.view.vendormenu.mainmenu.MainMenu;
+import com.github.yuqingliu.economy.view.vendormenu.mainmenu.MainMenuController;
 import com.github.yuqingliu.economy.view.vendormenu.trademenu.TradeMenu;
 import com.github.yuqingliu.economy.view.vendormenu.transactionmenu.TransactionMenu;
 import com.google.inject.Inject;
@@ -74,6 +75,6 @@ public class VendorMenu extends AbstractPlayerInventory {
     public void open(Player player) {
         Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
-        mainMenu.getController().openMainMenu(inventory, player);
+        mainMenu.getControllers().getPlayerInventoryController(player, new MainMenuController(player, inventory, this)).openMenu();
     }
 }

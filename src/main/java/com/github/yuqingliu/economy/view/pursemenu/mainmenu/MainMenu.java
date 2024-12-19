@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.pursemenu.PurseMenu;
 import com.github.yuqingliu.economy.view.pursemenu.PurseMenu.MenuType;
 
@@ -18,11 +19,10 @@ import lombok.Getter;
 @Getter
 public class MainMenu implements Listener {
     private final PurseMenu purseMenu;
-    private final MainMenuController controller;
+    private final PlayerInventoryControllerFactory<MainMenuController> controllers = new PlayerInventoryControllerFactory<>();
     
     public MainMenu(PurseMenu purseMenu) {
         this.purseMenu = purseMenu;
-        this.controller = new MainMenuController(purseMenu);
         purseMenu.getPluginManager().getEventManager().registerEvent(this);
     }
 
@@ -30,25 +30,27 @@ public class MainMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        Inventory inventory = player.getOpenInventory().getTopInventory();
         ItemStack currentItem = event.getCurrentItem();
 
         if (clickedInventory == null || currentItem == null || !event.getView().title().equals(purseMenu.getDisplayName())) {
             return;
         }
 
+        MainMenuController controller = controllers.getPlayerInventoryController(player, new MainMenuController(player, inventory, purseMenu));
         event.setCancelled(true);
 
-        if(purseMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(player.getOpenInventory().getTopInventory())) {
-            int[] slot = purseMenu.toCoords(event.getSlot());
-            if(purseMenu.isUnavailable(currentItem)) {
+        if(purseMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(inventory)) {
+            int[] slot = controller.toCoords(event.getSlot());
+            if(controller.isUnavailable(currentItem)) {
                 return;
             }
             if(Arrays.equals(slot, controller.getNextPageButton())) {
-                controller.nextPage(player, clickedInventory);
+                controller.nextPage();
                 return;
             } 
             if(Arrays.equals(slot, controller.getPrevPageButton())) {
-                controller.prevPage(player, clickedInventory);
+                controller.prevPage();
                 return;
             }
         }
@@ -57,7 +59,7 @@ public class MainMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getView().title().equals(purseMenu.getDisplayName())) {
-            controller.onClose((Player) event.getPlayer());
+            controllers.removePlayerInventoryController((Player) event.getPlayer());
         }
     }
 }
