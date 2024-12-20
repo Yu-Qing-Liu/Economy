@@ -1,18 +1,14 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
 import java.util.Set;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
@@ -41,11 +37,6 @@ public class PlayerEntity {
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @OrderBy("displayName ASC")
     private Set<AuctionEntity> auctions = new LinkedHashSet<>();
-
-    @ElementCollection
-    @MapKeyColumn(name = "auctionId")
-    @Column(name = "bids")
-    private Map<UUID, Double> bids = new HashMap<>();
 
     public void setPurse(PurseEntity purse) {
         if (purse != null) {

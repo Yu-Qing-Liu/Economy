@@ -1,6 +1,5 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.hibernate.Session;
@@ -11,18 +10,15 @@ import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.modules.Hibernate;
 import com.github.yuqingliu.economy.persistence.entities.AuctionEntity;
+import com.github.yuqingliu.economy.persistence.entities.BidEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
-import com.github.yuqingliu.economy.persistence.entities.PlayerEntity;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Singleton
@@ -33,59 +29,29 @@ public class AuctionRepository {
     private final Logger logger;
 
     // Transactions 
-    public boolean collectPay(AuctionEntity auction, Player player) {
-        Transaction transaction = null;
-        Session session = hibernate.getSession();
-        try {
-            transaction = session.beginTransaction();
-            UUID playerId = auction.getPlayerId();
-            String currencyType = auction.getCurrencyType();
-            Query<CurrencyEntity> query = session.createQuery(
-                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
-                CurrencyEntity.class
-            );
-            query.setParameter("purseId", playerId);
-            query.setParameter("currencyName", currencyType);
-            CurrencyEntity purseCurrency = query.uniqueResult();
-            if(!auction.getEnd().isBefore(Instant.now())) {
-                logger.sendPlayerErrorMessage(player, "This auction has not ended yet.");
-                throw new RuntimeException();
-            }
-            if(auction.isCollected()) {
-                session.remove(auction);
-            } else {
-                auction.setBid(0);
-                session.merge(auction);
-            }
-            purseCurrency.setAmount(purseCurrency.getAmount() + auction.getBid());
-            session.merge(purseCurrency);
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            transaction.rollback();
-            return false;
-        } finally {
-            session.close();
-        }
-    }
-
     public boolean collectAuction(AuctionEntity auction, Player player) {
         Transaction transaction = null;
         Session session = hibernate.getSession();
         try {
             transaction = session.beginTransaction();
-            ItemStack item = auction.getItem().clone();
             if(!auction.getEnd().isBefore(Instant.now())) {
                 logger.sendPlayerErrorMessage(player, "This auction has not ended yet.");
                 throw new RuntimeException();
             }
-            if(auction.getBid() == 0) {
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", auction.getPlayerId());
+            query.setParameter("currencyName", auction.getCurrencyType());
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            purseCurrency.setAmount(purseCurrency.getAmount() + auction.getHighestBid());
+            session.merge(purseCurrency);
+            auction.setHighestBid(0);
+            session.merge(auction);
+            if(canRemoveAuction(auction)) {
                 session.remove(auction);
-            } else {
-                auction.setCollected(true);
-                session.merge(auction);
             }
-            inventoryManager.addItemToPlayer(player, item, 1);
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -96,15 +62,56 @@ public class AuctionRepository {
         }
     }
 
-    public boolean collectBid(PlayerEntity player) {
-        return false;
-    }
-
-    public boolean bid(AuctionEntity auction, Player player, double bidAmount) {
+    public boolean collectWin(AuctionEntity auction, Player player) {
         Transaction transaction = null;
         Session session = hibernate.getSession();
         try {
             transaction = session.beginTransaction();
+            if(!auction.getEnd().isBefore(Instant.now())) {
+                logger.sendPlayerErrorMessage(player, "This auction has not ended yet.");
+                throw new RuntimeException();
+            }
+            ItemStack item = auction.getItem().clone();
+            auction.setCollected(true);
+            session.merge(auction);
+            inventoryManager.addItemToPlayer(player, item, 1);
+            Query<BidEntity> query = session.createQuery(
+                "FROM BidEntity WHERE playerId = :playerId AND auctionId = :auctionId",
+                BidEntity.class
+            );
+            query.setParameter("playerId", auction.getBidderId());
+            query.setParameter("auctionId", auction.getAuctionId());
+            BidEntity bid = query.uniqueResult();
+            if(bid != null) {
+                session.remove(bid);
+            }
+            if(canRemoveAuction(auction)) {
+                session.remove(auction);
+            }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        } finally {
+            session.close();
+        }
+    }
+
+    public boolean collectLoss(BidEntity bid, Player player) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            AuctionEntity auction = bid.getAuction();
+            if(!auction.getEnd().isBefore(Instant.now())) {
+                logger.sendPlayerErrorMessage(player, "This auction has not ended yet.");
+                throw new RuntimeException();
+            }
+            if(auction.getBidderId().equals(player.getUniqueId())) {
+                logger.sendPlayerErrorMessage(player, "Cannot collect bid on an auction that you won.");
+                throw new RuntimeException();
+            }
             Query<CurrencyEntity> query = session.createQuery(
                 "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
                 CurrencyEntity.class
@@ -112,22 +119,66 @@ public class AuctionRepository {
             query.setParameter("purseId", player.getUniqueId());
             query.setParameter("currencyName", auction.getCurrencyType());
             CurrencyEntity purseCurrency = query.uniqueResult();
-            if(bidAmount <= auction.getBid() || purseCurrency.getAmount() < bidAmount) {
+            purseCurrency.setAmount(purseCurrency.getAmount() + bid.getAmount());
+            session.merge(purseCurrency);
+            session.remove(bid);
+            if(canRemoveAuction(auction)) {
+                session.remove(auction);
+            }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        } finally {
+            session.close();
+        }
+    }
+
+    public boolean bid(AuctionEntity auction, Player player, double bidAmount) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            if(!auction.getEnd().isAfter(Instant.now())) {
+                logger.sendPlayerErrorMessage(player, "This auction has ended already.");
+                throw new RuntimeException();
+            }
+            if(!auction.getPlayerId().equals(player.getUniqueId())) {
+                logger.sendPlayerErrorMessage(player, "Cannot bid on your own auctions");
+                throw new RuntimeException();
+            }
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", player.getUniqueId());
+            query.setParameter("currencyName", auction.getCurrencyType());
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            if(bidAmount <= auction.getHighestBid() || purseCurrency.getAmount() < bidAmount) {
                 logger.sendPlayerErrorMessage(player, "Not enough currency to bid higher.");
                 throw new RuntimeException();
             }
             purseCurrency.setAmount(purseCurrency.getAmount() - bidAmount);
             session.merge(purseCurrency);
-            UUID previousWinner = auction.getBidderId();
-            Query<PlayerEntity> playerQuery = session.createQuery(
-                "From PlayerEntity WHERE playerId = :playerId",
-                PlayerEntity.class
+            Query<BidEntity> getPreviousBid = session.createQuery(
+                "FROM BidEntity WHERE playerId = :playerId AND auctionId = :auctionId",
+                BidEntity.class
             );
-            playerQuery.setParameter("playerId", previousWinner);
-            PlayerEntity prevPlayer = playerQuery.uniqueResult();
-            prevPlayer.getBids().put(auction.getAuctionId(), auction.getBid());
-            session.merge(prevPlayer);
-            auction.setBid(bidAmount);
+            getPreviousBid.setParameter("playerId", auction.getBidderId());
+            getPreviousBid.setParameter("auctionId", auction.getAuctionId());
+            BidEntity previousBid = getPreviousBid.uniqueResult();
+            if(previousBid != null) {
+                previousBid.setAmount(auction.getHighestBid());
+                session.merge(previousBid);
+            } else {
+                previousBid = new BidEntity();
+                previousBid.setAmount(auction.getHighestBid());
+                previousBid.setPlayerId(auction.getBidderId());
+                previousBid.setAuctionId(auction.getAuctionId());
+                session.persist(previousBid);
+            }
+            auction.setHighestBid(bidAmount);
             auction.setBidderId(player.getUniqueId());
             session.merge(auction);
             transaction.commit();
@@ -143,7 +194,7 @@ public class AuctionRepository {
     // Queries
     public List<AuctionEntity> getAuctionsWon(UUID playerId) {
         try (Session session = hibernate.getSession()) {
-            String hql = "FROM AuctionEntity WHERE bidderId = :bidderId AND end < CURRENT_TIMESTAMP";
+            String hql = "FROM AuctionEntity WHERE bidderId = :bidderId AND end < CURRENT_TIMESTAMP AND highestBid > 0";
             Query<AuctionEntity> query = session.createQuery(hql, AuctionEntity.class);
             query.setParameter("bidderId", playerId);
             return query.getResultList();
@@ -152,24 +203,11 @@ public class AuctionRepository {
         }
     }
 
-    public List<AuctionEntity> getPlayerAuctions(UUID playerId) {
+    public List<AuctionEntity> getAuctionsLost(UUID playerId) {
         try (Session session = hibernate.getSession()) {
-            List<AuctionEntity> auctions = new ArrayList<>();
-            Query<PlayerEntity> query = session.createQuery(
-                "From PlayerEntity WHERE playerId = :playerId",
-                PlayerEntity.class
-            );
-            query.setParameter("playerId", playerId);
-            PlayerEntity player = query.uniqueResult();
-            Query<AuctionEntity> auctionQuery = session.createQuery(
-                "From AuctionEntity WHERE auctionId = :auctionId",
-                AuctionEntity.class
-            );
-            for (UUID auctionId : player.getBids().keySet()) {
-                auctionQuery.setParameter("auctionId", auctionId);
-                auctions.add(auctionQuery.uniqueResult());
-            }
-            return auctions;
+            String hql = "FROM AuctionEntity a JOIN BidEntity b ON b.auctionId = a.auctionId WHERE b.playerId = :playerId AND b.playerId != a.bidderId";
+            Query<AuctionEntity> query = session.createQuery(hql, AuctionEntity.class);
+            return query.getResultList();
         } catch (Exception e) {
             return null;
         }
@@ -183,5 +221,19 @@ public class AuctionRepository {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // Helpers
+    private boolean canRemoveAuction(AuctionEntity auction) {
+        if(auction.getBids() != null && !auction.getBids().isEmpty()) {
+            return false;
+        }
+        if(!auction.isCollected()) {
+            return false;
+        }
+        if(!(auction.getHighestBid() > 0)) {
+            return false;
+        }
+        return true;
     }
 }

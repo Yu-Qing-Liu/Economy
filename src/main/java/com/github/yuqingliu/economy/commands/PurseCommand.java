@@ -11,8 +11,6 @@ import com.github.yuqingliu.economy.view.pursemenu.PurseMenu;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 @RequiredArgsConstructor
 public class PurseCommand implements CommandExecutor {
