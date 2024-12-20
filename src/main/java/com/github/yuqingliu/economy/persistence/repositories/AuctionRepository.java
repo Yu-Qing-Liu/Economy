@@ -16,7 +16,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +31,30 @@ public class AuctionRepository {
     private final Logger logger;
 
     // Transactions 
+    public boolean createAuction(Player player, ItemStack item, double startingBid, String currencyType, Instant start, Duration duration) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            AuctionEntity auctionEntity = new AuctionEntity();
+            Instant end = start.plus(duration);
+            auctionEntity.setStart(start);
+            auctionEntity.setEnd(end);
+            auctionEntity.setHighestBid(startingBid);
+            auctionEntity.setItem(item);
+            auctionEntity.setDisplayName(PlainTextComponentSerializer.plainText().serialize(item.displayName()));
+            auctionEntity.setCurrencyType(currencyType);
+            session.persist(auctionEntity);
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        } finally {
+            session.close();
+        }
+    }
+
     public boolean collectAuction(AuctionEntity auction, Player player) {
         Transaction transaction = null;
         Session session = hibernate.getSession();
@@ -36,6 +62,10 @@ public class AuctionRepository {
             transaction = session.beginTransaction();
             if(!auction.getEnd().isBefore(Instant.now())) {
                 logger.sendPlayerErrorMessage(player, "This auction has not ended yet.");
+                throw new RuntimeException();
+            }
+            if(!auction.getPlayerId().equals(player.getUniqueId())) {
+                logger.sendPlayerErrorMessage(player, "This auction does not belong to you.");
                 throw new RuntimeException();
             }
             Query<CurrencyEntity> query = session.createQuery(
@@ -69,6 +99,10 @@ public class AuctionRepository {
             transaction = session.beginTransaction();
             if(!auction.getEnd().isBefore(Instant.now())) {
                 logger.sendPlayerErrorMessage(player, "This auction has not ended yet.");
+                throw new RuntimeException();
+            }
+            if(!auction.getBidderId().equals(player.getUniqueId())) {
+                logger.sendPlayerErrorMessage(player, "You did not win this auction.");
                 throw new RuntimeException();
             }
             ItemStack item = auction.getItem().clone();
@@ -110,6 +144,10 @@ public class AuctionRepository {
             }
             if(auction.getBidderId().equals(player.getUniqueId())) {
                 logger.sendPlayerErrorMessage(player, "Cannot collect bid on an auction that you won.");
+                throw new RuntimeException();
+            }
+            if(!bid.getPlayerId().equals(player.getUniqueId())) {
+                logger.sendPlayerErrorMessage(player, "You did not bid on this auction.");
                 throw new RuntimeException();
             }
             Query<CurrencyEntity> query = session.createQuery(
