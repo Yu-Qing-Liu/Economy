@@ -29,6 +29,9 @@ public class AuctionEntity {
 
     @Column(name = "playerId", columnDefinition = "VARCHAR(36)")
     private UUID playerId;
+
+    @Column(name = "highestBidder", columnDefinition = "VARCHAR(36)")
+    private UUID bidderId;
     
     @Column(name = "displayName")
     private String displayName;
@@ -47,6 +50,9 @@ public class AuctionEntity {
 
     @Column(name = "bid")
     private double bid = 0;
+
+    @Column(name = "collected")
+    private boolean collected;
 
     @ManyToOne
     @JoinColumn(name = "playerId", insertable = false, updatable = false)
