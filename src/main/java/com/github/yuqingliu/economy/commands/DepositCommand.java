@@ -13,11 +13,9 @@ import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class DepositCommand implements CommandExecutor {
-    @Inject
     private final CurrencyService currencyService;
-    @Inject
     private final Logger logger;
 
     @Override

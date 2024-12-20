@@ -17,11 +17,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class AccountCommand implements CommandExecutor {
-    @Inject
     private final BankService bankService;
-    @Inject
     private final Logger logger;
 
     @Override

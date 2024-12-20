@@ -16,17 +16,12 @@ import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class VendorItemCommand implements CommandExecutor {
-    @Inject
     private final VendorService vendorService;
-    @Inject
     private final CurrencyService currencyService;
-    @Inject
     private final Logger logger;
 
     @Override

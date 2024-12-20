@@ -17,11 +17,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopSectionCommand implements CommandExecutor {
-    @Inject
     private final ShopService shopService;
-    @Inject
     private final Logger logger;
 
     @Override

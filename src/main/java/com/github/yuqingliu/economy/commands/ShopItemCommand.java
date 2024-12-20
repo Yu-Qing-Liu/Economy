@@ -14,11 +14,9 @@ import com.google.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopItemCommand implements CommandExecutor {
-    @Inject
     private final ShopService shopService;
-    @Inject
     private final Logger logger;
 
     @Override

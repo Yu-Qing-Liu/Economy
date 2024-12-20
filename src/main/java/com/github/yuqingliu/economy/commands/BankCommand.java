@@ -16,13 +16,10 @@ import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class BankCommand implements CommandExecutor {
-    @Inject
     private final NameSpacedKeyManager nameSpacedKeyManager;
-    @Inject
     private final BankService bankService;
-    @Inject
     private final Logger logger;
 
     @Override
