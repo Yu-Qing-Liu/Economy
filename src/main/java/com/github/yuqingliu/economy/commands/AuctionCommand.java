@@ -1,6 +1,7 @@
 package com.github.yuqingliu.economy.commands;
 
 import java.time.Duration;
+import java.time.Instant;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -46,6 +47,19 @@ public class AuctionCommand implements CommandExecutor {
                 }
                 case 5 -> {
                     if(!args[1].equals("create")) {
+                        return false;
+                    }
+                    try {
+                        double startingBid = Double.parseDouble(args[2]);
+                        String currencyType = args[3];
+                        int delay = Integer.parseInt(args[4]);
+                        Duration delay_duration = Duration.ofMinutes(delay);
+                        Instant start = Instant.now().plus(delay_duration);
+                        int length = Integer.parseInt(args[4]);
+                        Duration duration = Duration.ofMinutes(length);
+                        ItemStack item = player.getInventory().getItemInMainHand();
+                        auctionService.startAuction(player, item, startingBid, currencyType, start, duration);
+                    } catch (Exception e) {
                         return false;
                     }
                     return true;
