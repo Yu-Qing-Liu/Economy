@@ -13,11 +13,11 @@ import com.github.yuqingliu.economy.persistence.services.AuctionService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenuController;
+import com.github.yuqingliu.economy.view.auctionmenu.playerauctions.PlayerAuctionsMenu;
 import com.google.inject.Inject;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 @Getter
 public class AuctionMenu extends AbstractPlayerInventory {
@@ -25,23 +25,18 @@ public class AuctionMenu extends AbstractPlayerInventory {
     private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
-        MainMenu;
+        MainMenu, PlayerAuctionsMenu;
     }
 
     private final MainMenu mainMenu;
+    private final PlayerAuctionsMenu playerAuctionsMenu;
 
     @Inject
     public AuctionMenu(PluginManager pluginManager, Logger logger, Component displayName, AuctionService auctionService) {
         super(pluginManager, logger, displayName, 54);
         this.auctionService = auctionService;
         this.mainMenu = new MainMenu(this);
-    }
-
-    private String componentToString(Component component) {
-        if(component == null) {
-            return "";
-        }
-        return PlainTextComponentSerializer.plainText().serialize(component);
+        this.playerAuctionsMenu = new PlayerAuctionsMenu(this);
     }
 
     @Override

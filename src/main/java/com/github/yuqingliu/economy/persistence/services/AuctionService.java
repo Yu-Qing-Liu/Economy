@@ -40,6 +40,10 @@ public class AuctionService {
         return auctionRepository.collectLoss(bid, player);
     }
 
+    public List<AuctionEntity> getPlayerAuctions(Player player) {
+        return auctionRepository.getPlayerAuctions(player.getUniqueId());
+    }
+
     public List<AuctionEntity> getAuctionsWon(Player player) {
         return auctionRepository.getAuctionsWon(player.getUniqueId());
     }

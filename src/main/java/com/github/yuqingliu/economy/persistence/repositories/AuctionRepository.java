@@ -38,6 +38,7 @@ public class AuctionRepository {
             transaction = session.beginTransaction();
             AuctionEntity auctionEntity = new AuctionEntity();
             Instant end = start.plus(duration);
+            auctionEntity.setPlayerId(player.getUniqueId());
             auctionEntity.setStart(start);
             auctionEntity.setEnd(end);
             auctionEntity.setHighestBid(startingBid);
@@ -230,6 +231,17 @@ public class AuctionRepository {
     }
     
     // Queries
+    public List<AuctionEntity> getPlayerAuctions(UUID playerId) {
+        try (Session session = hibernate.getSession()) {
+            String hql = "FROM AuctionEntity WHERE playerId = :playerId";
+            Query<AuctionEntity> query = session.createQuery(hql, AuctionEntity.class);
+            query.setParameter("playerId", playerId);
+            return query.getResultList();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
     public List<AuctionEntity> getAuctionsWon(UUID playerId) {
         try (Session session = hibernate.getSession()) {
             String hql = "FROM AuctionEntity WHERE bidderId = :bidderId AND highestBid > 0";
