@@ -232,7 +232,7 @@ public class AuctionRepository {
     // Queries
     public List<AuctionEntity> getAuctionsWon(UUID playerId) {
         try (Session session = hibernate.getSession()) {
-            String hql = "FROM AuctionEntity WHERE bidderId = :bidderId AND end > CURRENT_TIMESTAMP AND highestBid > 0";
+            String hql = "FROM AuctionEntity WHERE bidderId = :bidderId AND highestBid > 0";
             Query<AuctionEntity> query = session.createQuery(hql, AuctionEntity.class);
             query.setParameter("bidderId", playerId);
             return query.getResultList();
@@ -253,7 +253,7 @@ public class AuctionRepository {
 
     public List<AuctionEntity> getActiveAuctions() {
         try (Session session = hibernate.getSession()) {
-            String hql = "FROM AuctionEntity WHERE end < CURRENT_TIMESTAMP";
+            String hql = "FROM AuctionEntity";
             Query<AuctionEntity> query = session.createQuery(hql, AuctionEntity.class);
             return query.getResultList();
         } catch (Exception e) {
