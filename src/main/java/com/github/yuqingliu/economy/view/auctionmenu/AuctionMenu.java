@@ -11,6 +11,8 @@ import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.PluginManager;
 import com.github.yuqingliu.economy.persistence.services.AuctionService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
+import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenu;
+import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenuController;
 import com.google.inject.Inject;
 
 import lombok.Getter;
@@ -26,12 +28,13 @@ public class AuctionMenu extends AbstractPlayerInventory {
         MainMenu;
     }
 
-    //private final MainMenu mainMenu;
+    private final MainMenu mainMenu;
 
     @Inject
     public AuctionMenu(PluginManager pluginManager, Logger logger, Component displayName, AuctionService auctionService) {
         super(pluginManager, logger, displayName, 54);
         this.auctionService = auctionService;
+        this.mainMenu = new MainMenu(this);
     }
     
     public String getBankName() {
@@ -56,6 +59,6 @@ public class AuctionMenu extends AbstractPlayerInventory {
     public void open(Player player) {
         Inventory inventory = Bukkit.createInventory(null, inventorySize, displayName);
         player.openInventory(inventory);
-        //mainMenu.getControllers().getPlayerInventoryController(player, new MainMenuController(player, inventory, this)).openMenu();
+        mainMenu.getControllers().getPlayerInventoryController(player, new MainMenuController(player, inventory, this)).openMenu();
     }
 }

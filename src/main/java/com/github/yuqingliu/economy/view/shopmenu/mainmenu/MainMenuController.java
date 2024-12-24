@@ -33,8 +33,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class MainMenuController extends AbstractPlayerInventoryController<ShopMenu> {
     private final int[] prevSectionsButton = new int[]{1,0};
     private final int[] nextSectionsButton = new int[]{1,5};
-    private final int[] prevItemsButton = new int[]{7,0};
-    private final int[] nextItemsButton = new int[]{6,0};
+    private final int[] prevItemsButton = new int[]{6,0};
+    private final int[] nextItemsButton = new int[]{7,0};
     private final int[] exitMenuButton = new int[]{4,0};
     private final int[] buyOrdersMenuButton = new int[]{4,5};
     private final int[] sellOrdersMenuButton = new int[]{6,5};

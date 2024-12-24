@@ -15,11 +15,13 @@ import com.github.yuqingliu.economy.api.logger.Logger;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.PluginManager;
 import com.github.yuqingliu.economy.api.view.PlayerInventory;
+import com.github.yuqingliu.economy.persistence.services.AuctionService;
 import com.github.yuqingliu.economy.persistence.services.BankService;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.github.yuqingliu.economy.persistence.services.VendorService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
+import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
 import com.github.yuqingliu.economy.view.bankmenu.BankMenu;
 import com.github.yuqingliu.economy.view.pursemenu.PurseMenu;
 import com.github.yuqingliu.economy.view.shopmenu.ShopMenu;
@@ -40,18 +42,21 @@ public class InventoryManagerImpl implements InventoryManager {
     private final VendorService vendorService;
     private final ShopService shopService;
     private final BankService bankService;
+    private final AuctionService auctionService;
     private Map<String, AbstractPlayerInventory> inventories = new HashMap<>();
-    
+
     @Inject
-    public InventoryManagerImpl(PluginManager pluginManager, Logger logger, CurrencyService currencyService, VendorService vendorService, ShopService shopService, BankService bankService) {
+    public InventoryManagerImpl(PluginManager pluginManager, Logger logger, CurrencyService currencyService,
+            VendorService vendorService, ShopService shopService, BankService bankService, AuctionService auctionService) {
         this.pluginManager = pluginManager;
         this.logger = logger;
         this.currencyService = currencyService;
         this.vendorService = vendorService;
         this.shopService = shopService;
         this.bankService = bankService;
+        this.auctionService = auctionService;
     }
-    
+
     @Override
     public void postConstruct() {
         inventories.put(
@@ -101,18 +106,27 @@ public class InventoryManagerImpl implements InventoryManager {
                 currencyService
             )
         );
+        inventories.put(
+            AuctionMenu.class.getSimpleName(),
+            new AuctionMenu(
+                pluginManager,
+                logger,
+                Component.text("Auction", NamedTextColor.GREEN).decorate(TextDecoration.BOLD),
+                auctionService
+            )
+        );
     }
 
     @Override
     public PlayerInventory getInventory(String className) {
         return inventories.get(className);
     }
-    
+
     @Override
     public void addItemToPlayer(Player player, ItemStack item, int quantity) {
         int required = quantity;
         int maxStackSize = item.getType().getMaxStackSize();
-        while(required > 0) {
+        while (required > 0) {
             int substractedAmount = Math.min(required, maxStackSize);
             item.setAmount(substractedAmount);
             if (!player.getInventory().addItem(item).isEmpty()) {
@@ -124,7 +138,7 @@ public class InventoryManagerImpl implements InventoryManager {
             required -= substractedAmount;
         }
     }
-    
+
     @Override
     public boolean removeItemFromPlayer(Player player, ItemStack item, int quantity) {
         int totalItemCount = countItemFromPlayer(player, item);
@@ -146,7 +160,7 @@ public class InventoryManagerImpl implements InventoryManager {
         }
         return false;
     }
-    
+
     @Override
     public int countItemFromPlayer(Player player, ItemStack item) {
         int count = 0;
@@ -157,7 +171,7 @@ public class InventoryManagerImpl implements InventoryManager {
         }
         return count;
     }
-    
+
     @Override
     public int countAvailableInventorySpace(Player player, Material material) {
         Inventory inventory = player.getInventory();
@@ -171,6 +185,6 @@ public class InventoryManagerImpl implements InventoryManager {
                 availableSpace += maxStackSize - item.getAmount();
             }
         }
-        return availableSpace;  
+        return availableSpace;
     }
 }

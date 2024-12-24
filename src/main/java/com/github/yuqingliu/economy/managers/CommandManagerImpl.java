@@ -11,10 +11,7 @@ import com.github.yuqingliu.economy.api.managers.CommandManager;
 import com.github.yuqingliu.economy.api.managers.InventoryManager;
 import com.github.yuqingliu.economy.api.managers.NameSpacedKeyManager;
 import com.github.yuqingliu.economy.commands.*;
-import com.github.yuqingliu.economy.persistence.services.BankService;
-import com.github.yuqingliu.economy.persistence.services.CurrencyService;
-import com.github.yuqingliu.economy.persistence.services.ShopService;
-import com.github.yuqingliu.economy.persistence.services.VendorService;
+import com.github.yuqingliu.economy.persistence.services.*;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -27,6 +24,7 @@ public class CommandManagerImpl implements CommandManager {
     private final VendorService vendorService;
     private final ShopService shopService;
     private final BankService bankService;
+    private final AuctionService auctionService;
     private final NameSpacedKeyManager nameSpacedKeyManager;
     private Map<String, CommandExecutor> commands = new HashMap<>();
         
@@ -39,6 +37,7 @@ public class CommandManagerImpl implements CommandManager {
         VendorService vendorService,
         ShopService shopService,
         BankService bankService,
+        AuctionService auctionService,
         NameSpacedKeyManager nameSpacedKeyManager
     ) {
         this.plugin = plugin;
@@ -48,6 +47,7 @@ public class CommandManagerImpl implements CommandManager {
         this.vendorService = vendorService;
         this.shopService = shopService;
         this.bankService = bankService;
+        this.auctionService = auctionService;
         this.nameSpacedKeyManager = nameSpacedKeyManager;
     }
     
@@ -75,6 +75,9 @@ public class CommandManagerImpl implements CommandManager {
         // Bank commands
         commands.put("bank", new BankCommand(nameSpacedKeyManager, bankService, logger));
         commands.put("account", new AccountCommand(bankService, logger));
+        // Auction commands
+        commands.put("ah", new AuctionHouseCommand(logger, inventoryManager));
+        commands.put("auction", new AuctionCommand(logger, auctionService)); 
     }
 
     private void registerCommands() {
