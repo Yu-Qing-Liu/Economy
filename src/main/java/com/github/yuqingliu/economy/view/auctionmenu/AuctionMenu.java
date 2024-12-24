@@ -36,10 +36,6 @@ public class AuctionMenu extends AbstractPlayerInventory {
         this.auctionService = auctionService;
         this.mainMenu = new MainMenu(this);
     }
-    
-    public String getBankName() {
-        return componentToString(displayName);
-    }
 
     private String componentToString(Component component) {
         if(component == null) {
