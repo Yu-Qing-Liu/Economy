@@ -111,7 +111,7 @@ public class InventoryManagerImpl implements InventoryManager {
             new AuctionMenu(
                 pluginManager,
                 logger,
-                Component.text("Auction", NamedTextColor.GREEN).decorate(TextDecoration.BOLD),
+                Component.text("Auction House", NamedTextColor.GOLD).decorate(TextDecoration.BOLD),
                 auctionService
             )
         );
