@@ -3,6 +3,7 @@ package com.github.yuqingliu.economy.view.auctionmenu.mainmenu;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -98,7 +99,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
             } else {
                 ItemStack icon = auction.getItem().clone();
                 ItemMeta meta = icon.getItemMeta();
-                List<Component> lore = meta.lore();
+                List<Component> lore = meta.lore() != null ? meta.lore() : new ArrayList<>();
                 Instant start = auction.getStart();
                 Instant end = auction.getEnd();
                 if(Instant.now().isBefore(start)) {
@@ -123,6 +124,6 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
         setItem(searchAuctionButton, createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Search", NamedTextColor.BLUE)));
         setItem(playerAuctionsButon, createSlotItem(Material.ENDER_CHEST, Component.text("Your Auctions", NamedTextColor.AQUA)));
         setItem(playerAuctionsWonButton, createSlotItem(Material.GOLD_BLOCK, Component.text("Auctions Won", NamedTextColor.GOLD)));
-        setItem(playerBidsButton, createSlotItem(Material.CHEST, Component.text("Bids")));
+        setItem(playerBidsButton, createSlotItem(Material.CHEST, Component.text("Bids", NamedTextColor.DARK_PURPLE)));
     }
 }
