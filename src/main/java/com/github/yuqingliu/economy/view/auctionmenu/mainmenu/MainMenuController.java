@@ -68,7 +68,8 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
     }
 
     private void fetchAuctions() {
-        List<AuctionEntity> auctions = menu.getAuctionService().getActiveAuctions().stream().filter(auc -> auc.getEnd().isAfter(Instant.now())).collect(Collectors.toList());
+        List<AuctionEntity> auctions = menu.getAuctionService().getActiveAuctions().stream()
+                .filter(auc -> auc.getEnd().isAfter(Instant.now())).collect(Collectors.toList());
         if (auctions.isEmpty()) {
             return;
         }
