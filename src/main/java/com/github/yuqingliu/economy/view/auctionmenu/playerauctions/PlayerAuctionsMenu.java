@@ -10,9 +10,11 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.yuqingliu.economy.persistence.entities.AuctionEntity;
 import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu.MenuType;
+import com.github.yuqingliu.economy.view.auctionmenu.bidmenu.BidMenuController;
 import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenuController;
 
 import lombok.Getter;
@@ -44,6 +46,11 @@ public class PlayerAuctionsMenu implements Listener {
         if(auctionMenu.getPlayerMenuTypes().get(player) == MenuType.PlayerAuctionsMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
+                return;
+            }
+            if(controller.rectangleContains(slot, controller.getAuctions())) {
+                AuctionEntity auction = controller.getPageData().get(slot);
+                auctionMenu.getBidMenu().getControllers().getPlayerInventoryController(player, new BidMenuController(player, inventory, auctionMenu)).openMenu(auction);
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {

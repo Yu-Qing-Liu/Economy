@@ -1,4 +1,4 @@
-package com.github.yuqingliu.economy.view.auctionmenu.mainmenu;
+package com.github.yuqingliu.economy.view.auctionmenu.bidmenu;
 
 import java.util.Arrays;
 
@@ -10,21 +10,19 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.yuqingliu.economy.persistence.entities.AuctionEntity;
 import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu.MenuType;
-import com.github.yuqingliu.economy.view.auctionmenu.bidmenu.BidMenuController;
-import com.github.yuqingliu.economy.view.auctionmenu.playerauctions.PlayerAuctionsMenuController;
+import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenuController;
 
 import lombok.Getter;
 
 @Getter
-public class MainMenu implements Listener {
+public class BidMenu implements Listener {
     private final AuctionMenu auctionMenu;
-    private final PlayerInventoryControllerFactory<MainMenuController> controllers = new PlayerInventoryControllerFactory<>();
+    private final PlayerInventoryControllerFactory<BidMenuController> controllers = new PlayerInventoryControllerFactory<>();
     
-    public MainMenu(AuctionMenu auctionMenu) {
+    public BidMenu(AuctionMenu auctionMenu) {
         this.auctionMenu = auctionMenu;
         auctionMenu.getPluginManager().getEventManager().registerEvent(this);
     }
@@ -40,30 +38,32 @@ public class MainMenu implements Listener {
             return;
         }
 
-        MainMenuController controller = controllers.getPlayerInventoryController(player, new MainMenuController(player, inventory, auctionMenu));
+        BidMenuController controller = controllers.getPlayerInventoryController(player, new BidMenuController(player, inventory, auctionMenu));
         event.setCancelled(true);
 
-        if(auctionMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(inventory)) {
+        if(auctionMenu.getPlayerMenuTypes().get(player) == MenuType.BidMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
-                return;
-            }
-            if(controller.rectangleContains(slot, controller.getAuctions())) {
-                AuctionEntity auction = controller.getPageData().get(slot);
-                auctionMenu.getBidMenu().getControllers().getPlayerInventoryController(player, new BidMenuController(player, inventory, auctionMenu)).openMenu(auction);
-                return;
-            }
-            if(Arrays.equals(slot, controller.getPlayerAuctionsButton())) {
-                auctionMenu.getPlayerAuctionsMenu().getControllers().getPlayerInventoryController(player, new PlayerAuctionsMenuController(player, inventory, auctionMenu)).openMenu();
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
                 inventory.close();
                 return;
             }
+            if(Arrays.equals(slot, controller.getPreviousMenuButton())) {
+                auctionMenu.getMainMenu().getControllers().getPlayerInventoryController(player, new MainMenuController(player, inventory, auctionMenu)).openMenu();
+                return;
+            }
             if(Arrays.equals(slot, controller.getRefreshButton())) {
                 controller.reload();
                 return;
+            }
+            if(Arrays.equals(slot, controller.getChangeBidAmount())) {
+                controller.changeBidAmount();
+                return;
+            }
+            if(Arrays.equals(slot, controller.getConfirmBid())) {
+                controller.confirmBid();
             }
         }
     }

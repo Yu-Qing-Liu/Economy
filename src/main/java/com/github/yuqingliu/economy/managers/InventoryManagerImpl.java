@@ -112,7 +112,8 @@ public class InventoryManagerImpl implements InventoryManager {
                 pluginManager,
                 logger,
                 Component.text("Auction House", NamedTextColor.GOLD).decorate(TextDecoration.BOLD),
-                auctionService
+                auctionService,
+                currencyService
             )
         );
     }

@@ -36,6 +36,19 @@ public class AuctionRepository {
         Session session = hibernate.getSession();
         try {
             transaction = session.beginTransaction();
+            Query<CurrencyEntity> query = session.createQuery(
+                "FROM CurrencyEntity c WHERE c.purseId = :purseId AND c.currencyName = :currencyName",
+                CurrencyEntity.class
+            );
+            query.setParameter("purseId", player.getUniqueId());
+            query.setParameter("currencyName", currencyType);
+            CurrencyEntity purseCurrency = query.uniqueResult();
+            if(purseCurrency.getAmount() < startingBid) {
+                logger.sendPlayerErrorMessage(player, "You do not have enough currency to start this auction");
+                throw new RuntimeException();
+            }
+            purseCurrency.setAmount(purseCurrency.getAmount() - startingBid);
+            session.merge(purseCurrency);
             AuctionEntity auctionEntity = new AuctionEntity();
             Instant end = start.plus(duration);
             auctionEntity.setPlayerId(player.getUniqueId());
@@ -231,6 +244,17 @@ public class AuctionRepository {
     }
     
     // Queries
+    public AuctionEntity getAuction(UUID auctionId) {
+        try (Session session = hibernate.getSession()) {
+            String hql = "FROM AuctionEntity WHERE auctionId = :auctionId";
+            Query<AuctionEntity> query = session.createQuery(hql, AuctionEntity.class);
+            query.setParameter("auctionId", auctionId);
+            return query.uniqueResult();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public List<AuctionEntity> getPlayerAuctions(UUID playerId) {
         try (Session session = hibernate.getSession()) {
             String hql = "FROM AuctionEntity WHERE playerId = :playerId";
