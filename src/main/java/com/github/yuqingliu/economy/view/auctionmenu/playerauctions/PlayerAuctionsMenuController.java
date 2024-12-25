@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -23,9 +24,11 @@ import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu.MenuType;
 
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+@Getter
 public class PlayerAuctionsMenuController extends AbstractPlayerInventoryController<AuctionMenu> {
     private final int[] nextPageButton = new int[] { 8, 1 };
     private final int[] prevPageButton = new int[] { 8, 2 };
@@ -66,9 +69,18 @@ public class PlayerAuctionsMenuController extends AbstractPlayerInventoryControl
         List<AuctionEntity> auctions2 = menu.getAuctionService().getAuctionsWon(player);
         List<AuctionEntity> auctions3 = menu.getAuctionService().getAuctionsLost(player);
         Queue<AuctionEntity> temp = new ArrayDeque<>();
-        temp.addAll(auctions1);
-        temp.addAll(auctions2);
-        temp.addAll(auctions3);
+        if (!(auctions1 == null) && !auctions1.isEmpty()) {
+            temp.addAll(auctions1);
+        }
+        if (!(auctions2 == null) && !auctions2.isEmpty()) {
+            temp.addAll(auctions2);
+        }
+        if (!(auctions3 == null) && !auctions3.isEmpty()) {
+            temp.addAll(auctions3);
+        }
+        if(temp.isEmpty()) {
+            return;
+        }
         int maxPages = (int) Math.ceil((double) auctions.size() / (double) auctionsSize);
         for (int i = 0; i < maxPages; i++) {
             int pageNum = i + 1;
@@ -95,6 +107,24 @@ public class PlayerAuctionsMenuController extends AbstractPlayerInventoryControl
                 ItemStack icon = auction.getItem().clone();
                 ItemMeta meta = icon.getItemMeta();
                 List<Component> lore = meta.lore() != null ? meta.lore() : new ArrayList<>();
+                // Owner lore
+                Component ownerLorePrefix = Component.text("Owner: ", NamedTextColor.DARK_GRAY);
+                Component ownerLoreName = Component.text(Bukkit.getOfflinePlayer(auction.getPlayerId()).getName(), NamedTextColor.BLUE);
+                Component ownerLore = ownerLorePrefix.append(ownerLoreName);
+                lore.add(ownerLore);
+                // Bidder lore
+                if(auction.getBidderId() != null) {
+                    Component bidderLorePrefix = Component.text("Highest Bidder: ", NamedTextColor.DARK_GRAY);
+                    Component bidderLoreName = Component.text(Bukkit.getOfflinePlayer(auction.getBidderId()).getName(), NamedTextColor.LIGHT_PURPLE);
+                    Component bidderLore = bidderLorePrefix.append(bidderLoreName);
+                    lore.add(bidderLore);
+                }
+                // Highest bid lore
+                Component bidLorePrefix = Component.text("Highest Bid: ", NamedTextColor.DARK_GRAY);
+                Component bidLoreAmount = Component.text(String.format("%.2f %s", auction.getHighestBid(), auction.getCurrencyType()), NamedTextColor.GOLD);
+                Component bidLore = bidLorePrefix.append(bidLoreAmount);
+                lore.add(bidLore);
+                // Time lore
                 Instant start = auction.getStart();
                 Instant end = auction.getEnd();
                 Instant now = Instant.now();
@@ -102,24 +132,10 @@ public class PlayerAuctionsMenuController extends AbstractPlayerInventoryControl
                     lore.add(Component.text(String.format("This auction has ended"), NamedTextColor.RED));
                 } else if (now.isBefore(start)) {
                     Duration duration = Duration.between(now, start);
-                    long days = duration.toDays();
-                    long hours = duration.toHours() % 24;
-                    long minutes = duration.toMinutes() % 60;
-                    long seconds = duration.getSeconds() % 60;
-
-                    String timeString = String.format("%02d days: %02d hrs: %02d mins: %02d s", days, hours, minutes,
-                            seconds);
-                    lore.add(Component.text(String.format("Starts in %s", timeString), NamedTextColor.GREEN));
+                    lore.add(Component.text(String.format("Starts in %s", durationToString(duration)), NamedTextColor.GREEN));
                 } else {
                     Duration duration = Duration.between(now, end);
-                    long days = duration.toDays();
-                    long hours = duration.toHours() % 24;
-                    long minutes = duration.toMinutes() % 60;
-                    long seconds = duration.getSeconds() % 60;
-
-                    String timeString = String.format("%02d days: %02d hrs: %02d mins: %02d s", days, hours, minutes,
-                            seconds);
-                    lore.add(Component.text(String.format("Ends in %s", timeString), NamedTextColor.YELLOW));
+                    lore.add(Component.text(String.format("Ends in %s", durationToString(duration)), NamedTextColor.YELLOW));
                 }
                 meta.lore(lore);
                 icon.setItemMeta(meta);

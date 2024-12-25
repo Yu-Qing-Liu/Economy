@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.view.auctionmenu.playerauctions;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu.MenuType;
+import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenuController;
 
 import lombok.Getter;
 
@@ -41,6 +44,18 @@ public class PlayerAuctionsMenu implements Listener {
         if(auctionMenu.getPlayerMenuTypes().get(player) == MenuType.PlayerAuctionsMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
+                return;
+            }
+            if(Arrays.equals(slot, controller.getExitMenuButton())) {
+                inventory.close();
+                return;
+            }
+            if(Arrays.equals(slot, controller.getRefreshButton())) {
+                controller.reload();
+                return;
+            }
+            if(Arrays.equals(slot, controller.getPreviousMenuButton())) {
+                auctionMenu.getMainMenu().getControllers().getPlayerInventoryController(player, new MainMenuController(player, inventory, auctionMenu)).openMenu();
                 return;
             }
         }

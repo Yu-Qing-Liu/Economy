@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu.MenuType;
+import com.github.yuqingliu.economy.view.auctionmenu.playerauctions.PlayerAuctionsMenuController;
 
 import lombok.Getter;
 
@@ -43,6 +44,18 @@ public class MainMenu implements Listener {
         if(auctionMenu.getPlayerMenuTypes().get(player) == MenuType.MainMenu && clickedInventory.equals(inventory)) {
             int[] slot = controller.toCoords(event.getSlot());
             if(controller.isUnavailable(currentItem)) {
+                return;
+            }
+            if(Arrays.equals(slot, controller.getPlayerAuctionsButton())) {
+                auctionMenu.getPlayerAuctionsMenu().getControllers().getPlayerInventoryController(player, new PlayerAuctionsMenuController(player, inventory, auctionMenu)).openMenu();
+                return;
+            }
+            if(Arrays.equals(slot, controller.getExitMenuButton())) {
+                inventory.close();
+                return;
+            }
+            if(Arrays.equals(slot, controller.getRefreshButton())) {
+                controller.reload();
                 return;
             }
         }
