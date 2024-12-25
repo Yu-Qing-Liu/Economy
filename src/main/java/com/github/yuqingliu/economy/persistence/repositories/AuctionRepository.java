@@ -196,7 +196,7 @@ public class AuctionRepository {
                 logger.sendPlayerErrorMessage(player, "This auction has ended already.");
                 throw new RuntimeException();
             }
-            if(!auction.getPlayerId().equals(player.getUniqueId())) {
+            if(auction.getPlayerId().equals(player.getUniqueId())) {
                 logger.sendPlayerErrorMessage(player, "Cannot bid on your own auctions");
                 throw new RuntimeException();
             }
@@ -223,7 +223,7 @@ public class AuctionRepository {
             if(previousBid != null) {
                 previousBid.setAmount(auction.getHighestBid());
                 session.merge(previousBid);
-            } else {
+            } else if (auction.getBidderId() != null) {
                 previousBid = new BidEntity();
                 previousBid.setAmount(auction.getHighestBid());
                 previousBid.setPlayerId(auction.getBidderId());
@@ -234,6 +234,7 @@ public class AuctionRepository {
             auction.setBidderId(player.getUniqueId());
             session.merge(auction);
             transaction.commit();
+            logger.sendPlayerNotificationMessage(player, String.format("You bid %.2f %s", bidAmount, auction.getCurrencyType()));
             return true;
         } catch (Exception e) {
             transaction.rollback();
