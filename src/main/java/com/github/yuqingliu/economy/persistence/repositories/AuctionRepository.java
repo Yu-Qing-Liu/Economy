@@ -221,7 +221,7 @@ public class AuctionRepository {
             getPreviousBid.setParameter("auctionId", auction.getAuctionId());
             BidEntity previousBid = getPreviousBid.uniqueResult();
             if(previousBid != null) {
-                previousBid.setAmount(auction.getHighestBid());
+                previousBid.setAmount(previousBid.getAmount() + auction.getHighestBid());
                 session.merge(previousBid);
             } else if (auction.getBidderId() != null) {
                 previousBid = new BidEntity();
