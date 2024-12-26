@@ -34,10 +34,6 @@ public class PlayerEntity {
     @OrderBy("accountName ASC")
     private Set<AccountEntity> accounts = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    @OrderBy("displayName ASC")
-    private Set<AuctionEntity> auctions = new LinkedHashSet<>();
-
     public void setPurse(PurseEntity purse) {
         if (purse != null) {
             purse.setPlayer(this);

@@ -112,7 +112,7 @@ public class BidMenuController extends AbstractPlayerInventoryController<Auction
             }
         } else if (auction.getBidderId().equals(player.getUniqueId())) {
             BidEntity playerBid = menu.getAuctionService().getPlayerBid(auction, player);
-            double refund = playerBid.getAmount();
+            double refund = playerBid != null ? playerBid.getAmount() : 0;
             if (menu.getAuctionService().collectAuctionItem(player, auction)) {
                 menu.getLogger().sendPlayerNotificationMessage(player,
                         String.format("Collected auction with %.2f %s bid refund.", refund, auction.getCurrencyType()));

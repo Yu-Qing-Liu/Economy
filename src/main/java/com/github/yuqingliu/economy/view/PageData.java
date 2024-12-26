@@ -53,4 +53,8 @@ public class PageData<T> {
     public void put(int pageNumber, Map<List<Integer>, T> data) {
         pageData.put(pageNumber, data);
     }
+
+    public void clear() {
+        pageData.clear();
+    }
 }

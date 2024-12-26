@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -21,7 +20,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.AuctionEntity;
-import com.github.yuqingliu.economy.persistence.entities.BidEntity;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
@@ -57,17 +55,20 @@ public class PlayerAuctionsMenuController extends AbstractPlayerInventoryControl
         fill(getBackgroundTile(Material.PURPLE_STAINED_GLASS_PANE));
         buttons();
         rectangleAreaLoading(auctionsStart, auctionsWidth, auctionsLength);
-        Scheduler.runAsync((task) -> {
+        Scheduler.runAsync(t -> {
             reload();
         });
     }
 
     public void reload() {
-        fetchPlayerAuctions();
-        displayPlayerAuctions();
+        Scheduler.runAsync(t -> {
+            fetchPlayerAuctions();
+            displayPlayerAuctions();
+        });
     }
 
     private void fetchPlayerAuctions() {
+        pageData.clear();
         List<AuctionEntity> auctions1 = menu.getAuctionService().getPlayerAuctions(player);
         List<AuctionEntity> auctions2 = menu.getAuctionService().getAuctionsWon(player);
         List<AuctionEntity> auctions3 = menu.getAuctionService().getAuctionsLost(player);

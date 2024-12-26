@@ -102,6 +102,8 @@ public class AuctionRepository {
             auction.setRefunded(true);
             session.merge(auction);
             if (canRemoveAuction(auction) || refund) {
+                session.flush();
+                session.clear();
                 session.remove(auction);
             }
             if (refund) {
@@ -157,6 +159,8 @@ public class AuctionRepository {
                 session.merge(auction);
             }
             if (canRemoveAuction(auction)) {
+                session.flush();
+                session.clear();
                 session.remove(auction);
             }
             inventoryManager.addItemToPlayer(player, item, 1);
@@ -200,6 +204,8 @@ public class AuctionRepository {
             auction.getBids().remove(bid);
             session.merge(auction);
             if (canRemoveAuction(auction)) {
+                session.flush();
+                session.clear();
                 session.remove(auction);
             }
             transaction.commit();
