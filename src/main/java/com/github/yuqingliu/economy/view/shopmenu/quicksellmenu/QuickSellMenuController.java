@@ -64,8 +64,10 @@ public class QuickSellMenuController extends AbstractPlayerInventoryController<S
 
     public void quickSell(int amount) {
         Scheduler.runAsync((task) -> {
-            int[] data = menu.getShopService().quickSell(item, amount, orderOption.getCurrencyName(), player);
-            int filled = amount - data[0];
+            double[] cdata = computeRemainderAndProfit(amount);
+            int sellAmount = (int) cdata[0];
+            int[] data = menu.getShopService().quickSell(item, sellAmount, orderOption.getCurrencyName(), player);
+            int filled = sellAmount - data[0];
             double profit = data[1];
             if(profit > 0) {
                 menu.getLogger().sendPlayerNotificationMessage(player, String.format("Sold %d items for %.2f %s", filled, profit, orderOption.getCurrencyName()));
@@ -79,30 +81,37 @@ public class QuickSellMenuController extends AbstractPlayerInventoryController<S
         setItem(itemSlot, item.getIcon().clone());
     }
 
+    private double[] computeRemainderAndProfit(int quantity) {
+        int max = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
+        int total = Math.min(max, quantity);
+        double profit = 0;
+        int qty = total;
+        for(ShopOrderEntity order : orderOption.getOrders()) {
+            int amount = order.getQuantity() - order.getFilledQuantity();
+            if(amount > qty) {
+                profit += qty * order.getUnitPrice();
+                qty = 0;
+                break;
+            } else {
+                qty -= amount;
+                profit += amount * order.getUnitPrice();
+            }
+        }
+        int leftover;
+        if(total - qty > 0) {
+            leftover = total - qty;
+        } else {
+            leftover = 0;
+        }
+        return new double[] {leftover, profit};
+    }
+
     private void displaySellOptions() {
         int index = 0;
         for(int[] coords : sellOptions) {
-            int max = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
-            int total = Math.min(max, quantities[index]);
-            double profit = 0;
-            int qty = total;
-            for(ShopOrderEntity order : orderOption.getOrders()) {
-                int amount = order.getQuantity() - order.getFilledQuantity();
-                if(amount > qty) {
-                    profit += qty * order.getUnitPrice();
-                    qty = 0;
-                    break;
-                } else {
-                    qty -= amount;
-                    profit += amount * order.getUnitPrice();
-                }
-            }
-            int leftover;
-            if(total - qty > 0) {
-                leftover = total - qty;
-            } else {
-                leftover = 0;
-            }
+            double[] data = computeRemainderAndProfit(quantities[index]);
+            int leftover = (int) data[0];
+            double profit = data[1];
             Component sell = Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
             Component profitComponent = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
             ItemStack option = createSlotItem(Material.RED_STAINED_GLASS, sell, profitComponent);
@@ -123,25 +132,9 @@ public class QuickSellMenuController extends AbstractPlayerInventoryController<S
     private void buttons() {
         displaySellOptions();
         int total = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
-        double profit = 0;
-        int qty = total;
-        for(ShopOrderEntity order : orderOption.getOrders()) {
-            int amount = order.getQuantity() - order.getFilledQuantity();
-            if(amount > qty) {
-                profit = qty * order.getUnitPrice();
-                qty = 0;
-                break;
-            } else {
-                qty -= amount;
-                profit += amount * order.getUnitPrice();
-            }
-        }
-        int leftover;
-        if(total - qty > 0) {
-            leftover = total - qty;
-        } else {
-            leftover = 0;
-        }
+        double[] data = computeRemainderAndProfit(total);
+        int leftover = (int) data[0];
+        double profit = data[1];
         List<Component> fillLore = Arrays.asList(
             Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
             Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
