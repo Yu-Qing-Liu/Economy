@@ -63,8 +63,8 @@ public class SellOrderMenuController extends AbstractPlayerInventoryController<S
         PlayerInventory shop = menu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
         Consumer<String> callback = (userInput) -> {
-            Inventory inventory = shop.load(player);
-            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, new SellOrderMenuController(player, inventory, menu));
+            this.inventory = shop.load(player);
+            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, this);
             try {
                 if(menu.getCurrencyService().getCurrencyByName(userInput) == null) {
                     throw new IllegalArgumentException();
@@ -72,10 +72,7 @@ public class SellOrderMenuController extends AbstractPlayerInventoryController<S
                 controller.setCurrencyType(userInput);
             } catch (Exception e) {
                 menu.getLogger().sendPlayerErrorMessage(player, "Invalid currency.");
-                controller.setCurrencyType(currencyType);
             }
-            controller.setPrice(price);
-            controller.setQuantity(quantity);
             controller.openMenu(item);
         };        
         TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
@@ -89,8 +86,8 @@ public class SellOrderMenuController extends AbstractPlayerInventoryController<S
         PlayerInventory shop = menu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
         Consumer<String> callback = (userInput) -> {
-            Inventory inventory = shop.load(player);
-            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, new SellOrderMenuController(player, inventory, menu));
+            this.inventory = shop.load(player);
+            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, this);
             try {
                 int quantity = Integer.parseInt(userInput);
                 if(quantity < 1) {
@@ -99,10 +96,7 @@ public class SellOrderMenuController extends AbstractPlayerInventoryController<S
                 controller.setQuantity(quantity);
             } catch (Exception e) {
                 menu.getLogger().sendPlayerErrorMessage(player, "Invalid quantity.");
-                controller.setQuantity(quantity);
             }
-            controller.setPrice(price);
-            controller.setCurrencyType(currencyType);
             controller.openMenu(item);
         };        
         TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
@@ -116,8 +110,8 @@ public class SellOrderMenuController extends AbstractPlayerInventoryController<S
         PlayerInventory shop = menu.getPluginManager().getInventoryManager().getInventory(ShopMenu.class.getSimpleName());
         shop.setDisplayName(Component.text(item.getShopName(), NamedTextColor.DARK_GRAY));
         Consumer<String> callback = (userInput) -> {
-            Inventory inventory = shop.load(player);
-            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, new SellOrderMenuController(player, inventory, menu));
+            this.inventory = shop.load(player);
+            SellOrderMenuController controller = menu.getSellOrderMenu().getControllers().getPlayerInventoryController(player, this);
             try {
                 double unitPrice = Double.parseDouble(userInput);
                 if(unitPrice < 0) {
@@ -126,10 +120,7 @@ public class SellOrderMenuController extends AbstractPlayerInventoryController<S
                 controller.setPrice(unitPrice);
             } catch (Exception e) {
                 menu.getLogger().sendPlayerErrorMessage(player, "Invalid unit price.");
-                controller.setPrice(price);
             }
-            controller.setQuantity(quantity);
-            controller.setCurrencyType(currencyType);
             controller.openMenu(item);
         };        
         TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
@@ -139,11 +130,9 @@ public class SellOrderMenuController extends AbstractPlayerInventoryController<S
     }
 
     public void confirmOrder() {
-        Scheduler.runAsync((task) -> {
-            if(menu.getShopService().createSellOrder(player, item, quantity, price, currencyType)) {
-                menu.getOrderMenu().getControllers().getPlayerInventoryController(player, new OrderMenuController(player, inventory, menu)).openMenu(item);
-            }
-        });
+        if(menu.getShopService().createSellOrder(player, item, quantity, price, currencyType)) {
+            menu.getOrderMenu().getControllers().getPlayerInventoryController(player, new OrderMenuController(player, inventory, menu)).openMenu(item);
+        }
     }
 
     private void displayItem() {
