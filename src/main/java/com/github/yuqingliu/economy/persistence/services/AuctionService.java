@@ -45,6 +45,10 @@ public class AuctionService {
         return auctionRepository.bid(auction, player, bidAmount);
     }
 
+    public BidEntity getPlayerBid(AuctionEntity auction, Player player) {
+        return auctionRepository.getPlayerBid(auction, player);
+    }
+
     public AuctionEntity getAuction(UUID auctionId) {
         return auctionRepository.getAuction(auctionId);
     }

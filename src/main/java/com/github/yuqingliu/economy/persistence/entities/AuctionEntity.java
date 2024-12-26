@@ -60,6 +60,9 @@ public class AuctionEntity {
     @Column(name = "collected")
     private boolean collected = false;
 
+    @Column(name = "refunded")
+    private boolean refunded = false;
+
     @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @OrderBy("amount DESC")
     private Set<BidEntity> bids = new LinkedHashSet<>();

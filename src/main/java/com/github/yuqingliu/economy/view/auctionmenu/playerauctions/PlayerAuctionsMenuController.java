@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -19,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.AuctionEntity;
+import com.github.yuqingliu.economy.persistence.entities.BidEntity;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.PageData;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
@@ -68,19 +71,30 @@ public class PlayerAuctionsMenuController extends AbstractPlayerInventoryControl
         List<AuctionEntity> auctions1 = menu.getAuctionService().getPlayerAuctions(player);
         List<AuctionEntity> auctions2 = menu.getAuctionService().getAuctionsWon(player);
         List<AuctionEntity> auctions3 = menu.getAuctionService().getAuctionsLost(player);
-        Queue<AuctionEntity> temp = new ArrayDeque<>();
+        List<AuctionEntity> auctionsList = new ArrayList<>();
         if (!(auctions1 == null) && !auctions1.isEmpty()) {
-            temp.addAll(auctions1);
+            auctionsList.addAll(auctions1);
         }
         if (!(auctions2 == null) && !auctions2.isEmpty()) {
-            temp.addAll(auctions2);
+            auctionsList.addAll(auctions2);
         }
         if (!(auctions3 == null) && !auctions3.isEmpty()) {
-            temp.addAll(auctions3);
+            auctionsList.addAll(auctions3);
         }
-        if(temp.isEmpty()) {
+        auctionsList = auctionsList.stream().filter(a -> {
+            if (a.getPlayerId().equals(player.getUniqueId())) {
+                return !a.isRefunded();
+            }
+            if (a.getBidderId().equals(player.getUniqueId())) {
+                return !a.isCollected();
+            }
+            return true;
+        }).collect(Collectors.toList());
+        if (auctionsList.isEmpty()) {
             return;
         }
+        Queue<AuctionEntity> temp = new ArrayDeque<>();
+        temp.addAll(auctionsList);
         int maxPages = (int) Math.ceil((double) auctions.size() / (double) auctionsSize);
         for (int i = 0; i < maxPages; i++) {
             int pageNum = i + 1;
@@ -109,21 +123,27 @@ public class PlayerAuctionsMenuController extends AbstractPlayerInventoryControl
                 List<Component> lore = meta.lore() != null ? meta.lore() : new ArrayList<>();
                 // Owner lore
                 Component ownerLorePrefix = Component.text("Owner: ", NamedTextColor.DARK_GRAY);
-                Component ownerLoreName = Component.text(Bukkit.getOfflinePlayer(auction.getPlayerId()).getName(), NamedTextColor.BLUE);
+                Component ownerLoreName = Component.text(Bukkit.getOfflinePlayer(auction.getPlayerId()).getName(),
+                        NamedTextColor.BLUE);
                 Component ownerLore = ownerLorePrefix.append(ownerLoreName);
                 lore.add(ownerLore);
                 // Bidder lore
-                if(auction.getBidderId() != null) {
+                if (auction.getBidderId() != null) {
                     Component bidderLorePrefix = Component.text("Highest Bidder: ", NamedTextColor.DARK_GRAY);
-                    Component bidderLoreName = Component.text(Bukkit.getOfflinePlayer(auction.getBidderId()).getName(), NamedTextColor.LIGHT_PURPLE);
+                    Component bidderLoreName = Component.text(Bukkit.getOfflinePlayer(auction.getBidderId()).getName(),
+                            NamedTextColor.LIGHT_PURPLE);
                     Component bidderLore = bidderLorePrefix.append(bidderLoreName);
                     lore.add(bidderLore);
                 }
                 // Highest bid lore
-                Component bidLorePrefix = Component.text("Highest Bid: ", NamedTextColor.DARK_GRAY);
-                Component bidLoreAmount = Component.text(String.format("%.2f %s", auction.getHighestBid(), auction.getCurrencyType()), NamedTextColor.GOLD);
-                Component bidLore = bidLorePrefix.append(bidLoreAmount);
-                lore.add(bidLore);
+                if (auction.getHighestBid() > 0) {
+                    Component bidLorePrefix = Component.text("Highest Bid: ", NamedTextColor.DARK_GRAY);
+                    Component bidLoreAmount = Component.text(
+                            String.format("%.2f %s", auction.getHighestBid(), auction.getCurrencyType()),
+                            NamedTextColor.GOLD);
+                    Component bidLore = bidLorePrefix.append(bidLoreAmount);
+                    lore.add(bidLore);
+                }
                 // Time lore
                 Instant start = auction.getStart();
                 Instant end = auction.getEnd();
@@ -132,10 +152,12 @@ public class PlayerAuctionsMenuController extends AbstractPlayerInventoryControl
                     lore.add(Component.text(String.format("This auction has ended"), NamedTextColor.RED));
                 } else if (now.isBefore(start)) {
                     Duration duration = Duration.between(now, start);
-                    lore.add(Component.text(String.format("Starts in %s", durationToString(duration)), NamedTextColor.GREEN));
+                    lore.add(Component.text(String.format("Starts in %s", durationToString(duration)),
+                            NamedTextColor.GREEN));
                 } else {
                     Duration duration = Duration.between(now, end);
-                    lore.add(Component.text(String.format("Ends in %s", durationToString(duration)), NamedTextColor.YELLOW));
+                    lore.add(Component.text(String.format("Ends in %s", durationToString(duration)),
+                            NamedTextColor.YELLOW));
                 }
                 meta.lore(lore);
                 icon.setItemMeta(meta);

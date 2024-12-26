@@ -64,6 +64,11 @@ public class BidMenu implements Listener {
             }
             if(Arrays.equals(slot, controller.getConfirmBid())) {
                 controller.confirmBid();
+                return;
+            }
+            if(Arrays.equals(slot, controller.getCollectButton())) {
+                controller.collectAuction();
+                return;
             }
         }
     }

@@ -3,6 +3,7 @@ package com.github.yuqingliu.economy.commands;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,6 +29,11 @@ public class AuctionCommand implements CommandExecutor {
                 logger.sendPlayerErrorMessage(player, "You do not have permission to use this command.");
                 return false;
             }
+            ItemStack item = player.getInventory().getItemInMainHand();
+            if(item == null || item.getType() == Material.AIR) {
+                logger.sendPlayerErrorMessage(player, "No auction item in main hand.");
+                return false;
+            }
             switch (args.length) {
                 case 4 -> {
                     if(!args[0].equals("create")) {
@@ -38,7 +44,6 @@ public class AuctionCommand implements CommandExecutor {
                         String currencyType = args[2];
                         int length = Integer.parseInt(args[3]);
                         Duration duration = Duration.ofMinutes(length);
-                        ItemStack item = player.getInventory().getItemInMainHand();
                         if (auctionService.startAuction(player, item, startingBid, currencyType, duration)) {
                             player.getInventory().setItemInMainHand(new ItemStack(org.bukkit.Material.AIR));
                         }
@@ -59,7 +64,6 @@ public class AuctionCommand implements CommandExecutor {
                         Instant start = Instant.now().plus(delay_duration);
                         int length = Integer.parseInt(args[4]);
                         Duration duration = Duration.ofMinutes(length);
-                        ItemStack item = player.getInventory().getItemInMainHand();
                         if (auctionService.startAuction(player, item, startingBid, currencyType, start, duration)) {
                             player.getInventory().setItemInMainHand(new ItemStack(org.bukkit.Material.AIR));
                         }

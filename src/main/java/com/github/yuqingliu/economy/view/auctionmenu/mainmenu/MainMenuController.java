@@ -33,10 +33,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class MainMenuController extends AbstractPlayerInventoryController<AuctionMenu> {
     private final int[] nextPageButton = new int[] { 8, 1 };
     private final int[] prevPageButton = new int[] { 8, 2 };
-    private final int[] exitMenuButton = new int[] { 8, 3 };
+    private final int[] refreshButton = new int[] { 8, 3 };
+    private final int[] exitMenuButton = new int[] { 8, 4 };
     private final int[] searchAuctionButton = new int[] { 0, 1 };
     private final int[] playerAuctionsButton = new int[] { 0, 2 };
-    private final int[] refreshButton = new int[] { 0, 3 };
     private final int[] auctionsStart = new int[] { 1, 1 };
     private final int auctionsLength = 7;
     private final int auctionsWidth = 4;
