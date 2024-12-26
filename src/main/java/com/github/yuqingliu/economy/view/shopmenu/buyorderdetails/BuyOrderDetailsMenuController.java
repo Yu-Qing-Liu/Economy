@@ -38,6 +38,7 @@ public class BuyOrderDetailsMenuController extends AbstractPlayerInventoryContro
     }   
 
     public void openMenu(ShopOrderEntity order) {
+        this.order = order;
         Scheduler.runLaterAsync((task) -> {
             menu.getPlayerMenuTypes().put(player, MenuType.BuyOrderDetailsMenu);
         }, Duration.ofMillis(50));

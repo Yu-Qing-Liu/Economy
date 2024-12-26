@@ -67,6 +67,14 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
         });
     }
 
+    public void nextPage() {
+        pageData.nextPage(() -> displayAuctions());
+    }
+
+    public void prevPage() {
+        pageData.prevPage(() -> displayAuctions());
+    }
+
     private void fetchAuctions() {
         pageData.clear();
         List<AuctionEntity> auctions = menu.getAuctionService().getActiveAuctions().stream()

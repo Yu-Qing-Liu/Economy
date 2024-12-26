@@ -70,6 +70,14 @@ public class MainMenu implements Listener {
                 auctionMenu.getCreateAuctionMenu().getControllers().getPlayerInventoryController(player, new CreateAuctionMenuController(player, inventory, auctionMenu)).openMenu();
                 return;
             }
+            if(Arrays.equals(slot, controller.getNextPageButton())) {
+                controller.nextPage();
+                return;
+            }
+            if(Arrays.equals(slot, controller.getPrevPageButton())) {
+                controller.prevPage();
+                return;
+            }
         }
     }
     
