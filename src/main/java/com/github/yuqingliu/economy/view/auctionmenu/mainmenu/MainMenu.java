@@ -15,6 +15,7 @@ import com.github.yuqingliu.economy.view.PlayerInventoryControllerFactory;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu.MenuType;
 import com.github.yuqingliu.economy.view.auctionmenu.bidmenu.BidMenuController;
+import com.github.yuqingliu.economy.view.auctionmenu.createauction.CreateAuctionMenuController;
 import com.github.yuqingliu.economy.view.auctionmenu.playerauctions.PlayerAuctionsMenuController;
 
 import lombok.Getter;
@@ -63,6 +64,10 @@ public class MainMenu implements Listener {
             }
             if(Arrays.equals(slot, controller.getRefreshButton())) {
                 controller.reload();
+                return;
+            }
+            if(Arrays.equals(slot, controller.getCreateAuctionButton())) {
+                auctionMenu.getCreateAuctionMenu().getControllers().getPlayerInventoryController(player, new CreateAuctionMenuController(player, inventory, auctionMenu)).openMenu();
                 return;
             }
         }

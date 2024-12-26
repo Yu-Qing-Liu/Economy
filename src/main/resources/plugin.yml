@@ -55,11 +55,15 @@ commands:
   ah:
     description: Opens the auction house GUI
     usage: /ah
-    permission: economy.user
+    permission: economy.admin
   auction:
     description: Creates an auction for the item in your main hand
     usage: /auction create <startingBid> <currenyType> <startDelay(mins)> <duration(mins)>; /auction create <startingBid> <currencyType> <duration(mins)>
-    permission: economy.user
+    permission: economy.admin
+  auctionhouse:
+    description: Spawn a villager acting as entry point to the auction house
+    usage: /auctionhouse
+    permission: economy.admin
 
 permissions:
   economy.admin:

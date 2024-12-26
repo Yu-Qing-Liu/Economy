@@ -13,6 +13,7 @@ import com.github.yuqingliu.economy.persistence.services.AuctionService;
 import com.github.yuqingliu.economy.persistence.services.CurrencyService;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventory;
 import com.github.yuqingliu.economy.view.auctionmenu.bidmenu.BidMenu;
+import com.github.yuqingliu.economy.view.auctionmenu.createauction.CreateAuctionMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.mainmenu.MainMenuController;
 import com.github.yuqingliu.economy.view.auctionmenu.playerauctions.PlayerAuctionsMenu;
@@ -28,12 +29,13 @@ public class AuctionMenu extends AbstractPlayerInventory {
     private Map<Player, MenuType> playerMenuTypes = new ConcurrentHashMap<>();
 
     public enum MenuType {
-        MainMenu, PlayerAuctionsMenu, BidMenu;
+        MainMenu, PlayerAuctionsMenu, BidMenu, CreateAuctionMenu;
     }
 
     private final MainMenu mainMenu;
     private final PlayerAuctionsMenu playerAuctionsMenu;
     private final BidMenu bidMenu;
+    private final CreateAuctionMenu createAuctionMenu;
 
     @Inject
     public AuctionMenu(PluginManager pluginManager, Logger logger, Component displayName, AuctionService auctionService, CurrencyService currencyService) {
@@ -43,6 +45,7 @@ public class AuctionMenu extends AbstractPlayerInventory {
         this.mainMenu = new MainMenu(this);
         this.playerAuctionsMenu = new PlayerAuctionsMenu(this);
         this.bidMenu = new BidMenu(this);
+        this.createAuctionMenu = new CreateAuctionMenu(this);
     }
 
     @Override

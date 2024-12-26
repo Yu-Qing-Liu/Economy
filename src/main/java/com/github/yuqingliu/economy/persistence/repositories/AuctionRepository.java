@@ -107,7 +107,7 @@ public class AuctionRepository {
                 session.remove(auction);
             }
             if (refund) {
-                inventoryManager.addItemToPlayer(player, temp, 1);
+                inventoryManager.addItemToPlayer(player, temp, temp.getAmount());
             }
             transaction.commit();
             return true;
@@ -163,7 +163,7 @@ public class AuctionRepository {
                 session.clear();
                 session.remove(auction);
             }
-            inventoryManager.addItemToPlayer(player, item, 1);
+            inventoryManager.addItemToPlayer(player, item, item.getAmount());
             transaction.commit();
             return true;
         } catch (Exception e) {

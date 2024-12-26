@@ -76,8 +76,9 @@ public class CommandManagerImpl implements CommandManager {
         commands.put("bank", new BankCommand(nameSpacedKeyManager, bankService, logger));
         commands.put("account", new AccountCommand(bankService, logger));
         // Auction commands
-        commands.put("ah", new AuctionHouseCommand(logger, inventoryManager));
+        commands.put("ah", new AhCommand(logger, inventoryManager));
         commands.put("auction", new AuctionCommand(logger, auctionService)); 
+        commands.put("auctionhouse", new AuctionHouseCommand(logger, nameSpacedKeyManager));
     }
 
     private void registerCommands() {
