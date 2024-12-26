@@ -36,7 +36,8 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
     private final int[] refreshButton = new int[] { 8, 3 };
     private final int[] exitMenuButton = new int[] { 8, 4 };
     private final int[] searchAuctionButton = new int[] { 0, 1 };
-    private final int[] playerAuctionsButton = new int[] { 0, 2 };
+    private final int[] createAuctionButton = new int[] { 0, 2 };
+    private final int[] playerAuctionsButton = new int[] { 0, 3 };
     private final int[] auctionsStart = new int[] { 1, 1 };
     private final int auctionsLength = 7;
     private final int auctionsWidth = 4;
@@ -144,6 +145,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
         setItem(refreshButton, getReloadIcon());
         setItem(exitMenuButton, getExitMenuIcon());
         setItem(searchAuctionButton, createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Search", NamedTextColor.BLUE)));
-        setItem(playerAuctionsButton, createSlotItem(Material.ENDER_CHEST, Component.text("Your Auctions", NamedTextColor.AQUA)));
+        setItem(createAuctionButton, createSlotItem(Material.CHEST, Component.text("Create Auction", NamedTextColor.AQUA)));
+        setItem(playerAuctionsButton, createSlotItem(Material.ENDER_CHEST, Component.text("Your Auctions", NamedTextColor.DARK_PURPLE)));
     }
 }

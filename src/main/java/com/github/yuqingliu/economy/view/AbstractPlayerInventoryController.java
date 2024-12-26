@@ -104,6 +104,10 @@ public abstract class AbstractPlayerInventoryController<T> {
         inventory.setItem(coords[0] + (coords[1] * inventoryLength), item);
     }
 
+    public ItemStack getItem(int[] coords) {
+        return inventory.getItem(coords[0] + (coords[1] * inventoryLength));
+    }
+
     public void setItem(List<Integer> coords, ItemStack item) {
         inventory.setItem(coords.get(0) + (coords.get(1) * inventoryLength), item);
     }
