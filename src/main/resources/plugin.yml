@@ -3,7 +3,6 @@ name: Economy
 version: '1.0'
 main: com.github.yuqingliu.economy.Main
 api-version: '1.13'
-softdepend: [ Vault ]
 commands:
   deposit:
     description: Deposit currency into user's purse
@@ -53,6 +52,14 @@ commands:
     description: Create/Delete a bank account option. Interest rate':' 10.25 -> 10.25%. Main hand item is used as icon
     usage: /account create <accountName> <bankName> <interestRate(%)> <unlockCurrencyName> <unlockCost>; /account delete <accountName> <bankName>
     permission: economy.admin
+  ah:
+    description: Opens the auction house GUI
+    usage: /ah
+    permission: economy.user
+  auction:
+    description: Creates an auction for the item in your main hand
+    usage: /auction create <startingBid> <currenyType> <startDelay(mins)> <duration(mins)>; /auction create <startingBid> <currencyType> <duration(mins)>
+    permission: economy.user
 
 permissions:
   economy.admin:

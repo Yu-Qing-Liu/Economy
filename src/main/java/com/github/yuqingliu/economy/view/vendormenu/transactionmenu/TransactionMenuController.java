@@ -3,12 +3,10 @@ package com.github.yuqingliu.economy.view.vendormenu.transactionmenu;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -92,6 +90,7 @@ public class TransactionMenuController extends AbstractPlayerInventoryController
     }
 
     private void fetchOptions() {
+        pageData.clear();
         Map<String, Double> buyPrices = item.getBuyPrices();
         Map<String, Double> sellPrices = item.getSellPrices();
         Queue<CurrencyOption> temp = new ArrayDeque<>();

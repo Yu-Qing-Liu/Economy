@@ -72,6 +72,7 @@ public class BuyOrdersMenuController extends AbstractPlayerInventoryController<S
     }
 
     private void fetchBuyOrders() {
+        pageData.clear();
         List<ShopOrderEntity> buyOrders = menu.getShopService().getPlayerBuyOrders(player);
         Queue<ShopOrderEntity> tempBuyOrders = new ArrayDeque<>();
         tempBuyOrders.addAll(buyOrders);

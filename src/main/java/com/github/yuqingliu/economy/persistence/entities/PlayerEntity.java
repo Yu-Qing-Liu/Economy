@@ -1,7 +1,7 @@
 package com.github.yuqingliu.economy.persistence.entities;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -36,7 +36,7 @@ public class PlayerEntity {
 
     public void setPurse(PurseEntity purse) {
         if (purse != null) {
-            purse.setPlayer(this); // Ensure bidirectional consistency
+            purse.setPlayer(this);
         }
         this.purse = purse;
     }

@@ -15,16 +15,11 @@ import com.github.yuqingliu.economy.persistence.services.ShopService;
 import com.google.inject.Inject;
 
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShopCommand implements CommandExecutor {
-    @Inject
     private final NameSpacedKeyManager nameSpacedKeyManager;
-    @Inject
     private final ShopService shopService;
-    @Inject
     private final Logger logger;
 
     @Override

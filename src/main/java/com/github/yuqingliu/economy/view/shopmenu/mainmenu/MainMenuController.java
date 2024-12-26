@@ -33,8 +33,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class MainMenuController extends AbstractPlayerInventoryController<ShopMenu> {
     private final int[] prevSectionsButton = new int[]{1,0};
     private final int[] nextSectionsButton = new int[]{1,5};
-    private final int[] prevItemsButton = new int[]{7,0};
-    private final int[] nextItemsButton = new int[]{6,0};
+    private final int[] prevItemsButton = new int[]{6,0};
+    private final int[] nextItemsButton = new int[]{7,0};
     private final int[] exitMenuButton = new int[]{4,0};
     private final int[] buyOrdersMenuButton = new int[]{4,5};
     private final int[] sellOrdersMenuButton = new int[]{6,5};
@@ -113,6 +113,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<ShopMe
     }
 
     private void fetchSections() {
+        sectionsPageData.clear();
         ShopEntity vendor = menu.getShopService().getShop(menu.getShopName()); 
         if(vendor == null) {
             return;
@@ -139,6 +140,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<ShopMe
     }
 
     private void fetchItems(int[] sectionCoords) {
+        itemPageData.clear();
         Map<List<Integer>, ShopSectionEntity> sections = sectionsPageData.getCurrentPageData();
         Set<ShopItemEntity> items = Collections.emptySet();
         if(sections.containsKey(Arrays.asList(sectionCoords[0], sectionCoords[1]))) {

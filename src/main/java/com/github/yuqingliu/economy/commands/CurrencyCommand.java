@@ -17,11 +17,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class CurrencyCommand implements CommandExecutor {
-    @Inject
     private final CurrencyService currencyService;
-    @Inject
     private final Logger logger;
 
     @Override
