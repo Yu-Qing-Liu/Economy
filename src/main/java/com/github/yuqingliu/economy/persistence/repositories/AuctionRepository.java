@@ -88,7 +88,7 @@ public class AuctionRepository {
                 logger.sendPlayerErrorMessage(player, "You have already collected this auction.");
                 throw new RuntimeException();
             }
-            if (auction.getBidderId() == null && auction.getHighestBid() > 0) {
+            if (auction.getBidderId() == null) {
                 refund = true;
             }
             Query<CurrencyEntity> query = session.createQuery(
