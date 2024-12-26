@@ -61,8 +61,10 @@ public class DepositMenuController extends AbstractPlayerInventoryController<Ban
     }
 
     public void reload() {
-        fetchCurrencies();
-        displayCurrencies();
+        Scheduler.runAsync(t -> {
+            fetchCurrencies();
+            displayCurrencies();
+        });
     }
 
     public void nextPage() {
@@ -98,6 +100,7 @@ public class DepositMenuController extends AbstractPlayerInventoryController<Ban
     }
 
     private void fetchCurrencies() {
+        pageData.clear();
         account = menu.getBankService().getAccount(account.getAccountId());
         Set<CurrencyEntity> currencies = account.getCurrencies();
         if(currencies.isEmpty()) {

@@ -109,6 +109,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<Vendor
     }
 
     private void fetchSections() {
+        sectionsPageData.clear();
         VendorEntity vendor = menu.getVendorService().getVendor(menu.getVendorName()); 
         if(vendor == null) {
             return;
@@ -135,6 +136,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<Vendor
     }
 
     private void fetchItems(int[] sectionCoords) {
+        itemPageData.clear();
         Map<List<Integer>, VendorSectionEntity> sections = sectionsPageData.getCurrentPageData();
         Set<VendorItemEntity> items = Collections.emptySet();
         if(sections.containsKey(Arrays.asList(sectionCoords[0], sectionCoords[1]))) {

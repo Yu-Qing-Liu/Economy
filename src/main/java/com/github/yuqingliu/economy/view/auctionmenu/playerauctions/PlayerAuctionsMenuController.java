@@ -55,9 +55,7 @@ public class PlayerAuctionsMenuController extends AbstractPlayerInventoryControl
         fill(getBackgroundTile(Material.PURPLE_STAINED_GLASS_PANE));
         buttons();
         rectangleAreaLoading(auctionsStart, auctionsWidth, auctionsLength);
-        Scheduler.runAsync(t -> {
-            reload();
-        });
+        reload();
     }
 
     public void reload() {

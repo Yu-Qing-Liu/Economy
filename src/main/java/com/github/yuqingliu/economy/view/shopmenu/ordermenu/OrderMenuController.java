@@ -72,18 +72,18 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
         displayItem();
         rectangleAreaLoading(buyOrdersStart, buyOrdersWidth, buyOrdersLength);
         rectangleAreaLoading(sellOrdersStart, sellOrdersWidth, sellOrdersLength);
-        Scheduler.runAsync((task) -> {
-            reload();
-        });
+        reload();
     }
 
     public void reload() {
         item = menu.getShopService().getShopItem(item.getShopName(),item.getShopSection().getSectionName(), item.getItemName());
-        fetchBuyOptions();
-        fetchSellOptions();
-        displayBuyOptions();
-        displaySellOptions();
-        buttons();
+        Scheduler.runAsync(t -> {
+            fetchBuyOptions();
+            fetchSellOptions();
+            displayBuyOptions();
+            displaySellOptions();
+            buttons();
+        });
     }
 
     public void nextBuyPage() {
@@ -125,6 +125,7 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
     }
 
     private void fetchBuyOptions() {
+        buyPageData.clear();
         Map<String, List<ShopOrderEntity>> buyOrders = item.getBuyOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
         for(Map.Entry<String, List<ShopOrderEntity>> entry : buyOrders.entrySet()) {
@@ -150,6 +151,7 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
     }
 
     private void fetchSellOptions() {
+        sellPageData.clear();
         Map<String, List<ShopOrderEntity>> sellOrders = item.getSellOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
         for(Map.Entry<String, List<ShopOrderEntity>> entry : sellOrders.entrySet()) {

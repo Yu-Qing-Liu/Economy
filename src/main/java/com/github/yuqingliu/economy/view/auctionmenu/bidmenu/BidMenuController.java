@@ -65,8 +65,10 @@ public class BidMenuController extends AbstractPlayerInventoryController<Auction
     }
 
     public void reload() {
-        fetchAuction();
-        displayAuction();
+        Scheduler.runAsync(t -> {
+            fetchAuction();
+            displayAuction();
+        });
     }
 
     public void changeBidAmount() {

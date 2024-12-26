@@ -56,17 +56,18 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
         fill(getBackgroundTile(Material.YELLOW_STAINED_GLASS_PANE));
         buttons();
         rectangleAreaLoading(auctionsStart, auctionsWidth, auctionsLength);
-        Scheduler.runAsync((task) -> {
-            reload();
-        });
+        reload();
     }
 
     public void reload() {
-        fetchAuctions();
-        displayAuctions();
+        Scheduler.runAsync(t -> {
+            fetchAuctions();
+            displayAuctions();
+        });
     }
 
     private void fetchAuctions() {
+        pageData.clear();
         List<AuctionEntity> auctions = menu.getAuctionService().getActiveAuctions().stream()
                 .filter(auc -> auc.getEnd().isAfter(Instant.now())).collect(Collectors.toList());
         if (auctions == null || auctions.isEmpty()) {

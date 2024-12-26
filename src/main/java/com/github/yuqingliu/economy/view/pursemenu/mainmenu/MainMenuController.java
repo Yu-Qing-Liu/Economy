@@ -65,6 +65,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<PurseM
     }
 
     private void fetchCurrencies() {
+        pageData.clear();
         Set<CurrencyEntity> currencies = menu.getCurrencyService().getPlayerPurseCurrencies(player);
         if(currencies.isEmpty()) {
             return;

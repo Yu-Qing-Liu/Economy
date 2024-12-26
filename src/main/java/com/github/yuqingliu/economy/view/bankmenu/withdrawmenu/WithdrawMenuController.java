@@ -61,8 +61,10 @@ public class WithdrawMenuController extends AbstractPlayerInventoryController<Ba
     }
 
     public void reload() {
-        fetchCurrencies();
-        displayCurrencies();
+        Scheduler.runAsync(t -> {
+            fetchCurrencies();
+            displayCurrencies();
+        });
     }
 
     public void nextPage() {
@@ -98,6 +100,7 @@ public class WithdrawMenuController extends AbstractPlayerInventoryController<Ba
     }
 
     private void fetchCurrencies() {
+        pageData.clear();
         this.account = menu.getBankService().getAccount(this.account.getAccountId());
         Set<CurrencyEntity> currencies = account.getCurrencies();
         if(currencies.isEmpty()) {

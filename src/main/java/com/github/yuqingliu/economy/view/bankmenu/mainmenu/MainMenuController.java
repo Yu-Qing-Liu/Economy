@@ -80,6 +80,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<BankMe
     }
 
     private void fetchAccounts() {
+        pageData.clear();
         List<AccountEntity> accounts = menu.getBankService().getPlayerAccountsByBank(menu.getBankName(), player);
         if(accounts.isEmpty()) {
             return;

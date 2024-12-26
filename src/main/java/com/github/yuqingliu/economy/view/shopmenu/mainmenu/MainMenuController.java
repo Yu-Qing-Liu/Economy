@@ -113,6 +113,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<ShopMe
     }
 
     private void fetchSections() {
+        sectionsPageData.clear();
         ShopEntity vendor = menu.getShopService().getShop(menu.getShopName()); 
         if(vendor == null) {
             return;
@@ -139,6 +140,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<ShopMe
     }
 
     private void fetchItems(int[] sectionCoords) {
+        itemPageData.clear();
         Map<List<Integer>, ShopSectionEntity> sections = sectionsPageData.getCurrentPageData();
         Set<ShopItemEntity> items = Collections.emptySet();
         if(sections.containsKey(Arrays.asList(sectionCoords[0], sectionCoords[1]))) {
