@@ -8,7 +8,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
@@ -30,12 +29,12 @@ public class QuickSellMenuController extends AbstractPlayerInventoryController<S
     private final int sellOptionsLength = quantities.length;
     private final int[] itemSlot = new int[]{4,1};
     private final int[] sellInventoryButton = new int[]{7,4};
-    private final int[] prevMenuButton = new int[]{2,2};
-    private final int[] exitMenuButton = new int[]{6,2};
+    private final int[] prevMenuButton = new int[]{0,0};
+    private final int[] refreshButton = new int[]{1,0};
+    private final int[] exitMenuButton = new int[]{2,0};
     private final List<int[]> sellOptions;
     private ShopItemEntity item;
     private OrderOption orderOption;
-    private BukkitTask task;
     
     public QuickSellMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
         super(player, inventory, shopMenu);
@@ -50,15 +49,17 @@ public class QuickSellMenuController extends AbstractPlayerInventoryController<S
         }, Duration.ofMillis(50));
         fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
         border();
-        buttons();
         displayItem();
-        displaySellOptions();
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
+        setItem(refreshButton, getReloadIcon());
+        reload();
     }
 
-    public void onClose() {
-        if(task != null) {
-            task.cancel();
-        }
+    public void reload() {
+        Scheduler.runAsync(t -> {
+            buttons();
+        });
     }
 
     public void quickSell(int amount) {
@@ -120,36 +121,32 @@ public class QuickSellMenuController extends AbstractPlayerInventoryController<S
     }
 
     private void buttons() {
-        task = Scheduler.runTimerAsync((task) -> {
-            displaySellOptions();
-            int total = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
-            double profit = 0;
-            int qty = total;
-            for(ShopOrderEntity order : orderOption.getOrders()) {
-                int amount = order.getQuantity() - order.getFilledQuantity();
-                if(amount > qty) {
-                    profit = qty * order.getUnitPrice();
-                    qty = 0;
-                    break;
-                } else {
-                    qty -= amount;
-                    profit += amount * order.getUnitPrice();
-                }
-            }
-            int leftover;
-            if(total - qty > 0) {
-                leftover = total - qty;
+        displaySellOptions();
+        int total = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
+        double profit = 0;
+        int qty = total;
+        for(ShopOrderEntity order : orderOption.getOrders()) {
+            int amount = order.getQuantity() - order.getFilledQuantity();
+            if(amount > qty) {
+                profit = qty * order.getUnitPrice();
+                qty = 0;
+                break;
             } else {
-                leftover = 0;
+                qty -= amount;
+                profit += amount * order.getUnitPrice();
             }
-            List<Component> fillLore = Arrays.asList(
-                Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
-                Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
-            );
-            ItemStack sellButton = createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), fillLore);
-            setItem(sellInventoryButton, sellButton);
-        }, Duration.ofSeconds(2),Duration.ofSeconds(0));
-        setItem(prevMenuButton, getPrevMenuIcon());
-        setItem(exitMenuButton, getExitMenuIcon());
+        }
+        int leftover;
+        if(total - qty > 0) {
+            leftover = total - qty;
+        } else {
+            leftover = 0;
+        }
+        List<Component> fillLore = Arrays.asList(
+            Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
+            Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
+        );
+        ItemStack sellButton = createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), fillLore);
+        setItem(sellInventoryButton, sellButton);
     }
 }

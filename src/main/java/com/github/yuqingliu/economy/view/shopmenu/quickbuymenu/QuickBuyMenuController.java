@@ -30,12 +30,12 @@ public class QuickBuyMenuController extends AbstractPlayerInventoryController<Sh
     private final int buyOptionsLength = quantities.length;
     private final int[] itemSlot = new int[]{4,1};
     private final int[] buyInventoryButton = new int[]{7,4};
-    private final int[] prevMenuButton = new int[]{2,2};
-    private final int[] exitMenuButton = new int[]{6,2};
+    private final int[] prevMenuButton = new int[]{0,0};
+    private final int[] refreshButton = new int[]{1,0};
+    private final int[] exitMenuButton = new int[]{2,0};
     private final List<int[]> buyOptions;
     private ShopItemEntity item;
     private OrderOption orderOption;
-    private BukkitTask task;
     
     public QuickBuyMenuController(Player player, Inventory inventory, ShopMenu shopMenu) {
         super(player, inventory, shopMenu);
@@ -50,15 +50,17 @@ public class QuickBuyMenuController extends AbstractPlayerInventoryController<Sh
         }, Duration.ofMillis(50));
         fill(getBackgroundTile(Material.BLUE_STAINED_GLASS_PANE));
         border();
-        buttons();
         displayItem();
-        displayBuyOptions();
+        setItem(prevMenuButton, getPrevMenuIcon());
+        setItem(exitMenuButton, getExitMenuIcon());
+        setItem(refreshButton, getReloadIcon());
+        reload();
     }
 
-    public void onClose() {
-        if(task != null) {
-            task.cancel();
-        }
+    public void reload() {
+        Scheduler.runAsync(t -> {
+            buttons();
+        });
     }
 
     public void quickBuy(int amount) {
@@ -115,35 +117,31 @@ public class QuickBuyMenuController extends AbstractPlayerInventoryController<Sh
     }
 
     private void buttons() {
-        task = Scheduler.runTimerAsync((task) -> {
-            displayBuyOptions();
-            int freeSpace = menu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
-            double cost = 0;
-            int qty = freeSpace;
-            for(ShopOrderEntity order : orderOption.getOrders()) {
-                int amount = order.getQuantity() - order.getFilledQuantity();
-                if(amount > qty) {
-                    cost = qty * order.getUnitPrice();
-                    break;
-                } else {
-                    qty -= amount;
-                    cost += amount * order.getUnitPrice();
-                }
-            }
-            int leftover;
-            if(freeSpace - qty > 0) {
-                leftover = freeSpace - qty;
+        displayBuyOptions();
+        int freeSpace = menu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
+        double cost = 0;
+        int qty = freeSpace;
+        for(ShopOrderEntity order : orderOption.getOrders()) {
+            int amount = order.getQuantity() - order.getFilledQuantity();
+            if(amount > qty) {
+                cost = qty * order.getUnitPrice();
+                break;
             } else {
-                leftover = 0;
+                qty -= amount;
+                cost += amount * order.getUnitPrice();
             }
-            List<Component> fillLore = Arrays.asList(
-                Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
-                Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
-            );
-            ItemStack fillButton = createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
-            setItem(buyInventoryButton, fillButton);
-        }, Duration.ofSeconds(2),Duration.ofSeconds(0));
-        setItem(prevMenuButton, getPrevMenuIcon());
-        setItem(exitMenuButton, getExitMenuIcon());
+        }
+        int leftover;
+        if(freeSpace - qty > 0) {
+            leftover = freeSpace - qty;
+        } else {
+            leftover = 0;
+        }
+        List<Component> fillLore = Arrays.asList(
+            Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
+            Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
+        );
+        ItemStack fillButton = createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
+        setItem(buyInventoryButton, fillButton);
     }
 }

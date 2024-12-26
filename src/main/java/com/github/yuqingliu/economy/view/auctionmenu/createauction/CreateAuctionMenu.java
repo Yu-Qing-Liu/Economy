@@ -111,9 +111,11 @@ public class CreateAuctionMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
-        if (event.getView().title().equals(auctionMenu.getDisplayName()) && auctionMenu.getPlayerMenuTypes().get(player) == MenuType.CreateAuctionMenu) {
-            Inventory inventory = player.getOpenInventory().getTopInventory();
-            controllers.getPlayerInventoryController(player, new CreateAuctionMenuController(player, inventory, auctionMenu)).onClose();
+        if (event.getView().title().equals(auctionMenu.getDisplayName()) ) {
+            if (auctionMenu.getPlayerMenuTypes().get(player) == MenuType.CreateAuctionMenu) {
+                Inventory inventory = player.getOpenInventory().getTopInventory();
+                controllers.getPlayerInventoryController(player, new CreateAuctionMenuController(player, inventory, auctionMenu)).onClose();
+            }
             controllers.removePlayerInventoryController(player);
         }
     }

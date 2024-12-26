@@ -8,7 +8,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.VendorItemEntity;
@@ -39,7 +38,6 @@ public class TradeMenuController extends AbstractPlayerInventoryController<Vendo
     private final List<int[]> sellOptions;
     private VendorItemEntity item;
     private CurrencyOption currencyOption;
-    private BukkitTask task;
     
     public TradeMenuController(Player player, Inventory inventory, VendorMenu vendorMenu) {
         super(player, inventory, vendorMenu);
@@ -74,33 +72,25 @@ public class TradeMenuController extends AbstractPlayerInventoryController<Vendo
         });
     }
 
-    public void onClose() {
-        if(task != null) {
-            task.cancel();
-        }
-    }
-
     private void displayItem() {
         setItem(itemSlot, item.getIcon().clone());
     }
 
     private void buttons() {
-        task = Scheduler.runTimerAsync((task) -> {
-            int freeSpace = menu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
-            int amount = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
-            List<Component> fillLore = Arrays.asList(
-                Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(freeSpace + "x", NamedTextColor.RED)),
-                Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(freeSpace) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))
-            );
-            List<Component> sellLore = Arrays.asList(
-                Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(amount + "x", NamedTextColor.RED)),
-                Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(amount) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))
-            );
-            ItemStack fillButton = createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
-            ItemStack sellButton = createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), sellLore);
-            setItem(buyInventoryButton, fillButton);
-            setItem(sellInventoryButton, sellButton);
-        }, Duration.ofSeconds(2),Duration.ofSeconds(0));
+        int freeSpace = menu.getPluginManager().getInventoryManager().countAvailableInventorySpace(player, item.getIcon().getType());
+        int amount = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
+        List<Component> fillLore = Arrays.asList(
+            Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(freeSpace + "x", NamedTextColor.RED)),
+            Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(freeSpace) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))
+        );
+        List<Component> sellLore = Arrays.asList(
+            Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(amount + "x", NamedTextColor.RED)),
+            Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(amount) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))
+        );
+        ItemStack fillButton = createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
+        ItemStack sellButton = createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), sellLore);
+        setItem(buyInventoryButton, fillButton);
+        setItem(sellInventoryButton, sellButton);
         setItem(prevMenuButton, getPrevMenuIcon());
         setItem(exitMenuButton, getExitMenuIcon());
     }

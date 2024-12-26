@@ -58,8 +58,11 @@ public class QuickBuyMenu implements Listener {
                 return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                controller.onClose();
                 shopMenu.getOrderMenu().getControllers().getPlayerInventoryController(player, new OrderMenuController(player, clickedInventory, shopMenu)).openMenu(controller.getItem());
+                return;
+            }
+            if(Arrays.equals(slot, controller.getRefreshButton())) {
+                controller.reload();
                 return;
             }
             if(Arrays.equals(slot, controller.getExitMenuButton())) {
@@ -70,10 +73,8 @@ public class QuickBuyMenu implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
+        Player player = (Player) event.getPlayer();
         if (event.getView().title().equals(shopMenu.getDisplayName())) {
-            Player player = (Player) event.getPlayer();
-            Inventory inventory = player.getOpenInventory().getTopInventory();
-            controllers.getPlayerInventoryController(player, new QuickBuyMenuController(player, inventory, shopMenu)).onClose();
             controllers.removePlayerInventoryController(player);
         }
     }

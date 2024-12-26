@@ -67,7 +67,6 @@ public class TradeMenu implements Listener {
                 return;
             }
             if(Arrays.equals(slot, controller.getPrevMenuButton())) {
-                controller.onClose();
                 vendorMenu.getTransactionMenu().getControllers().getPlayerInventoryController(player, new TransactionMenuController(player, clickedInventory, vendorMenu)).openMenu(controller.getItem());
                 return;
             }
@@ -79,10 +78,8 @@ public class TradeMenu implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
+        Player player = (Player) event.getPlayer();
         if (event.getView().title().equals(vendorMenu.getDisplayName())) {
-            Player player = (Player) event.getPlayer();
-            Inventory inventory = player.getOpenInventory().getTopInventory();
-            controllers.getPlayerInventoryController(player, new TradeMenuController(player, inventory, vendorMenu)).onClose();
             controllers.removePlayerInventoryController(player);
         }
     }
