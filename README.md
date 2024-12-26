@@ -63,6 +63,21 @@ The Economy plugin is a Minecraft server plugin designed to manage currencies, s
 - **Description:** Create or Delete a bank account option. Interest rate':' 10.25 -> 10.25%. Main hand item is used as icon
 - **Permission:** `economy.admin`
 
+#### `/ah`
+- **Usage:** `/ah`
+- **Description:** Opens the auction house GUI
+- **Permission:** `economy.admin`
+
+#### `/auction`
+- **Usage:** `/auction create <startingBid> <currenyType> <startDelay(mins)> <duration(mins)>; /auction create <startingBid> <currencyType> <duration(mins)>`
+- **Description:** Creates an auction for the item in your main hand
+- **Permission:** `economy.admin`
+
+#### `/auctionhouse`
+- **Usage:** `/auctionhouse`
+- **Description:** Spawns a villager acting as entry point for the auction house
+- **Permission:** `economy.admin`
+
 ### User Commands
 
 #### `/purse`
