@@ -77,6 +77,7 @@ public class CreateAuctionMenu implements Listener {
                 return;
             }
             if (Arrays.equals(slot, controller.getPreviousMenuButton())) {
+                controller.onClose();
                 auctionMenu.getMainMenu().getControllers()
                         .getPlayerInventoryController(player, new MainMenuController(player, inventory, auctionMenu))
                         .openMenu();
