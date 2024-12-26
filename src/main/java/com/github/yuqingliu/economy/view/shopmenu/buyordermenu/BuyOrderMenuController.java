@@ -35,7 +35,7 @@ public class BuyOrderMenuController extends AbstractPlayerInventoryController<Sh
     private final int[] confirmOrderButton = new int[]{7,4};
     private final Component changeComponent = Component.text("Click to Change", NamedTextColor.RED);
     @Setter private String currencyType;
-    @Setter private int quantity;
+    @Setter private int quantity = 1;
     @Setter private double price;
     private ShopItemEntity item;
     
