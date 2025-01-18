@@ -57,5 +57,6 @@ public class PluginModule extends AbstractModule {
         bind(InventoryManager.class).to(InventoryManagerImpl.class).in(Singleton.class);
         bind(CommandManager.class).to(CommandManagerImpl.class).in(Singleton.class);
         bind(PluginManager.class).to(PluginManagerImpl.class).in(Singleton.class);
+        bind(ConfigurationManager.class).to(ConfigurationManagerImpl.class).in(Singleton.class);
     }
 }

@@ -6,4 +6,5 @@ public interface PluginManager {
     InventoryManager getInventoryManager();
     NameSpacedKeyManager getNameSpacedKeyManager();
     SoundManager getSoundManager();
+    ConfigurationManager getConfigurationManager();
 }

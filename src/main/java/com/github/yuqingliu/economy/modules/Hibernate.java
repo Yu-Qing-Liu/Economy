@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.modules;
 
+import java.io.File;
+
 import org.bukkit.plugin.java.JavaPlugin;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -25,6 +27,10 @@ public class Hibernate {
 
     public static SessionFactory createSessionFactory(String dataFolderPath) {
         Configuration configuration = new Configuration();
+        File dataFolder = new File(dataFolderPath);
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
         String dbUrl = "jdbc:sqlite:" + dataFolderPath + "/database.db";
         configuration.setProperty("hibernate.connection.url", dbUrl);
         configuration.setProperty("hibernate.connection.driver_class", "org.sqlite.JDBC");
