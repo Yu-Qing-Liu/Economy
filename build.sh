@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ./gradlew clean shadowJar
-cp ./build/libs/* ../../Minecraft/plugins/Economy.jar
+cp ./build/libs/* ../Server/plugins/Economy.jar
