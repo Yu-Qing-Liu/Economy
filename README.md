@@ -7,11 +7,13 @@ The Economy plugin is a Minecraft server plugin designed to manage currencies, s
 - Minecraft Server: Spigot/Paper 1.21.1 or later
 
 ## Plugin directory
+```
 ├── Economy
 │   ├── config.yml
 │   └── database.db
 ├── Economy.jar
 ├── ...
+```
 
 ## Configuration config.yml example
 ```
