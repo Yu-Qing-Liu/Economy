@@ -6,6 +6,19 @@ The Economy plugin is a Minecraft server plugin designed to manage currencies, s
 
 - Minecraft Server: Spigot/Paper 1.21.1 or later
 
+## Plugin directory
+├── Economy
+│   ├── config.yml
+│   └── database.db
+├── Economy.jar
+├── ...
+
+## Configuration config.yml example
+```
+DailyVendorBuyLimit: 320 # Maximum amount of items that can be bought in the vendor per day.
+DailyVendorResetDurationHrs: 24 # Reset timer for the vendor buy limit in hours.
+```
+
 ## Commands
 
 ### Admin Commands
