@@ -17,6 +17,8 @@ import com.google.inject.Singleton;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +32,49 @@ public class AccountRepository {
     private final Logger logger;
 
     // Transactions 
+    public boolean depositInterest(AccountEntity accountEntity) {
+        Transaction transaction = null;
+        Session session = hibernate.getSession();
+        try {
+            transaction = session.beginTransaction();
+            BankEntity bank = accountEntity.getBank();
+            double interest = accountEntity.getInterestRate();
+            Instant now = Instant.now();
+            Instant lastInterestDeposit = accountEntity.getLastInterestTimestamp();
+            Duration interestCooldown = bank.getInterestCooldown();
+            if (lastInterestDeposit == null) {
+                accountEntity.setLastInterestTimestamp(now);
+                session.merge(accountEntity);
+            } else {
+                Instant next = lastInterestDeposit.plus(interestCooldown);
+                if (next.isBefore(now)) {
+                    Duration elapsed = Duration.between(lastInterestDeposit, now.minus(Duration.between(next, now)));
+                    long interestEpochs = elapsed.dividedBy(interestCooldown);
+                    accountEntity.setLastInterestTimestamp(now);
+                    Set<CurrencyEntity> currencies = accountEntity.getCurrencies();
+                    for (CurrencyEntity currency : currencies) {
+                        double initial = currency.getAmount();
+                        double profit = 0;
+                        for (long i = 0; i < interestEpochs; i++) {
+                            profit = initial * interest;
+                            initial += profit;
+                        }
+                        currency.setAmount(initial);
+                        session.merge(currency);
+                    }
+                    session.merge(accountEntity);
+                }
+            }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            transaction.rollback();
+            return false;
+        } finally {
+            session.close();
+        }
+    }
+
     public boolean deleteBankAccountsByAccountName(String accountName, String bankName) {
         Transaction transaction = null;
         Session session = hibernate.getSession();

@@ -57,7 +57,6 @@ public class BankMenu extends AbstractPlayerInventory {
         this.accountMenu = new AccountMenu(this);
         this.depositMenu = new DepositMenu(this);
         this.WithdrawMenu = new WithdrawMenu(this);
-        interestTask();
     }
     
     public String getBankName() {
@@ -69,18 +68,6 @@ public class BankMenu extends AbstractPlayerInventory {
             return "";
         }
         return PlainTextComponentSerializer.plainText().serialize(component);
-    }
-
-    private void interestTask() {
-        Scheduler.runTimerAsync((task) -> {
-            synchronized (lock) {
-                try {
-                    bankService.depositAllInterest();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }, Duration.ofSeconds(10) , Duration.ofSeconds(0));
     }
 
     @Override

@@ -66,17 +66,10 @@ public class MainMenuController extends AbstractPlayerInventoryController<BankMe
 
     public void unlockAccount(int[] slot) {
         AccountEntity account = pageData.get(slot);
-        if(account.isUnlocked()) {
+        if(!menu.getBankService().unlockAccount(account, player)) {
             return;
-        } else {
-            if(!menu.getBankService().unlockAccount(account, player)) {
-                menu.getLogger().sendPlayerErrorMessage(player, "Could not unlock the account.");
-                return;
-            }
-            menu.getLogger().sendPlayerNotificationMessage(player, String.format("Sucessfully unlocked account for %.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType()));
-            menu.getPluginManager().getSoundManager().playTransactionSound(player);
-            menu.getAccountMenu().getControllers().getPlayerInventoryController(player, new AccountMenuController(player, inventory, menu)).openMenu(account);
         }
+        menu.getAccountMenu().getControllers().getPlayerInventoryController(player, new AccountMenuController(player, inventory, menu)).openMenu(account);
     }
 
     private void fetchAccounts() {

@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -34,6 +35,9 @@ public class AccountEntity {
 
     @Column(name = "interestRate")
     private double interestRate;
+
+    @Column(name = "lastInterestTimestamp")
+    private Instant lastInterestTimestamp;
 
     @Column(name = "unlockCurrencyType")
     private String unlockCurrencyType;

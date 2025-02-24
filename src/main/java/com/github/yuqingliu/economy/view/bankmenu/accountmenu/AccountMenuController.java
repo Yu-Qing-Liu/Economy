@@ -1,6 +1,7 @@
 package com.github.yuqingliu.economy.view.bankmenu.accountmenu;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class AccountMenuController extends AbstractPlayerInventoryController<Ban
             menu.getPlayerMenuTypes().put(player, MenuType.AccountMenu);
         }, Duration.ofMillis(50));
         fill(getBackgroundTile(Material.ORANGE_STAINED_GLASS_PANE));
+        menu.getBankService().depositInterest(account);
         accountDetails();
         buttons();
     }
@@ -50,6 +52,8 @@ public class AccountMenuController extends AbstractPlayerInventoryController<Ban
         if(meta != null) {
             List<Component> lore = new ArrayList<>();
             lore.add(Component.text("Interest Rate: ", NamedTextColor.DARK_AQUA).append(Component.text(account.getInterestRate() + "%", NamedTextColor.DARK_GREEN)));
+            Duration next = Duration.between(Instant.now(), account.getLastInterestTimestamp().plus(account.getBank().getInterestCooldown()));
+            lore.add(Component.text("Next interest in: ", NamedTextColor.YELLOW).append(Component.text(menu.getLogger().durationToString(next), NamedTextColor.GREEN)));
             for(CurrencyEntity currency : account.getCurrencies()) {
                 Component currencyInfo = Component.text(String.format("%s: ", currency.getCurrencyName()), NamedTextColor.BLUE).append(Component.text(currency.getAmount(), NamedTextColor.GOLD));
                 lore.add(currencyInfo);

@@ -9,7 +9,6 @@ import com.google.inject.Singleton;
 
 import lombok.RequiredArgsConstructor;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +26,6 @@ public class BankService {
         BankEntity newBank = new BankEntity();
         newBank.setBankName(bankName);
         newBank.setInterestCooldown(cooldown);
-        newBank.setLastInterestTimestamp(Instant.now());
         return bankRepository.save(newBank);
     }
     
@@ -59,8 +57,8 @@ public class BankService {
         return accountRepository.withdrawPlayerAccount(account, player, amount, currencyName);
     }
 
-    public boolean depositAllInterest() {
-        return bankRepository.depositAllInterestForAllBanks();
+    public boolean depositInterest(AccountEntity account) {
+        return accountRepository.depositInterest(account);
     }
 
     public boolean unlockAccount(AccountEntity account, Player player) {

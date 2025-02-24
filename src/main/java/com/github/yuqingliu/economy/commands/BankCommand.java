@@ -33,6 +33,10 @@ public class BankCommand implements CommandExecutor {
             if (args.length == 3) {
                 if(args[0].equals("create")) {
                     long cooldown = Long.parseLong(args[2]);
+                    if (cooldown < 1) {
+                        logger.sendPlayerErrorMessage(player, "Cooldown must be positive and greater than 0.");
+                        return false;
+                    }
                     if(bankService.addBank(args[1], cooldown)) {
                         logger.sendPlayerAcknowledgementMessage(player, String.format("Successfully created bank with name %s with an interest deposit every %s hours", args[1], args[2]));
                     } else {

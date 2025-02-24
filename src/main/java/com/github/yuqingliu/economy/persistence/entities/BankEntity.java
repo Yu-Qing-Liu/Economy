@@ -30,9 +30,6 @@ public class BankEntity {
     @Column(name = "interestCooldown")
     private long interestCooldown;
 
-    @Column(name = "lastInterestTimestamp")
-    private Instant lastInterestTimestamp;
-
     @OneToMany(mappedBy = "bank", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderBy("accountName ASC")
     private Set<AccountEntity> accounts = new LinkedHashSet<>();

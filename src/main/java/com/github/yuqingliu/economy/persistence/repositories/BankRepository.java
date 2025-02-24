@@ -1,6 +1,7 @@
 package com.github.yuqingliu.economy.persistence.repositories;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
+import com.github.yuqingliu.economy.api.managers.SoundManager;
 import com.github.yuqingliu.economy.persistence.entities.AccountEntity;
 import com.github.yuqingliu.economy.persistence.entities.BankEntity;
 import com.github.yuqingliu.economy.persistence.entities.CurrencyEntity;
@@ -17,8 +18,6 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,6 +26,7 @@ import java.util.UUID;
 public class BankRepository {
     private final Hibernate hibernate;
     private final Logger logger;
+    private final SoundManager soundManager;
     
     // Transactions
     public boolean save(BankEntity bank) {
@@ -106,47 +106,14 @@ public class BankRepository {
         }
     }
 
-    public boolean depositAllInterestForAllBanks() {
-        Transaction transaction = null;
-        Session session = hibernate.getSession();
-        try {
-            transaction = session.beginTransaction();
-            Set<BankEntity> banks = this.findAll();
-            Instant now = Instant.now();
-            for (BankEntity bank : banks) {
-                Instant lastInterestTimestamp = bank.getLastInterestTimestamp();
-                Duration interestCooldown = bank.getInterestCooldown();
-                Instant nextInterestTimestamp = lastInterestTimestamp.plus(interestCooldown);
-                if (now.isAfter(nextInterestTimestamp)) {
-                    Set<AccountEntity> bankAccounts = bank.getAccounts();
-                    for (AccountEntity account : bankAccounts) {
-                        Set<CurrencyEntity> currencies = account.getCurrencies();
-                        for (CurrencyEntity currency : currencies) {
-                            double initial = currency.getAmount();
-                            double profit = initial * account.getInterestRate();
-                            currency.setAmount(initial + profit);
-                            session.merge(currency);
-                        }
-                    }
-                    bank.setLastInterestTimestamp(now);
-                    session.merge(bank);
-                }
-            }
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            transaction.rollback();
-            return false;
-        } finally {
-            session.close();
-        }
-    }
-
     public boolean unlockAccount(AccountEntity account, Player player) {
         Transaction transaction = null;
         Session session = hibernate.getSession();
         try {
             transaction = session.beginTransaction();
+            if (account.isUnlocked()) {
+                return true;
+            }
             double unlockPrice = account.getUnlockCost();
             String currencyType = account.getUnlockCurrencyType();
             Query<CurrencyEntity> query = session.createQuery(
@@ -165,6 +132,8 @@ public class BankRepository {
             account.setUnlocked(true);
             session.merge(account);
             transaction.commit();
+            logger.sendPlayerNotificationMessage(player, String.format("Sucessfully unlocked account for %.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType()));
+            soundManager.playTransactionSound(player);
             return true;
         } catch (Exception e) {
             transaction.rollback();
