@@ -1,5 +1,7 @@
 package com.github.yuqingliu.economy.logger;
 
+import java.time.Duration;
+
 import org.bukkit.entity.Player;
 
 import com.github.yuqingliu.economy.api.logger.Logger;
@@ -33,5 +35,14 @@ public class LoggerImpl implements Logger {
     @Override
     public void sendPlayerMessage(Player player, String message, NamedTextColor color) {
         player.sendMessage(Component.text(message, color));
+    }
+
+    @Override
+    public String durationToString(Duration duration) {
+        long days = duration.toDays();
+        long hours = duration.toHours() % 24;
+        long minutes = duration.toMinutes() % 60;
+        long seconds = duration.getSeconds() % 60;
+        return String.format("%02d days: %02d hrs: %02d mins: %02d s", days, hours, minutes, seconds);
     }
 }

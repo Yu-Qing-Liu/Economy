@@ -180,7 +180,7 @@ public class CreateAuctionMenuController extends AbstractPlayerInventoryControll
     }
 
     private void displayAuctionDelay() {
-        String duration = durationToString(auctionDelay);
+        String duration = menu.getLogger().durationToString(auctionDelay);
         Component prefix = Component.text("Starts After: ", NamedTextColor.DARK_GRAY);
         Component time = Component.text(duration, NamedTextColor.GREEN);
         Component durationComponent = prefix.append(time);
@@ -188,7 +188,7 @@ public class CreateAuctionMenuController extends AbstractPlayerInventoryControll
     }
 
     private void displayAuctionDuration() {
-        String duration = durationToString(auctionDuration);
+        String duration = menu.getLogger().durationToString(auctionDuration);
         Component prefix = Component.text("Auction Duration: ", NamedTextColor.DARK_GRAY);
         Component time = Component.text(duration, NamedTextColor.GREEN);
         Component durationComponent = prefix.append(time);
@@ -214,11 +214,11 @@ public class CreateAuctionMenuController extends AbstractPlayerInventoryControll
     }
 
     private void displayConfirmButton() {
-        String delay = durationToString(auctionDelay);
+        String delay = menu.getLogger().durationToString(auctionDelay);
         Component prefixDelay = Component.text("Starts After: ", NamedTextColor.DARK_GRAY);
         Component timeDelay = Component.text(delay, NamedTextColor.GREEN);
         Component delayComponent = prefixDelay.append(timeDelay);
-        String duration = durationToString(auctionDuration);
+        String duration = menu.getLogger().durationToString(auctionDuration);
         Component prefix = Component.text("Auction Duration: ", NamedTextColor.DARK_GRAY);
         Component time = Component.text(duration, NamedTextColor.GREEN);
         Component durationComponent = prefix.append(time);

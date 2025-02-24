@@ -46,14 +46,6 @@ public abstract class AbstractPlayerInventoryController<T> {
         return item.isSimilar(unavailableIcon) || item.isSimilar(loadingIcon) || item.isSimilar(getBackgroundTile(item.getType()));
     }
 
-    public String durationToString(Duration duration) {
-        long days = duration.toDays();
-        long hours = duration.toHours() % 24;
-        long minutes = duration.toMinutes() % 60;
-        long seconds = duration.getSeconds() % 60;
-        return String.format("%02d days: %02d hrs: %02d mins: %02d s", days, hours, minutes, seconds);
-    }
-
     public ItemStack createSlotItem(Material material, Component displayName, List<Component> lore) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();

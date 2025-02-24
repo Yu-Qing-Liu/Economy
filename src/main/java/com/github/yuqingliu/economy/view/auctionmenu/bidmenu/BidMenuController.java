@@ -180,10 +180,10 @@ public class BidMenuController extends AbstractPlayerInventoryController<Auction
             lore.add(Component.text(String.format("This auction has ended"), NamedTextColor.RED));
         } else if (now.isBefore(start)) {
             Duration duration = Duration.between(now, start);
-            lore.add(Component.text(String.format("Starts in %s", durationToString(duration)), NamedTextColor.GREEN));
+            lore.add(Component.text(String.format("Starts in %s", menu.getLogger().durationToString(duration)), NamedTextColor.GREEN));
         } else {
             Duration duration = Duration.between(now, end);
-            lore.add(Component.text(String.format("Ends in %s", durationToString(duration)), NamedTextColor.YELLOW));
+            lore.add(Component.text(String.format("Ends in %s", menu.getLogger().durationToString(duration)), NamedTextColor.YELLOW));
         }
         meta.lore(lore);
         icon.setItemMeta(meta);

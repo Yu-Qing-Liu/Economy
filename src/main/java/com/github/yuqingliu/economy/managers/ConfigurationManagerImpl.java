@@ -12,6 +12,8 @@ import lombok.Getter;
 public class ConfigurationManagerImpl implements ConfigurationManager {
     private final JavaPlugin plugin;
     private final FileConfiguration config;
+    private int dailyVendorBuyLimit = 320;
+    private int dailyVendorResetDurationHrs = 24;
     
     @Inject
     public ConfigurationManagerImpl(JavaPlugin plugin) {
@@ -21,6 +23,8 @@ public class ConfigurationManagerImpl implements ConfigurationManager {
 
     @Inject
     public void postConstruct() {
+        dailyVendorBuyLimit = setConstant("DailyVendorBuyLimit", dailyVendorBuyLimit, Integer.class);
+        dailyVendorResetDurationHrs = setConstant("DailyVendorResetDurationHrs", dailyVendorResetDurationHrs, Integer.class);
         plugin.saveConfig();
     }
 
