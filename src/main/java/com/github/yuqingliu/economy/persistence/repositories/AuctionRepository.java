@@ -223,7 +223,8 @@ public class AuctionRepository {
         Session session = hibernate.getSession();
         try {
             transaction = session.beginTransaction();
-            if (!auction.getEnd().isAfter(Instant.now())) {
+            Instant now = Instant.now();
+            if (!auction.getEnd().isAfter(now)) {
                 logger.sendPlayerErrorMessage(player, "This auction has ended already.");
                 throw new RuntimeException();
             }
@@ -261,6 +262,9 @@ public class AuctionRepository {
             }
             auction.setHighestBid(bidAmount);
             auction.setBidderId(player.getUniqueId());
+            if (Duration.between(now, auction.getEnd()).toMinutes() < 1) {
+                auction.setEnd(now.plus(Duration.ofMinutes(2)));
+            }
             session.merge(auction);
             transaction.commit();
             logger.sendPlayerNotificationMessage(player,

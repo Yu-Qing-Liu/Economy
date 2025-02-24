@@ -150,7 +150,6 @@ public class VendorItemRepository {
             soundManager.playTransactionSound(player);
             return true;
         } catch (Exception e) {
-            System.out.println(e);
             transaction.rollback();
             return false;
         } finally {
