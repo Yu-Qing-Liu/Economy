@@ -78,6 +78,10 @@ public class MainMenu implements Listener {
                 controller.prevPage();
                 return;
             }
+            if(Arrays.equals(slot, controller.getSearchAuctionButton())) {
+                controller.searchAuction();
+                return;
+            }
         }
     }
     

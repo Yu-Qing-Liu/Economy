@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -19,13 +20,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.yuqingliu.economy.api.Scheduler;
+import com.github.yuqingliu.economy.api.view.PlayerInventory;
 import com.github.yuqingliu.economy.persistence.entities.AuctionEntity;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu;
 import com.github.yuqingliu.economy.view.auctionmenu.AuctionMenu.MenuType;
+import com.github.yuqingliu.economy.view.textmenu.TextMenu;
 import com.github.yuqingliu.economy.view.AbstractPlayerInventoryController;
 import com.github.yuqingliu.economy.view.PageData;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -44,6 +48,7 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
     private final int auctionsSize = auctionsWidth * auctionsLength;
     private final List<int[]> auctions;
     private final PageData<AuctionEntity> pageData = new PageData<>();
+    @Setter private String searchString = "";
 
     public MainMenuController(Player player, Inventory inventory, AuctionMenu auctionMenu) {
         super(player, inventory, auctionMenu);
@@ -75,10 +80,29 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
         pageData.prevPage(() -> displayAuctions());
     }
 
+    public void searchAuction() {
+        inventory.close();
+        PlayerInventory auctionHouse = menu.getPluginManager().getInventoryManager().getInventory(AuctionMenu.class.getSimpleName());
+        Consumer<String> callback = (userInput) -> {
+            this.inventory = auctionHouse.load(player);
+            Scheduler.runAsync((task) -> {
+                menu.getMainMenu().getControllers().getPlayerInventoryController(player, this).setSearchString(userInput);
+                this.openMenu();
+            });
+        };
+        TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
+        scanner.setOnCloseCallback(callback);
+        scanner.setDisplayName(Component.text("search string", NamedTextColor.RED));
+        scanner.open(player);
+    }
+
     private void fetchAuctions() {
         pageData.clear();
-        List<AuctionEntity> auctions = menu.getAuctionService().getActiveAuctions().stream()
-                .filter(auc -> auc.getEnd().isAfter(Instant.now())).collect(Collectors.toList());
+        List<AuctionEntity> auctions = menu.getAuctionService().getActiveAuctions().stream().filter(auc -> {
+            boolean isValid = auc.getEnd().isAfter(Instant.now());
+            boolean containsSearchString = searchString.isEmpty() || auc.getDisplayName().toLowerCase().contains(searchString);
+            return isValid && containsSearchString;
+        }).collect(Collectors.toList());
         if (auctions == null || auctions.isEmpty()) {
             return;
         }

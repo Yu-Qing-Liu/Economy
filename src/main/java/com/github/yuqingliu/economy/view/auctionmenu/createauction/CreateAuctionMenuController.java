@@ -121,21 +121,21 @@ public class CreateAuctionMenuController extends AbstractPlayerInventoryControll
         PlayerInventory auctionHouse = menu.getPluginManager().getInventoryManager().getInventory(AuctionMenu.class.getSimpleName());
         Consumer<String> callback = (userInput) -> {
             this.inventory = auctionHouse.load(player);
-            CreateAuctionMenuController controller = menu.getCreateAuctionMenu().getControllers().getPlayerInventoryController(player, this);
+            menu.getCreateAuctionMenu().getControllers().getPlayerInventoryController(player, this);
             try {
-                int time = Integer.parseInt(userInput);
+                long time = Long.parseLong(userInput);
                 if(time < 0) {
                     throw new IllegalArgumentException();
                 }
-                controller.setAuctionDelay(Duration.ofMinutes(time));
+                this.setAuctionDelay(Duration.ofMinutes(time));
             } catch (Exception e) {
                 menu.getLogger().sendPlayerErrorMessage(player, "Invalid delay.");
             }
-            controller.openMenu();
+            this.openMenu();
         };
         TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
-        scanner.setDisplayName(Component.text("auction delay (mins)", NamedTextColor.RED));
+        scanner.setDisplayName(Component.text("delay (mins)", NamedTextColor.RED));
         scanner.open(player);
     }
 
@@ -144,21 +144,21 @@ public class CreateAuctionMenuController extends AbstractPlayerInventoryControll
         PlayerInventory auctionHouse = menu.getPluginManager().getInventoryManager().getInventory(AuctionMenu.class.getSimpleName());
         Consumer<String> callback = (userInput) -> {
             this.inventory = auctionHouse.load(player);
-            CreateAuctionMenuController controller = menu.getCreateAuctionMenu().getControllers().getPlayerInventoryController(player, this);
+            menu.getCreateAuctionMenu().getControllers().getPlayerInventoryController(player, this);
             try {
-                int time = Integer.parseInt(userInput);
+                long time = Long.parseLong(userInput);
                 if(time < 1) {
                     throw new IllegalArgumentException();
                 }
-                controller.setAuctionDelay(Duration.ofMinutes(time));
+                this.setAuctionDuration(Duration.ofMinutes(time));
             } catch (Exception e) {
                 menu.getLogger().sendPlayerErrorMessage(player, "Invalid duration.");
             }
-            controller.openMenu();
+            this.openMenu();
         };
         TextMenu scanner = (TextMenu) menu.getPluginManager().getInventoryManager().getInventory(TextMenu.class.getSimpleName());
         scanner.setOnCloseCallback(callback);
-        scanner.setDisplayName(Component.text("auction duration (mins)", NamedTextColor.RED));
+        scanner.setDisplayName(Component.text("duration (mins)", NamedTextColor.RED));
         scanner.open(player);
     }
 
