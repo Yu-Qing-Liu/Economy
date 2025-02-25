@@ -76,6 +76,9 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
     }
 
     public void reload() {
+        if (item == null) {
+            return;
+        }
         item = menu.getShopService().getShopItem(item.getShopName(),item.getShopSection().getSectionName(), item.getItemName());
         Scheduler.runAsync(t -> {
             fetchBuyOptions();
@@ -125,6 +128,9 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
     }
 
     private void fetchBuyOptions() {
+        if (item == null) {
+            return;
+        }
         buyPageData.clear();
         Map<String, List<ShopOrderEntity>> buyOrders = item.getBuyOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
@@ -151,6 +157,9 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
     }
 
     private void fetchSellOptions() {
+        if (item == null) {
+            return;
+        }
         sellPageData.clear();
         Map<String, List<ShopOrderEntity>> sellOrders = item.getSellOrders();
         Queue<OrderOption> temp = new ArrayDeque<>();
@@ -196,7 +205,7 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
                     ShopOrderEntity element = iterator.next();
                     if(element.getQuantity() - element.getFilledQuantity() > 0) {
                         Component playerComponent = Component.text(Bukkit.getOfflinePlayer(element.getPlayerId()).getName(), NamedTextColor.LIGHT_PURPLE);
-                        Component priceComponent = Component.text("Unit Buy Price: ", NamedTextColor.BLUE).append(Component.text(element.getUnitPrice() + "$/unit", NamedTextColor.GOLD));
+                        Component priceComponent = Component.text("Unit Buy Price: ", NamedTextColor.BLUE).append(Component.text(String.format("%.2f", element.getUnitPrice()), NamedTextColor.DARK_GREEN)).append(Component.text(String.format(" %s/unit", element.getCurrencyType()), NamedTextColor.GOLD));
                         Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(element.getQuantity() - element.getFilledQuantity() + "x", NamedTextColor.GREEN));
                         Component separator = Component.text("------------------------------------", NamedTextColor.BLUE);
                         topOrders.add(playerComponent);
@@ -209,6 +218,7 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
                 }
                 ItemMeta meta = item.getItemMeta();
                 if(meta != null) {
+                    meta.displayName(Component.text("BUY ORDERS:", NamedTextColor.DARK_AQUA));
                     meta.lore(topOrders);
                 }
                 item.setItemMeta(meta);
@@ -240,7 +250,7 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
                     ShopOrderEntity element = iterator.next();
                     if(element.getQuantity() - element.getFilledQuantity() > 0) {
                         Component playerComponent = Component.text(Bukkit.getOfflinePlayer(element.getPlayerId()).getName(), NamedTextColor.LIGHT_PURPLE);
-                        Component priceComponent = Component.text("Unit Sell Price: ", NamedTextColor.BLUE).append(Component.text(element.getUnitPrice() + "$/unit", NamedTextColor.GOLD));
+                        Component priceComponent = Component.text("Unit Sell Price: ", NamedTextColor.BLUE).append(Component.text(String.format("%.2f", element.getUnitPrice()), NamedTextColor.DARK_GREEN)).append(Component.text(String.format(" %s/unit", element.getCurrencyType()), NamedTextColor.GOLD));
                         Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(element.getQuantity() - element.getFilledQuantity() + "x", NamedTextColor.GREEN));
                         Component separator = Component.text("------------------------------------", NamedTextColor.BLUE);
                         topOrders.add(playerComponent);
@@ -253,6 +263,7 @@ public class OrderMenuController extends AbstractPlayerInventoryController<ShopM
                 }
                 ItemMeta meta = item.getItemMeta();
                 if(meta != null) {
+                    meta.displayName(Component.text("SELL ORDERS:", NamedTextColor.DARK_AQUA));
                     meta.lore(topOrders);
                 }
                 item.setItemMeta(meta);

@@ -8,7 +8,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.github.yuqingliu.economy.api.Scheduler;
 import com.github.yuqingliu.economy.persistence.entities.ShopItemEntity;
@@ -103,7 +102,7 @@ public class QuickBuyMenuController extends AbstractPlayerInventoryController<Sh
                 leftover = quantities[index];
             }
             Component buy = Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
-            Component costComponent = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
+            Component costComponent = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost, NamedTextColor.DARK_GREEN).append(Component.text(" " + orderOption.getCurrencyName(), NamedTextColor.GOLD)));
             ItemStack option = createSlotItem(Material.LIME_STAINED_GLASS, buy, costComponent);
             option.setAmount(leftover);
             setItem(coords, option);
@@ -139,7 +138,7 @@ public class QuickBuyMenuController extends AbstractPlayerInventoryController<Sh
         }
         List<Component> fillLore = Arrays.asList(
             Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
-            Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
+            Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(cost, NamedTextColor.DARK_GREEN).append(Component.text(" " + orderOption.getCurrencyName(), NamedTextColor.GOLD)))
         );
         ItemStack fillButton = createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
         setItem(buyInventoryButton, fillButton);

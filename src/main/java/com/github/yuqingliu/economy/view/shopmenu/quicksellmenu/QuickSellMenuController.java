@@ -113,7 +113,7 @@ public class QuickSellMenuController extends AbstractPlayerInventoryController<S
             int leftover = (int) data[0];
             double profit = data[1];
             Component sell = Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED));
-            Component profitComponent = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(orderOption.getIcon().displayName()));
+            Component profitComponent = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit, NamedTextColor.DARK_GREEN).append(Component.text(" " + orderOption.getCurrencyName(), NamedTextColor.GOLD)));
             ItemStack option = createSlotItem(Material.RED_STAINED_GLASS, sell, profitComponent);
             option.setAmount(leftover);
             setItem(coords, option);
@@ -137,7 +137,7 @@ public class QuickSellMenuController extends AbstractPlayerInventoryController<S
         double profit = data[1];
         List<Component> fillLore = Arrays.asList(
             Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(leftover + "x", NamedTextColor.RED)),
-            Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit +"$ ", NamedTextColor.DARK_GREEN).append(Component.text(orderOption.getCurrencyName(), NamedTextColor.GOLD)))
+            Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(profit, NamedTextColor.DARK_GREEN).append(Component.text(" " + orderOption.getCurrencyName(), NamedTextColor.GOLD)))
         );
         ItemStack sellButton = createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), fillLore);
         setItem(sellInventoryButton, sellButton);

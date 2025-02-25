@@ -43,7 +43,7 @@ public class AccountCommand implements CommandExecutor {
                         meta.displayName(Component.text(args[1], NamedTextColor.RED).decorate(TextDecoration.BOLD));
                         icon.setItemMeta(meta);
                     }
-                    double interestRate = Double.parseDouble(args[3]);
+                    double interestRate = Double.parseDouble(args[3]) / 100.0;
                     double cost = Double.parseDouble(args[5]);
                     if(bankService.addBankAccountToAll(args[1], args[2], icon, interestRate, args[4], cost)) {
                         logger.sendPlayerAcknowledgementMessage(player, String.format("Sucessfully create account with name %s in bank %s with an interest rate of %s%%. Unlocking the account costs %s %s.", args[1], args[2], args[3], args[5], args[4]));

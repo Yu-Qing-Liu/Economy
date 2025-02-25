@@ -23,6 +23,6 @@ public class CurrencyOption {
 
     public String getCurrencyName() {
         String name = PlainTextComponentSerializer.plainText().serialize(icon.displayName());
-        return name.length() > 1 ? name.substring(1, name.length() - 1) : name;
+        return name.replaceAll("[\\[\\]]", "");
     }
 }

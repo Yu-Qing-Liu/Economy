@@ -105,11 +105,10 @@ public class BuyOrdersMenuController extends AbstractPlayerInventoryController<S
                     meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
                     meta.displayName(Component.text("BUY ORDER", NamedTextColor.GOLD));
                     Component nameComponent = Component.text(order.getItemName(), NamedTextColor.AQUA);
-                    Component currencyComponent = Component.text("Currency: ", NamedTextColor.BLUE).append(Component.text(order.getCurrencyType(), NamedTextColor.GOLD));
-                    Component priceComponent = Component.text("Unit Buy Price: ", NamedTextColor.BLUE).append(Component.text(order.getUnitPrice() + "$/unit", NamedTextColor.GOLD));
+                    Component priceComponent = Component.text("Unit Buy Price: ", NamedTextColor.BLUE).append(Component.text(String.format("%.2f ", order.getUnitPrice()), NamedTextColor.DARK_GREEN)).append(Component.text(String.format("%s/unit", order.getCurrencyType()), NamedTextColor.GOLD));
                     Component quantityComponent = Component.text("Quantity: ", NamedTextColor.BLUE).append(Component.text(order.getQuantity() + "x", NamedTextColor.GREEN));
                     Component quantityBoughtComponent = Component.text("Quantity Bought: ", NamedTextColor.BLUE).append(Component.text(order.getFilledQuantity() + "x", NamedTextColor.GREEN));
-                    meta.lore(Arrays.asList(nameComponent, currencyComponent, priceComponent, quantityComponent, quantityBoughtComponent));
+                    meta.lore(Arrays.asList(nameComponent, priceComponent, quantityComponent, quantityBoughtComponent));
                 }
                 orderIcon.setItemMeta(meta);
                 setItem(coords, orderIcon);

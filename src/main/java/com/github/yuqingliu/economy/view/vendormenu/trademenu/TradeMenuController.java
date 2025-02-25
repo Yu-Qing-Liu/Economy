@@ -81,11 +81,11 @@ public class TradeMenuController extends AbstractPlayerInventoryController<Vendo
         int amount = menu.getPluginManager().getInventoryManager().countItemFromPlayer(player, item.getIcon());
         List<Component> fillLore = Arrays.asList(
             Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(freeSpace + "x", NamedTextColor.RED)),
-            Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(freeSpace) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))
+            Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(freeSpace), NamedTextColor.DARK_GREEN).append(Component.text(" " + currencyOption.getCurrencyName(), NamedTextColor.GOLD)))
         );
         List<Component> sellLore = Arrays.asList(
             Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(amount + "x", NamedTextColor.RED)),
-            Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(amount) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()))
+            Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(amount), NamedTextColor.DARK_GREEN).append(Component.text(" " + currencyOption.getCurrencyName(), NamedTextColor.GOLD)))
         );
         ItemStack fillButton = createSlotItem(Material.CHEST, Component.text("Fill Inventory", NamedTextColor.RED), fillLore);
         ItemStack sellButton = createSlotItem(Material.CHEST, Component.text("Sell Inventory", NamedTextColor.RED), sellLore);
@@ -104,7 +104,7 @@ public class TradeMenuController extends AbstractPlayerInventoryController<Vendo
         int index = 0;
         for(int[] coords : buyOptions) {
             Component buy = Component.text("BUY: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED));
-            Component cost = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(quantities[index]) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()));
+            Component cost = Component.text("COST: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getBuyPrice(quantities[index]), NamedTextColor.DARK_GREEN).append(Component.text(" " + currencyOption.getCurrencyName(), NamedTextColor.GOLD)));
             ItemStack option = createSlotItem(Material.LIME_STAINED_GLASS, buy, cost);
             option.setAmount(quantities[index]);
             setItem(coords, option);
@@ -116,7 +116,7 @@ public class TradeMenuController extends AbstractPlayerInventoryController<Vendo
         int index = 0;
         for(int[] coords : sellOptions) {
             Component sell = Component.text("SELL: ", NamedTextColor.GOLD).append(Component.text(quantities[index] + "x", NamedTextColor.RED));
-            Component profit = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(quantities[index]) +"$ ", NamedTextColor.DARK_GREEN).append(currencyOption.getIcon().displayName()));
+            Component profit = Component.text("PROFIT: ", NamedTextColor.DARK_PURPLE).append(Component.text(currencyOption.getSellPrice(quantities[index]), NamedTextColor.DARK_GREEN).append(Component.text(" " + currencyOption.getCurrencyName(), NamedTextColor.GOLD)));
             ItemStack option = createSlotItem(Material.RED_STAINED_GLASS, sell, profit);
             option.setAmount(quantities[index]);
             setItem(coords, option);

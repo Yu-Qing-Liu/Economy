@@ -127,9 +127,10 @@ public class TransactionMenuController extends AbstractPlayerInventoryController
             } else {
                 ItemStack item = option.getIcon().clone();
                 ItemMeta itemMeta = item.getItemMeta();
-                Component buyPrice = Component.text("UNIT BUY PRICE: ", NamedTextColor.DARK_AQUA).append(Component.text(option.getBuyPrice() +"$ ", NamedTextColor.DARK_GREEN));
-                Component sellPrice = Component.text("UNIT SELL PRICE: ", NamedTextColor.DARK_AQUA).append(Component.text(option.getSellPrice() +"$ ", NamedTextColor.DARK_GREEN));
-                itemMeta.lore(Arrays.asList(buyPrice, sellPrice));
+                Component buyPrice = Component.text("BUY PRICE: ", NamedTextColor.DARK_AQUA).append(Component.text(option.getBuyPrice(), NamedTextColor.DARK_GREEN).append(Component.text(String.format(" %s/unit", option.getCurrencyName()), NamedTextColor.GOLD)));
+                Component sellPrice = Component.text("SELL PRICE: ", NamedTextColor.DARK_AQUA).append(Component.text(option.getSellPrice(), NamedTextColor.DARK_GREEN).append(Component.text(String.format(" %s/unit", option.getCurrencyName()), NamedTextColor.GOLD)));
+                itemMeta.displayName(buyPrice);
+                itemMeta.lore(Arrays.asList(sellPrice));
                 item.setItemMeta(itemMeta);
                 setItem(coords, item);
             }
