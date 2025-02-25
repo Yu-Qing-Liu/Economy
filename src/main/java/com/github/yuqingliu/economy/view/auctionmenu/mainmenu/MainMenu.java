@@ -82,6 +82,10 @@ public class MainMenu implements Listener {
                 controller.searchAuction();
                 return;
             }
+            if(Arrays.equals(slot, controller.getSortAuctionsButton())) {
+                controller.sortButtonOnClick();
+                return;
+            }
         }
     }
     

@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 @Getter
 public class MainMenuController extends AbstractPlayerInventoryController<AuctionMenu> {
@@ -40,19 +41,32 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
     private final int[] refreshButton = new int[] { 8, 3 };
     private final int[] exitMenuButton = new int[] { 8, 4 };
     private final int[] searchAuctionButton = new int[] { 0, 1 };
-    private final int[] createAuctionButton = new int[] { 0, 2 };
-    private final int[] playerAuctionsButton = new int[] { 0, 3 };
+    private final int[] sortAuctionsButton = new int[] { 0, 2 };
+    private final int[] createAuctionButton = new int[] { 0, 3 };
+    private final int[] playerAuctionsButton = new int[] { 0, 4 };
     private final int[] auctionsStart = new int[] { 1, 1 };
     private final int auctionsLength = 7;
     private final int auctionsWidth = 4;
     private final int auctionsSize = auctionsWidth * auctionsLength;
     private final List<int[]> auctions;
     private final PageData<AuctionEntity> pageData = new PageData<>();
+    enum SortingOption {
+        PRICE_ASC("Price Ascending"), PRICE_DESC("Price Descending");
+        private final String type;
+        SortingOption(String type) {
+            this.type = type;
+        }
+        public String value() {
+            return this.type;
+        }
+    }
     @Setter private String searchString = "";
+    private Queue<SortingOption> sortingOptions = new ArrayDeque<>();
 
     public MainMenuController(Player player, Inventory inventory, AuctionMenu auctionMenu) {
         super(player, inventory, auctionMenu);
         this.auctions = rectangleArea(auctionsStart, auctionsWidth, auctionsLength);
+        sortingOptions.addAll(Arrays.asList(SortingOption.values()));
     }
 
     public void openMenu() {
@@ -96,12 +110,28 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
         scanner.open(player);
     }
 
+    public void sortButtonOnClick() {
+        SortingOption curr = sortingOptions.poll();
+        sortingOptions.offer(curr);
+        sortButton();
+        reload();
+    }
+
     private void fetchAuctions() {
         pageData.clear();
         List<AuctionEntity> auctions = menu.getAuctionService().getActiveAuctions().stream().filter(auc -> {
             boolean isValid = auc.getEnd().isAfter(Instant.now());
             boolean containsSearchString = searchString.isEmpty() || auc.getDisplayName().toLowerCase().contains(searchString);
             return isValid && containsSearchString;
+        }).sorted((auc1, auc2) ->  {
+            switch (sortingOptions.peek()) {
+                case PRICE_ASC:
+                    return Double.compare(auc1.getHighestBid(), auc2.getHighestBid());
+                case PRICE_DESC:
+                    return Double.compare(auc2.getHighestBid(), auc1.getHighestBid());
+                default:
+                    return Double.compare(auc1.getHighestBid(), auc2.getHighestBid());
+            }
         }).collect(Collectors.toList());
         if (auctions == null || auctions.isEmpty()) {
             return;
@@ -171,12 +201,26 @@ public class MainMenuController extends AbstractPlayerInventoryController<Auctio
         }
     }
 
+    private void sortButton() {
+        SortingOption current = sortingOptions.peek();
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(current.type, NamedTextColor.RED).decorate(TextDecoration.BOLD));
+        for (SortingOption opt : sortingOptions) {
+            if (opt.equals(current)) {
+                continue;
+            }
+            lore.add(Component.text(opt.type, NamedTextColor.DARK_AQUA));
+        }
+        setItem(sortAuctionsButton, createSlotItem(Material.NETHER_STAR, Component.text("Sort By", NamedTextColor.GOLD), lore));
+    }
+
     private void buttons() {
         setItem(nextPageButton, getNextPageIcon());
         setItem(prevPageButton, getPrevPageIcon());
         setItem(refreshButton, getReloadIcon());
         setItem(exitMenuButton, getExitMenuIcon());
         setItem(searchAuctionButton, createSlotItem(Material.OAK_HANGING_SIGN, Component.text("Search", NamedTextColor.BLUE)));
+        sortButton();
         setItem(createAuctionButton, createSlotItem(Material.CHEST, Component.text("Create Auction", NamedTextColor.AQUA)));
         setItem(playerAuctionsButton, createSlotItem(Material.ENDER_CHEST, Component.text("Your Auctions", NamedTextColor.DARK_PURPLE)));
     }
