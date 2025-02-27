@@ -1,6 +1,9 @@
 package com.github.yuqingliu.economy.modules;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.hibernate.Session;
@@ -25,12 +28,7 @@ public class Hibernate {
         }
     }
 
-    public static SessionFactory createSessionFactory(String dataFolderPath) {
-        Configuration configuration = new Configuration();
-        File dataFolder = new File(dataFolderPath);
-        if (!dataFolder.exists()) {
-            dataFolder.mkdirs();
-        }
+    private static void defaultSettings(String dataFolderPath, Configuration configuration) {
         String dbUrl = "jdbc:sqlite:" + dataFolderPath + "/database.db";
         configuration.setProperty("hibernate.connection.url", dbUrl);
         configuration.setProperty("hibernate.connection.driver_class", "org.sqlite.JDBC");
@@ -39,6 +37,31 @@ public class Hibernate {
         configuration.setProperty("hibernate.show_sql", "false");
         configuration.setProperty("hibernate.format_sql", "false");
         configuration.setProperty("hibernate.connection.autocommit", "false");
+    }
+
+    public static SessionFactory createSessionFactory(String dataFolderPath) {
+        boolean readSuccess = false;
+        Properties properties = new Properties();
+        Configuration configuration = new Configuration();
+        File dataFolder = new File(dataFolderPath);
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+
+        try (FileInputStream input = new FileInputStream(dataFolderPath + "/hibernate.properties")) {
+            properties.load(input);
+            readSuccess = true;
+        } catch (IOException e) {
+            System.out.println("Error loading hibernate.properties, using default settings.");
+        }
+
+        if (!readSuccess) {
+            defaultSettings(dataFolderPath, configuration);
+        } else {
+            for (String name : properties.stringPropertyNames()) {
+                configuration.setProperty(name, properties.getProperty(name));
+            }           
+        }
 
         StandardServiceRegistryBuilder serviceRegistryBuilder = new StandardServiceRegistryBuilder();
         serviceRegistryBuilder.applySettings(configuration.getProperties());
