@@ -10,6 +10,7 @@ The Economy plugin is a Minecraft server plugin designed to manage currencies, s
 ```
 ├── Economy
 │   ├── config.yml
+│   ├── hibernate.properties
 │   └── database.db
 ├── Economy.jar
 ├── ...
@@ -19,6 +20,17 @@ The Economy plugin is a Minecraft server plugin designed to manage currencies, s
 ```
 DailyVendorBuyLimit: 320 # Maximum amount of items that can be bought in the vendor per day.
 DailyVendorResetDurationHrs: 24 # Reset timer for the vendor buy limit in hours.
+```
+
+## Configuration hibernate.properties example
+```
+hibernate.connection.driver_class=org.sqlite.JDBC
+hibernate.connection.url=jdbc:sqlite:/home/admin/Repositories/Minecraft/DevServer/plugins/Economy/database.db
+hibernate.dialect=org.hibernate.community.dialect.SQLiteDialect
+hibernate.hbm2ddl.auto=update
+hibernate.show_sql=false
+hibernate.format_sql=false
+hibernate.connection.autocommit=false
 ```
 
 ## Commands
