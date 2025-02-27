@@ -55,9 +55,9 @@ public class ShopOrderEntity {
 
     @ManyToOne
     @JoinColumns({
-        @JoinColumn(name = "itemName", referencedColumnName = "itemName", insertable = false, updatable = false),
         @JoinColumn(name = "sectionName", referencedColumnName = "sectionName", insertable = false, updatable = false),
-        @JoinColumn(name = "shopName", referencedColumnName = "shopName", insertable = false, updatable = false)
+        @JoinColumn(name = "shopName", referencedColumnName = "shopName", insertable = false, updatable = false),
+        @JoinColumn(name = "itemName", referencedColumnName = "itemName", insertable = false, updatable = false)
     })
     private ShopItemEntity shopItem;
 

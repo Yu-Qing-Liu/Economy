@@ -50,7 +50,8 @@ public class AccountRepository {
                 if (next.isBefore(now)) {
                     Duration elapsed = Duration.between(lastInterestDeposit, now.minus(Duration.between(next, now)));
                     long interestEpochs = elapsed.dividedBy(interestCooldown);
-                    accountEntity.setLastInterestTimestamp(now);
+                    Duration remainder = elapsed.minus(interestCooldown.multipliedBy(interestEpochs));
+                    accountEntity.setLastInterestTimestamp(now.minus(remainder));
                     Set<CurrencyEntity> currencies = accountEntity.getCurrencies();
                     for (CurrencyEntity currency : currencies) {
                         double initial = currency.getAmount();

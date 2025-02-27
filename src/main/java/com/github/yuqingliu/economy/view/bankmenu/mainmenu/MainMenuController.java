@@ -108,9 +108,9 @@ public class MainMenuController extends AbstractPlayerInventoryController<BankMe
                 if(meta != null) {
                     List<Component> lore = new ArrayList<>();
                     lore.add(Component.text("BANK ACCOUNT", NamedTextColor.GOLD));
-                    lore.add(Component.text("Interest Rate: ", NamedTextColor.BLUE).append(Component.text(account.getInterestRate() + "%", NamedTextColor.DARK_GREEN).append(Component.text(String.format(" every %s hour(s)", account.getBank().getInterestCooldown().toHours()), NamedTextColor.YELLOW))));
+                    lore.add(Component.text("Interest Rate: ", NamedTextColor.BLUE).append(Component.text(account.getInterestRate() * 100 + "%", NamedTextColor.DARK_GREEN).append(Component.text(String.format(" every %s hour(s)", account.getBank().getInterestCooldown().toHours()), NamedTextColor.YELLOW))));
                     if(!account.isUnlocked()) {
-                        lore.add(Component.text("Unlock cost: ", NamedTextColor.BLUE).append(Component.text(String.format("%.2f %s", account.getUnlockCost(), account.getUnlockCurrencyType(), NamedTextColor.DARK_GREEN))));
+                        lore.add(Component.text("Unlock cost: ", NamedTextColor.BLUE).append(Component.text(String.format("%.2f", account.getUnlockCost()), NamedTextColor.DARK_GREEN)).append(Component.text(String.format(" %s", account.getUnlockCurrencyType()), NamedTextColor.GOLD)));
                     }
                     meta.lore(lore);
                 }

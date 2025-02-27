@@ -48,8 +48,8 @@ public class VendorItemEntity {
 
     @ManyToOne
     @JoinColumns({
-        @JoinColumn(name = "vendorName", referencedColumnName = "vendorName", insertable = false, updatable = false),
-        @JoinColumn(name = "sectionName", referencedColumnName = "sectionName", insertable = false, updatable = false)
+        @JoinColumn(name = "sectionName", referencedColumnName = "sectionName", insertable = false, updatable = false),
+        @JoinColumn(name = "vendorName", referencedColumnName = "vendorName", insertable = false, updatable = false)
     })
     private VendorSectionEntity vendorSection;
     

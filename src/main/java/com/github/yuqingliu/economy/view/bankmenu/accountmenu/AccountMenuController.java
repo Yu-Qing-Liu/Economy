@@ -51,7 +51,7 @@ public class AccountMenuController extends AbstractPlayerInventoryController<Ban
         ItemMeta meta = icon.getItemMeta();
         if(meta != null) {
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("Interest Rate: ", NamedTextColor.DARK_AQUA).append(Component.text(account.getInterestRate() + "%", NamedTextColor.DARK_GREEN)));
+            lore.add(Component.text("Interest Rate: ", NamedTextColor.DARK_AQUA).append(Component.text(account.getInterestRate() * 100 + "%", NamedTextColor.DARK_GREEN)));
             Duration next = Duration.between(Instant.now(), account.getLastInterestTimestamp().plus(account.getBank().getInterestCooldown()));
             lore.add(Component.text("Next interest in: ", NamedTextColor.YELLOW).append(Component.text(menu.getLogger().durationToString(next), NamedTextColor.GREEN)));
             for(CurrencyEntity currency : account.getCurrencies()) {

@@ -50,6 +50,7 @@ public class PluginModule extends AbstractModule {
         bind(VendorService.class).in(Singleton.class);
         bind(ShopService.class).in(Singleton.class);
         bind(BankService.class).in(Singleton.class);
+        bind(AuctionService.class).in(Singleton.class);
         // Managers
         bind(NameSpacedKeyManager.class).to(NameSpacedKeyManagerImpl.class).in(Singleton.class);
         bind(SoundManager.class).to(SoundManagerImpl.class).in(Singleton.class);

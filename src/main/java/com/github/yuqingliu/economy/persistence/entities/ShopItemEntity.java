@@ -52,8 +52,8 @@ public class ShopItemEntity {
 
     @ManyToOne
     @JoinColumns({
-        @JoinColumn(name = "shopName", referencedColumnName = "shopName", insertable = false, updatable = false),
-        @JoinColumn(name = "sectionName", referencedColumnName = "sectionName", insertable = false, updatable = false)
+        @JoinColumn(name = "sectionName", referencedColumnName = "sectionName", insertable = false, updatable = false),
+        @JoinColumn(name = "shopName", referencedColumnName = "shopName", insertable = false, updatable = false)
     })
     private ShopSectionEntity shopSection;
 
