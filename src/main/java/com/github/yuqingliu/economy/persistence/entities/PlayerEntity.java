@@ -43,7 +43,7 @@ public class PlayerEntity {
     @OrderBy("accountName ASC")
     private Set<AccountEntity> accounts = new LinkedHashSet<>();
 
-    @Column(name = "lastVendorBuyLimitRefill", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "lastVendorBuyLimitRefill")
     private Instant lastVendorBuyLimitRefill;
 
     @ElementCollection(fetch = FetchType.EAGER)
