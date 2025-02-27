@@ -119,7 +119,10 @@ public class VendorItemRepository {
             Duration buyCooldown = Duration.ofHours(configurationManager.getDailyVendorResetDurationHrs());
             Instant next = lastDailyBuyRefill.plus(buyCooldown);
             if (next.isBefore(now)) {
-                playerEntity.setLastVendorBuyLimitRefill(now);
+                Duration elapsed = Duration.between(lastDailyBuyRefill, now);
+                long epochs = elapsed.dividedBy(buyCooldown);
+                Duration remainder = elapsed.minus(buyCooldown.multipliedBy(epochs));
+                playerEntity.setLastVendorBuyLimitRefill(now.minus(remainder));
                 playerEntity.refillVendorBuyLimit(configurationManager.getDailyVendorBuyLimit());
             }
             int maxAmount = playerEntity.getVendorItemsBuyLimit().computeIfAbsent(itemKey, (i) -> configurationManager.getDailyVendorBuyLimit());
